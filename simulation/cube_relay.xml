@@ -1,0 +1,52 @@
+<mujoco model="cube_relay_approximate">
+  <compiler angle="radian"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast"/>
+  <visual><global offwidth="640" offheight="480"/></visual>
+  <asset>
+    <material name="table" rgba="0.35 0.25 0.18 1"/>
+    <material name="robot" rgba="0.25 0.3 0.35 1"/>
+  </asset>
+  <worldbody>
+    <light pos="0 0 2.5" dir="0 0 -1"/>
+    <geom name="floor" type="plane" size="3 3 .1" rgba=".15 .15 .17 1"/>
+    <geom name="table" type="box" pos="0 0 .55" size=".9 .7 .05" material="table"/>
+    <camera name="overhead" pos="0 -1.6 1.8" xyaxes="1 0 0 0 .75 .66"/>
+    <body name="robot_base" pos="-.55 0 .65">
+      <geom type="cylinder" size=".14 .08" material="robot"/>
+      <body name="link1" pos="0 0 .08">
+        <joint name="arm_j1" type="hinge" axis="0 0 1" damping="2"/>
+        <!-- Keep the capsule's lower hemispherical cap 5 mm above the
+             pedestal top. The old start=0 overlapped it by the radius. -->
+        <geom type="capsule" fromto="0 0 .06 0 0 .42" size=".055" material="robot"/>
+        <body name="link2" pos="0 0 .42">
+          <joint name="arm_j2" type="hinge" axis="0 1 0" damping="2"/>
+          <geom type="capsule" fromto="0 0 0 .38 0 0" size=".045" material="robot"/>
+          <body name="gripper" pos=".38 0 0">
+            <joint name="arm_j3" type="hinge" axis="0 1 0" damping="1"/>
+            <geom type="box" size=".08 .06 .04" rgba=".1 .1 .12 1"/>
+          </body>
+        </body>
+      </body>
+    </body>
+    <body name="cube" pos=".22 0 .72">
+      <geom type="box" size=".145 .145 .145" rgba=".03 .03 .03 1"/>
+      <body name="plate_U" pos="0 0 .151"><joint name="face_U" type="hinge" axis="0 0 1" damping="1"/><geom type="box" size=".13 .13 .008" rgba="1 1 1 1" contype="0" conaffinity="0"/></body>
+      <body name="plate_D" pos="0 0 -.151"><joint name="face_D" type="hinge" axis="0 0 -1" damping="1"/><geom type="box" size=".13 .13 .008" rgba="1 1 0 1" contype="0" conaffinity="0"/></body>
+      <body name="plate_R" pos=".151 0 0"><joint name="face_R" type="hinge" axis="1 0 0" damping="1"/><geom type="box" size=".008 .13 .13" rgba="1 0 0 1" contype="0" conaffinity="0"/></body>
+      <body name="plate_L" pos="-.151 0 0"><joint name="face_L" type="hinge" axis="-1 0 0" damping="1"/><geom type="box" size=".008 .13 .13" rgba="1 .4 0 1" contype="0" conaffinity="0"/></body>
+      <body name="plate_F" pos="0 -.151 0"><joint name="face_F" type="hinge" axis="0 -1 0" damping="1"/><geom type="box" size=".13 .008 .13" rgba="0 .7 0 1" contype="0" conaffinity="0"/></body>
+      <body name="plate_B" pos="0 .151 0"><joint name="face_B" type="hinge" axis="0 1 0" damping="1"/><geom type="box" size=".13 .008 .13" rgba="0 .2 1 1" contype="0" conaffinity="0"/></body>
+    </body>
+  </worldbody>
+  <actuator>
+    <position name="turn_U" joint="face_U" kp="80"/>
+    <position name="turn_D" joint="face_D" kp="80"/>
+    <position name="turn_R" joint="face_R" kp="80"/>
+    <position name="turn_L" joint="face_L" kp="80"/>
+    <position name="turn_F" joint="face_F" kp="80"/>
+    <position name="turn_B" joint="face_B" kp="80"/>
+    <position name="arm_1" joint="arm_j1" kp="30"/>
+    <position name="arm_2" joint="arm_j2" kp="30"/>
+    <position name="arm_3" joint="arm_j3" kp="20"/>
+  </actuator>
+</mujoco>

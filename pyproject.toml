@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "cube-relay"
+version = "0.1.0"
+description = "Human/robot Rubik's cube relay MVP"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115,<1",
+  "kociemba==1.2.1",
+  "numpy>=1.26,<3",
+  "pydantic>=2.9,<3",
+  "uvicorn>=0.30,<1",
+]
+
+[project.optional-dependencies]
+dev = ["pytest==9.0.2", "httpx2>=2,<3"]
+simulation = ["mujoco==3.3.7", "imageio>=2.34,<3", "imageio-ffmpeg>=0.5,<1"]
+vision = ["opencv-python-headless>=4.10,<5"]
+vlm = ["Pillow>=10,<13"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+addopts = "-ra"
+pythonpath = ["src"]
+testpaths = ["tests"]

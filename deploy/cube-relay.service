@@ -1,0 +1,17 @@
+[Unit]
+Description=CubeRelay web and simulation service
+Requires=docker.service
+After=docker.service network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5
+ExecStartPre=-/usr/bin/docker rm -f cube-relay
+ExecStart=/usr/bin/docker run --name cube-relay --env-file /opt/cube-relay/.env --volume /opt/cube-relay/src:/app/src:ro --volume /opt/cube-relay/web:/app/web:ro --publish 8000:8000 cube-relay:latest
+ExecStop=/usr/bin/docker stop -t 20 cube-relay
+ExecStopPost=-/usr/bin/docker rm -f cube-relay
+
+[Install]
+WantedBy=multi-user.target

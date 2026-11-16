@@ -1,0 +1,140 @@
+.scramble-field span {
+  font-weight: 700;
+  color: #dfe6f5;
+}
+
+.advanced {
+  position: relative;
+  align-self: center;
+  color: #9ca7bb;
+}
+
+.advanced summary {
+  cursor: pointer;
+  padding: 8px 10px;
+  border: 1px solid #354056;
+  border-radius: 8px;
+  list-style: none;
+}
+
+.advanced > div {
+  position: absolute;
+  z-index: 40;
+  top: 44px;
+  right: 0;
+  min-width: 320px;
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+  background: #171d29;
+  border: 1px solid #354056;
+  border-radius: 10px;
+  box-shadow: 0 14px 40px #0009;
+}
+
+.steps {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 4px 0 16px;
+  color: #69758a;
+  font-size: 13px;
+}
+
+.steps span {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.steps span::first-letter {
+  color: white;
+}
+
+.steps i {
+  width: 36px;
+  height: 1px;
+  background: #344056;
+}
+
+.steps .active {
+  color: #edf3ff;
+}
+
+.steps .active:first-letter {
+  color: #8fb1ff;
+}
+
+.action-hint {
+  margin: 18px 0 9px;
+  color: #9aa6ba;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.turn-banner.error {
+  border-color: #a84141;
+  background: #351819;
+}
+
+.advanced input {
+  width: 100%;
+}
+
+.replay-action {
+  width: 100%;
+  margin-top: 9px;
+  border-style: dashed;
+}
+
+.replay-note {
+  display: block;
+  margin-top: 7px;
+  color: #778399;
+  line-height: 1.4;
+}
+
+.turn-banner.replay {
+  border-color: #3f78a8;
+  background: #13283a;
+}
+
+.confirmation {
+  margin-top: 14px;
+  padding: 13px;
+  border: 1px solid #d28a3a;
+  border-radius: 10px;
+  background: #302213;
+}
+
+.confirmation[hidden], .confirmation [hidden] {
+  display: none;
+}
+
+.confirmation p {
+  color: #e3c59f;
+  line-height: 1.45;
+}
+
+.confirmation div {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.confirmation > button {
+  width: 100%;
+}
+
+@media (max-width: 850px) {
+  .steps b {
+    display: none;
+  }
+
+  .advanced > div {
+    left: 0;
+    right: auto;
+  }
+}

@@ -1,0 +1,500 @@
+{
+  "session": {
+    "session_id": "22c86967-d798-4c6b-8d04-8aa2eb3ce8a7",
+    "actual_state": "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB",
+    "planned_moves": [],
+    "next_actor": "human",
+    "plan_version": 4,
+    "status": "solved",
+    "robot_mode": "sim",
+    "machine_status": "idle",
+    "control_mode": "hierarchical",
+    "policy_backend": "kociemba_baseline",
+    "message": "ready"
+  },
+  "events": [
+    {
+      "sequence": 1,
+      "kind": "SESSION_STARTED",
+      "actual_state": "UUUUUURDDLRRLRRURRFFFUFFLLBDDLDDFDDFFFULLBBBBBLLBBBDRR",
+      "move": null,
+      "plan_version": 1,
+      "detail": {}
+    },
+    {
+      "sequence": 2,
+      "kind": "HUMAN_MOVE",
+      "actual_state": "DUUDUUDDDLRRLRRURRRFFBFFLLBUDLUDFRDFBBBBLLUFFBLLBBUDRF",
+      "move": "L2",
+      "plan_version": 1,
+      "detail": {
+        "recommended": "D'",
+        "unexpected": true
+      }
+    },
+    {
+      "sequence": 3,
+      "kind": "PLANNING_STARTED",
+      "actual_state": "DUUDUUDDDLRRLRRURRRFFBFFLLBUDLUDFRDFBBBBLLUFFBLLBBUDRF",
+      "move": null,
+      "plan_version": 1,
+      "detail": {
+        "reason": "unexpected_human_move",
+        "policy_backend": "kociemba_baseline"
+      }
+    },
+    {
+      "sequence": 4,
+      "kind": "PLANNING_FINISHED",
+      "actual_state": "DUUDUUDDDLRRLRRURRRFFBFFLLBUDLUDFRDFBBBBLLUFFBLLBBUDRF",
+      "move": null,
+      "plan_version": 2,
+      "detail": {
+        "reason": "unexpected_human_move",
+        "planned_move_count": 14
+      }
+    },
+    {
+      "sequence": 5,
+      "kind": "PLAN_REPAIRED",
+      "actual_state": "DUUDUUDDDLRRLRRURRRFFBFFLLBUDLUDFRDFBBBBLLUFFBLLBBUDRF",
+      "move": null,
+      "plan_version": 2,
+      "detail": {
+        "reason": "unexpected_human_move"
+      }
+    },
+    {
+      "sequence": 6,
+      "kind": "ROBOT_EXECUTION_STARTED",
+      "actual_state": "DUUDUUDDDLRRLRRURRRFFBFFLLBUDLUDFRDFBBBBLLUFFBLLBBUDRF",
+      "move": "U",
+      "plan_version": 2,
+      "detail": {}
+    },
+    {
+      "sequence": 7,
+      "kind": "ROBOT_VERIFYING",
+      "actual_state": "DDDDUUDUUBLLLRRURRLRRBFFLLBUDLUDFRDFRFFBLLUFFBBBBBUDRF",
+      "move": "U",
+      "plan_version": 2,
+      "detail": {
+        "backend": "sim"
+      }
+    },
+    {
+      "sequence": 8,
+      "kind": "ROBOT_MOVE",
+      "actual_state": "DDDDUUDUUBLLLRRURRLRRBFFLLBUDLUDFRDFRFFBLLUFFBBBBBUDRF",
+      "move": "U",
+      "plan_version": 2,
+      "detail": {
+        "backend": "sim",
+        "success": true
+      }
+    },
+    {
+      "sequence": 9,
+      "kind": "HUMAN_MOVE",
+      "actual_state": "UDDUUURUUBLLLRRURRFRRUFFBLBDDLDDFDDFFFULLBFFRBBLBBBDRL",
+      "move": "L2",
+      "plan_version": 2,
+      "detail": {
+        "recommended": "L2",
+        "unexpected": false
+      }
+    },
+    {
+      "sequence": 10,
+      "kind": "ROBOT_EXECUTION_STARTED",
+      "actual_state": "UDDUUURUUBLLLRRURRFRRUFFBLBDDLDDFDDFFFULLBFFRBBLBBBDRL",
+      "move": "D'",
+      "plan_version": 2,
+      "detail": {}
+    },
+    {
+      "sequence": 11,
+      "kind": "ROBOT_VERIFYING",
+      "actual_state": "UDDUUURUUBLLLRRDRLFRRUFFURRLFFDDDDDDFFULLBBLBBBLBBBFFR",
+      "move": "D'",
+      "plan_version": 2,
+      "detail": {
+        "backend": "sim"
+      }
+    },
+    {
+      "sequence": 12,
+      "kind": "ROBOT_MOVE",
+      "actual_state": "UDDUUURUUBLLLRRDRLFRRUFFURRLFFDDDDDDFFULLBBLBBBLBBBFFR",
+      "move": "D'",
+      "plan_version": 2,
+      "detail": {
+        "backend": "sim",
+        "success": true
+      }
+    },
+    {
+      "sequence": 13,
+      "kind": "HUMAN_MOVE",
+      "actual_state": "RDDBUULUUBLLLRRDRLURRUFFRRRFFFUDDUDDBLFLLFBBUBBDBBDFFL",
+      "move": "L",
+      "plan_version": 2,
+      "detail": {
+        "recommended": "L",
+        "unexpected": false
+      }
+    },
+    {
+      "sequence": 14,
+      "kind": "ROBOT_EXECUTION_STARTED",
+      "actual_state": "RDDBUULUUBLLLRRDRLURRUFFRRRFFFUDDUDDBLFLLFBBUBBDBBDFFL",
+      "move": "D'",
+      "plan_version": 2,
+      "detail": {}
+    },
+    {
+      "sequence": 15,
+      "kind": "ROBOT_VERIFYING",
+      "actual_state": "RDDBUULUUBLLLRRFFLURRUFFDRLFDDFDDFUUBLFLLFRRRBBDBBDBBU",
+      "move": "D'",
+      "plan_version": 2,
+      "detail": {
+        "backend": "sim"
+      }
+    },
+    {
+      "sequence": 16,
+      "kind": "ROBOT_MOVE",
+      "actual_state": "RDDBUULUUBLLLRRFFLURRUFFDRLFDDFDDFUUBLFLLFRRRBBDBBDBBU",
+      "move": "D'",
+      "plan_version": 2,
+      "detail": {
+        "backend": "sim",
+        "success": true
+      }
+    },
+    {
+      "sequence": 17,
+      "kind": "HUMAN_MOVE",
+      "actual_state": "UDDDUUDUUBLLLRRFFLRRRBFFLRLUDDUDDDUURLBRLLRFFBBFBBFBBF",
+      "move": "L",
+      "plan_version": 2,
+      "detail": {
+        "recommended": "L",
+        "unexpected": false
+      }
+    },
+    {
+      "sequence": 18,
+      "kind": "ROBOT_EXECUTION_STARTED",
+      "actual_state": "UDDDUUDUUBLLLRRFFLRRRBFFLRLUDDUDDDUURLBRLLRFFBBFBBFBBF",
+      "move": "D2",
+      "plan_version": 2,
+      "detail": {}
+    },
+    {
+      "sequence": 19,
+      "kind": "ROBOT_VERIFYING",
+      "actual_state": "UDDDUUDUUBLLLRRRFFRRRBFFBBFUUDDDUDDURLBRLLFFLBBFBBFLRL",
+      "move": "D2",
+      "plan_version": 2,
+      "detail": {
+        "backend": "sim"
+      }
+    },
+    {
+      "sequence": 20,
+      "kind": "ROBOT_MOVE",
+      "actual_state": "UDDDUUDUUBLLLRRRFFRRRBFFBBFUUDDDUDDURLBRLLFFLBBFBBFLRL",
+      "move": "D2",
+      "plan_version": 2,
+      "detail": {
+        "backend": "sim",
+        "success": true
+      }
+    },
+    {
+      "sequence": 21,
+      "kind": "HUMAN_MOVE",
+      "actual_state": "DUUDUUUDDRRRLRRRFFRLBBFFBBFUUDDDUDDUBBFRLLFFLBLLBBFLRL",
+      "move": "U'",
+      "plan_version": 2,
+      "detail": {
+        "recommended": "F2",
+        "unexpected": true
+      }
+    },
+    {
+      "sequence": 22,
+      "kind": "PLANNING_STARTED",
+      "actual_state": "DUUDUUUDDRRRLRRRFFRLBBFFBBFUUDDDUDDUBBFRLLFFLBLLBBFLRL",
+      "move": null,
+      "plan_version": 2,
+      "detail": {
+        "reason": "unexpected_human_move",
+        "policy_backend": "kociemba_baseline"
+      }
+    },
+    {
+      "sequence": 23,
+      "kind": "PLANNING_FINISHED",
+      "actual_state": "DUUDUUUDDRRRLRRRFFRLBBFFBBFUUDDDUDDUBBFRLLFFLBLLBBFLRL",
+      "move": null,
+      "plan_version": 3,
+      "detail": {
+        "reason": "unexpected_human_move",
+        "planned_move_count": 8
+      }
+    },
+    {
+      "sequence": 24,
+      "kind": "PLAN_REPAIRED",
+      "actual_state": "DUUDUUUDDRRRLRRRFFRLBBFFBBFUUDDDUDDUBBFRLLFFLBLLBBFLRL",
+      "move": null,
+      "plan_version": 3,
+      "detail": {
+        "reason": "unexpected_human_move"
+      }
+    },
+    {
+      "sequence": 25,
+      "kind": "ROBOT_EXECUTION_STARTED",
+      "actual_state": "DUUDUUUDDRRRLRRRFFRLBBFFBBFUUDDDUDDUBBFRLLFFLBLLBBFLRL",
+      "move": "U",
+      "plan_version": 3,
+      "detail": {}
+    },
+    {
+      "sequence": 26,
+      "kind": "ROBOT_VERIFYING",
+      "actual_state": "UDDDUUDUUBLLLRRRFFRRRBFFBBFUUDDDUDDURLBRLLFFLBBFBBFLRL",
+      "move": "U",
+      "plan_version": 3,
+      "detail": {
+        "backend": "sim"
+      }
+    },
+    {
+      "sequence": 27,
+      "kind": "ROBOT_MOVE",
+      "actual_state": "UDDDUUDUUBLLLRRRFFRRRBFFBBFUUDDDUDDURLBRLLFFLBBFBBFLRL",
+      "move": "U",
+      "plan_version": 3,
+      "detail": {
+        "backend": "sim",
+        "success": true
+      }
+    },
+    {
+      "sequence": 28,
+      "kind": "HUMAN_MOVE",
+      "actual_state": "UDRDUFDUFRLBFRLFRLRRDBFUBBUUULDDBDDBRLBRLLFFLUBFUBFDRL",
+      "move": "R",
+      "plan_version": 3,
+      "detail": {
+        "recommended": "F2",
+        "unexpected": true
+      }
+    },
+    {
+      "sequence": 29,
+      "kind": "PLANNING_STARTED",
+      "actual_state": "UDRDUFDUFRLBFRLFRLRRDBFUBBUUULDDBDDBRLBRLLFFLUBFUBFDRL",
+      "move": null,
+      "plan_version": 3,
+      "detail": {
+        "reason": "unexpected_human_move",
+        "policy_backend": "kociemba_baseline"
+      }
+    },
+    {
+      "sequence": 30,
+      "kind": "PLANNING_FINISHED",
+      "actual_state": "UDRDUFDUFRLBFRLFRLRRDBFUBBUUULDDBDDBRLBRLLFFLUBFUBFDRL",
+      "move": null,
+      "plan_version": 4,
+      "detail": {
+        "reason": "unexpected_human_move",
+        "planned_move_count": 8
+      }
+    },
+    {
+      "sequence": 31,
+      "kind": "PLAN_REPAIRED",
+      "actual_state": "UDRDUFDUFRLBFRLFRLRRDBFUBBUUULDDBDDBRLBRLLFFLUBFUBFDRL",
+      "move": null,
+      "plan_version": 4,
+      "detail": {
+        "reason": "unexpected_human_move"
+      }
+    },
+    {
+      "sequence": 32,
+      "kind": "ROBOT_EXECUTION_STARTED",
+      "actual_state": "UDRDUFDUFRLBFRLFRLRRDBFUBBUUULDDBDDBRLBRLLFFLUBFUBFDRL",
+      "move": "R'",
+      "plan_version": 4,
+      "detail": {}
+    },
+    {
+      "sequence": 33,
+      "kind": "ROBOT_VERIFYING",
+      "actual_state": "UDDDUUDUUBLLLRRRFFRRRBFFBBFUUDDDUDDURLBRLLFFLBBFBBFLRL",
+      "move": "R'",
+      "plan_version": 4,
+      "detail": {
+        "backend": "sim"
+      }
+    },
+    {
+      "sequence": 34,
+      "kind": "ROBOT_MOVE",
+      "actual_state": "UDDDUUDUUBLLLRRRFFRRRBFFBBFUUDDDUDDURLBRLLFFLBBFBBFLRL",
+      "move": "R'",
+      "plan_version": 4,
+      "detail": {
+        "backend": "sim",
+        "success": true
+      }
+    },
+    {
+      "sequence": 35,
+      "kind": "HUMAN_MOVE",
+      "actual_state": "UDDDUUDUULLLLRRBFFFBBFFBRRRUUDDDUDDURLRRLLFFBBBFBBFLRL",
+      "move": "F2",
+      "plan_version": 4,
+      "detail": {
+        "recommended": "F2",
+        "unexpected": false
+      }
+    },
+    {
+      "sequence": 36,
+      "kind": "ROBOT_EXECUTION_STARTED",
+      "actual_state": "UDDDUUDUULLLLRRBFFFBBFFBRRRUUDDDUDDURLRRLLFFBBBFBBFLRL",
+      "move": "U'",
+      "plan_version": 4,
+      "detail": {}
+    },
+    {
+      "sequence": 37,
+      "kind": "ROBOT_VERIFYING",
+      "actual_state": "DUUDUUUDDFBBLRRBFFRLRFFBRRRUUDDDUDDUBBFRLLFFBLLLBBFLRL",
+      "move": "U'",
+      "plan_version": 4,
+      "detail": {
+        "backend": "sim"
+      }
+    },
+    {
+      "sequence": 38,
+      "kind": "ROBOT_MOVE",
+      "actual_state": "DUUDUUUDDFBBLRRBFFRLRFFBRRRUUDDDUDDUBBFRLLFFBLLLBBFLRL",
+      "move": "U'",
+      "plan_version": 4,
+      "detail": {
+        "backend": "sim",
+        "success": true
+      }
+    },
+    {
+      "sequence": 39,
+      "kind": "HUMAN_MOVE",
+      "actual_state": "DUUDUUDUUBBBLRRFFFRRRBFFRLRDDUDDUDDUBBBRLLFFFLLLBBFLRL",
+      "move": "F2",
+      "plan_version": 4,
+      "detail": {
+        "recommended": "F2",
+        "unexpected": false
+      }
+    },
+    {
+      "sequence": 40,
+      "kind": "ROBOT_EXECUTION_STARTED",
+      "actual_state": "DUUDUUDUUBBBLRRFFFRRRBFFRLRDDUDDUDDUBBBRLLFFFLLLBBFLRL",
+      "move": "L2",
+      "plan_version": 4,
+      "detail": {}
+    },
+    {
+      "sequence": 41,
+      "kind": "ROBOT_VERIFYING",
+      "actual_state": "DUUDUUDUUBBBLRRFFFLRRFFFLLRDDUDDUDDUFFFLLRBBBLLRBBBLRR",
+      "move": "L2",
+      "plan_version": 4,
+      "detail": {
+        "backend": "sim"
+      }
+    },
+    {
+      "sequence": 42,
+      "kind": "ROBOT_MOVE",
+      "actual_state": "DUUDUUDUUBBBLRRFFFLRRFFFLLRDDUDDUDDUFFFLLRBBBLLRBBBLRR",
+      "move": "L2",
+      "plan_version": 4,
+      "detail": {
+        "backend": "sim",
+        "success": true
+      }
+    },
+    {
+      "sequence": 43,
+      "kind": "HUMAN_MOVE",
+      "actual_state": "UUUUUUDDDLRRLRRFFFFFFFFFLLRDDUDDUDDULLRLLRBBBBBBBBBLRR",
+      "move": "U'",
+      "plan_version": 4,
+      "detail": {
+        "recommended": "U'",
+        "unexpected": false
+      }
+    },
+    {
+      "sequence": 44,
+      "kind": "ROBOT_EXECUTION_STARTED",
+      "actual_state": "UUUUUUDDDLRRLRRFFFFFFFFFLLRDDUDDUDDULLRLLRBBBBBBBBBLRR",
+      "move": "D'",
+      "plan_version": 4,
+      "detail": {}
+    },
+    {
+      "sequence": 45,
+      "kind": "ROBOT_VERIFYING",
+      "actual_state": "UUUUUUDDDLRRLRRLRRFFFFFFFFFUUUDDDDDDLLRLLRLLRBBBBBBBBB",
+      "move": "D'",
+      "plan_version": 4,
+      "detail": {
+        "backend": "sim"
+      }
+    },
+    {
+      "sequence": 46,
+      "kind": "ROBOT_MOVE",
+      "actual_state": "UUUUUUDDDLRRLRRLRRFFFFFFFFFUUUDDDDDDLLRLLRLLRBBBBBBBBB",
+      "move": "D'",
+      "plan_version": 4,
+      "detail": {
+        "backend": "sim",
+        "success": true
+      }
+    },
+    {
+      "sequence": 47,
+      "kind": "HUMAN_MOVE",
+      "actual_state": "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB",
+      "move": "F2",
+      "plan_version": 4,
+      "detail": {
+        "recommended": "F2",
+        "unexpected": false
+      }
+    },
+    {
+      "sequence": 48,
+      "kind": "SOLVED",
+      "actual_state": "UUUUUUUUURRRRRRRRRFFFFFFFFFDDDDDDDDDLLLLLLLLLBBBBBBBBB",
+      "move": null,
+      "plan_version": 4,
+      "detail": {}
+    }
+  ]
+}

@@ -1,0 +1,149 @@
+<mujoco model="cube_relay_embodied_v2">
+  <compiler angle="radian"/>
+  <option timestep="0.002" gravity="0 0 -9.81" integrator="implicitfast" cone="elliptic"/>
+  <visual><global offwidth="640" offheight="480"/><map znear="0.01"/></visual>
+  <default>
+    <geom friction="1.2 .02 .002" solref=".004 1" solimp=".95 .99 .002"/>
+    <joint damping="2" armature=".01"/>
+  </default>
+  <asset>
+    <material name="table_mat" rgba=".28 .22 .16 1"/>
+    <material name="robot_mat" rgba=".18 .28 .38 1"/>
+    <material name="finger_mat" rgba=".08 .08 .09 1"/>
+    <material name="cube_black" rgba=".018 .018 .018 1"/>
+  </asset>
+  <worldbody>
+    <light pos="0 -1 2.4" dir="0 .3 -1" diffuse=".85 .85 .85"/>
+    <light pos="1 .5 1.5" dir="-.5 -.2 -1" diffuse=".5 .5 .5"/>
+    <geom name="floor" type="plane" size="3 3 .1" rgba=".11 .12 .14 1"/>
+    <geom name="table" type="box" pos="0 0 .55" size=".8 .65 .05" material="table_mat"/>
+    <camera name="overhead" pos="0 -1.25 1.55" xyaxes="1 0 0 0 .74 .67" fovy="48"/>
+    <!-- Fixed external top camera for released-face inspection. It observes
+         RGB-D only and remains independent of the moving gantry/gripper. -->
+    <camera name="world_top" pos="0 0 1.15" xyaxes="1 0 0 0 1 0" fovy="90"/>
+    <!-- Fixed calibrated scan station. The robot physically transports and
+         releases the cube at the origin before these cameras are used. -->
+    <camera name="scan_y" pos="0 -.72 .66" xyaxes="1 0 0 0 0 1" fovy="24"/>
+    <camera name="scan_neg_y" pos="0 .72 .66" xyaxes="-1 0 0 0 0 1" fovy="24"/>
+    <camera name="scan_x" pos="-.72 0 .66" xyaxes="0 -1 0 0 0 1" fovy="24"/>
+    <camera name="scan_neg_x" pos=".72 0 .66" xyaxes="0 1 0 0 0 1" fovy="24"/>
+    <!-- Oblique top view avoids the Cartesian robot-base beam at z=1.2. -->
+    <camera name="scan_top" pos="0 -.65 1.40" xyaxes="1 0 0 0 .75 .66" fovy="22"/>
+    <camera name="scan_high_y" pos="0 -.72 .86" xyaxes="1 0 0 0 0 1" fovy="26"/>
+    <camera name="scan_high_neg_y" pos="0 .72 .86" xyaxes="-1 0 0 0 0 1" fovy="26"/>
+    <camera name="scan_high_x" pos="-.72 0 .86" xyaxes="0 -1 0 0 0 1" fovy="26"/>
+    <camera name="scan_high_neg_x" pos=".72 0 .86" xyaxes="0 1 0 0 0 1" fovy="26"/>
+
+    <!-- Cartesian arm: robot grasp uses pad contacts and friction only; no robot weld. -->
+    <body name="robot_base" pos="0 0 1.2">
+      <geom type="box" size=".72 .04 .04" material="robot_mat"/>
+      <body name="robot_x">
+        <inertial pos="0 0 0" mass=".05" diaginertia=".0001 .0001 .0001"/>
+        <joint name="robot_x_joint" type="slide" axis="1 0 0" range="-.68 .68"/>
+        <body name="robot_y">
+          <inertial pos="0 0 0" mass=".05" diaginertia=".0001 .0001 .0001"/>
+          <joint name="robot_y_joint" type="slide" axis="0 1 0" range="-.55 .55"/>
+          <!-- Orthogonal eye-in-gantry cameras avoid occlusion by the two-finger gripper. -->
+          <camera name="inspection_y" pos="0 -.55 -.54" xyaxes="1 0 0 0 0 1" fovy="28"/>
+          <camera name="inspection_x" pos="-.55 0 -.54" xyaxes="0 -1 0 0 0 1" fovy="28"/>
+          <camera name="inspection_neg_y" pos="0 .55 -.54" xyaxes="-1 0 0 0 0 1" fovy="28"/>
+          <camera name="inspection_neg_x" pos=".55 0 -.54" xyaxes="0 1 0 0 0 1" fovy="28"/>
+          <camera name="inspection_top" pos="0 0 .35" xyaxes="1 0 0 0 1 0" fovy="28"/>
+          <camera name="inspection_top_oblique" pos="0 -.55 .45" xyaxes="1 0 0 0 .75 .66" fovy="30"/>
+          <!-- The cube settles near z=.74 inside the pads during pitch. -->
+          <camera name="inspection_high_y" pos="0 -.58 -.32" xyaxes="1 0 0 0 0 1" fovy="34"/>
+          <camera name="inspection_high_neg_y" pos="0 .58 -.32" xyaxes="-1 0 0 0 0 1" fovy="34"/>
+          <camera name="inspection_high_x" pos="-.58 0 -.32" xyaxes="0 -1 0 0 0 1" fovy="34"/>
+          <camera name="inspection_high_neg_x" pos=".58 0 -.32" xyaxes="0 1 0 0 0 1" fovy="34"/>
+          <!-- Eye-in-gantry downward cameras offset 22 cm from the gripper axis.
+               The gantry places one of them directly above a released cube, so
+               the raised gripper and fingers cannot occlude the top face. -->
+          <camera name="inspection_down_pos_y" pos="0 .22 -.30" xyaxes="1 0 0 0 1 0" fovy="60"/>
+          <camera name="inspection_down_neg_y" pos="0 -.22 -.30" xyaxes="1 0 0 0 1 0" fovy="60"/>
+          <body name="robot_z">
+            <joint name="robot_z_joint" type="slide" axis="0 0 1" range="-.62 0"/>
+            <geom type="capsule" fromto="0 0 0 0 0 -.11" size=".025" material="robot_mat"/>
+            <body name="wrist" pos="0 0 -.11">
+              <joint name="wrist_yaw_joint" type="hinge" axis="0 0 1" range="-6.3 6.3"/>
+              <joint name="wrist_pitch_joint" type="hinge" axis="1 0 0" range="-1.7 1.7"/>
+              <body name="gripper">
+                <!-- Palm collision ends 15 mm above the pad top. The previous
+                     bottom at z=-.050 overlapped the pad side-grasp envelope and
+                     struck the cube top before finger closure. -->
+                <geom name="palm" type="box" pos="0 0 -.0125" size=".075 .13 .0125" material="robot_mat"/>
+                <!-- 256 mm maximum inner opening leaves clearance for a 120 mm
+                     cube plus P95 visual-position error during vertical approach. -->
+                <body name="left_finger" pos="0 .14 -.10">
+                  <joint name="left_finger_joint" type="slide" axis="0 -1 0" range="0 .075"/>
+                  <geom name="left_finger_pad" type="box" size=".075 .012 .06" material="finger_mat" friction="10 .3 .03"/>
+                </body>
+                <body name="right_finger" pos="0 -.14 -.10">
+                  <joint name="right_finger_joint" type="slide" axis="0 1 0" range="0 .075"/>
+                  <geom name="right_finger_pad" type="box" size=".075 .012 .06" material="finger_mat" friction="10 .3 .03"/>
+                </body>
+              </body>
+            </body>
+          </body>
+        </body>
+      </body>
+    </body>
+
+    <!-- Free rigid cube. Sticker colors are world appearance, observed only through pixels. -->
+    <body name="cube" pos=".18 .05 .665">
+      <freejoint name="cube_free"/>
+      <geom name="cube_core" type="box" size=".06 .06 .06" material="cube_black" mass=".085"/>
+      <!-- U -->
+      <geom name="sticker_U_0" type="box" pos="-.039 -.039 .061" size=".017 .017 .001" contype="0" conaffinity="0" density="0"/>
+      <geom name="sticker_U_1" type="box" pos="0 -.039 .061" size=".017 .017 .001" contype="0" conaffinity="0" density="0"/>
+      <geom name="sticker_U_2" type="box" pos=".039 -.039 .061" size=".017 .017 .001" contype="0" conaffinity="0" density="0"/>
+      <geom name="sticker_U_3" type="box" pos="-.039 0 .061" size=".017 .017 .001" contype="0" conaffinity="0" density="0"/>
+      <geom name="sticker_U_4" type="box" pos="0 0 .061" size=".017 .017 .001" contype="0" conaffinity="0" density="0"/>
+      <geom name="sticker_U_5" type="box" pos=".039 0 .061" size=".017 .017 .001" contype="0" conaffinity="0" density="0"/>
+      <geom name="sticker_U_6" type="box" pos="-.039 .039 .061" size=".017 .017 .001" contype="0" conaffinity="0" density="0"/>
+      <geom name="sticker_U_7" type="box" pos="0 .039 .061" size=".017 .017 .001" contype="0" conaffinity="0" density="0"/>
+      <geom name="sticker_U_8" type="box" pos=".039 .039 .061" size=".017 .017 .001" contype="0" conaffinity="0" density="0"/>
+      <!-- D -->
+      <geom name="sticker_D_0" type="box" pos="-.039 .039 -.061" size=".017 .017 .001" contype="0" conaffinity="0" density="0"/>
+      <geom name="sticker_D_1" type="box" pos="0 .039 -.061" size=".017 .017 .001" contype="0" conaffinity="0" density="0"/>
+      <geom name="sticker_D_2" type="box" pos=".039 .039 -.061" size=".017 .017 .001" contype="0" conaffinity="0" density="0"/>
+      <geom name="sticker_D_3" type="box" pos="-.039 0 -.061" size=".017 .017 .001" contype="0" conaffinity="0" density="0"/>
+      <geom name="sticker_D_4" type="box" pos="0 0 -.061" size=".017 .017 .001" contype="0" conaffinity="0" density="0"/>
+      <geom name="sticker_D_5" type="box" pos=".039 0 -.061" size=".017 .017 .001" contype="0" conaffinity="0" density="0"/>
+      <geom name="sticker_D_6" type="box" pos="-.039 -.039 -.061" size=".017 .017 .001" contype="0" conaffinity="0" density="0"/>
+      <geom name="sticker_D_7" type="box" pos="0 -.039 -.061" size=".017 .017 .001" contype="0" conaffinity="0" density="0"/>
+      <geom name="sticker_D_8" type="box" pos=".039 -.039 -.061" size=".017 .017 .001" contype="0" conaffinity="0" density="0"/>
+      <!-- F/B/R/L: nine visible stickers per side. -->
+      <geom name="sticker_F_0" type="box" pos="-.039 -.061 .039" size=".017 .001 .017" contype="0" conaffinity="0" density="0"/><geom name="sticker_F_1" type="box" pos="0 -.061 .039" size=".017 .001 .017" contype="0" conaffinity="0" density="0"/><geom name="sticker_F_2" type="box" pos=".039 -.061 .039" size=".017 .001 .017" contype="0" conaffinity="0" density="0"/>
+      <geom name="sticker_F_3" type="box" pos="-.039 -.061 0" size=".017 .001 .017" contype="0" conaffinity="0" density="0"/><geom name="sticker_F_4" type="box" pos="0 -.061 0" size=".017 .001 .017" contype="0" conaffinity="0" density="0"/><geom name="sticker_F_5" type="box" pos=".039 -.061 0" size=".017 .001 .017" contype="0" conaffinity="0" density="0"/>
+      <geom name="sticker_F_6" type="box" pos="-.039 -.061 -.039" size=".017 .001 .017" contype="0" conaffinity="0" density="0"/><geom name="sticker_F_7" type="box" pos="0 -.061 -.039" size=".017 .001 .017" contype="0" conaffinity="0" density="0"/><geom name="sticker_F_8" type="box" pos=".039 -.061 -.039" size=".017 .001 .017" contype="0" conaffinity="0" density="0"/>
+      <geom name="sticker_B_0" type="box" pos=".039 .061 .039" size=".017 .001 .017" contype="0" conaffinity="0" density="0"/><geom name="sticker_B_1" type="box" pos="0 .061 .039" size=".017 .001 .017" contype="0" conaffinity="0" density="0"/><geom name="sticker_B_2" type="box" pos="-.039 .061 .039" size=".017 .001 .017" contype="0" conaffinity="0" density="0"/>
+      <geom name="sticker_B_3" type="box" pos=".039 .061 0" size=".017 .001 .017" contype="0" conaffinity="0" density="0"/><geom name="sticker_B_4" type="box" pos="0 .061 0" size=".017 .001 .017" contype="0" conaffinity="0" density="0"/><geom name="sticker_B_5" type="box" pos="-.039 .061 0" size=".017 .001 .017" contype="0" conaffinity="0" density="0"/>
+      <geom name="sticker_B_6" type="box" pos=".039 .061 -.039" size=".017 .001 .017" contype="0" conaffinity="0" density="0"/><geom name="sticker_B_7" type="box" pos="0 .061 -.039" size=".017 .001 .017" contype="0" conaffinity="0" density="0"/><geom name="sticker_B_8" type="box" pos="-.039 .061 -.039" size=".017 .001 .017" contype="0" conaffinity="0" density="0"/>
+      <geom name="sticker_R_0" type="box" pos=".061 -.039 .039" size=".001 .017 .017" contype="0" conaffinity="0" density="0"/><geom name="sticker_R_1" type="box" pos=".061 0 .039" size=".001 .017 .017" contype="0" conaffinity="0" density="0"/><geom name="sticker_R_2" type="box" pos=".061 .039 .039" size=".001 .017 .017" contype="0" conaffinity="0" density="0"/>
+      <geom name="sticker_R_3" type="box" pos=".061 -.039 0" size=".001 .017 .017" contype="0" conaffinity="0" density="0"/><geom name="sticker_R_4" type="box" pos=".061 0 0" size=".001 .017 .017" contype="0" conaffinity="0" density="0"/><geom name="sticker_R_5" type="box" pos=".061 .039 0" size=".001 .017 .017" contype="0" conaffinity="0" density="0"/>
+      <geom name="sticker_R_6" type="box" pos=".061 -.039 -.039" size=".001 .017 .017" contype="0" conaffinity="0" density="0"/><geom name="sticker_R_7" type="box" pos=".061 0 -.039" size=".001 .017 .017" contype="0" conaffinity="0" density="0"/><geom name="sticker_R_8" type="box" pos=".061 .039 -.039" size=".001 .017 .017" contype="0" conaffinity="0" density="0"/>
+      <geom name="sticker_L_0" type="box" pos="-.061 .039 .039" size=".001 .017 .017" contype="0" conaffinity="0" density="0"/><geom name="sticker_L_1" type="box" pos="-.061 0 .039" size=".001 .017 .017" contype="0" conaffinity="0" density="0"/><geom name="sticker_L_2" type="box" pos="-.061 -.039 .039" size=".001 .017 .017" contype="0" conaffinity="0" density="0"/>
+      <geom name="sticker_L_3" type="box" pos="-.061 .039 0" size=".001 .017 .017" contype="0" conaffinity="0" density="0"/><geom name="sticker_L_4" type="box" pos="-.061 0 0" size=".001 .017 .017" contype="0" conaffinity="0" density="0"/><geom name="sticker_L_5" type="box" pos="-.061 -.039 0" size=".001 .017 .017" contype="0" conaffinity="0" density="0"/>
+      <geom name="sticker_L_6" type="box" pos="-.061 .039 -.039" size=".001 .017 .017" contype="0" conaffinity="0" density="0"/><geom name="sticker_L_7" type="box" pos="-.061 0 -.039" size=".001 .017 .017" contype="0" conaffinity="0" density="0"/><geom name="sticker_L_8" type="box" pos="-.061 -.039 -.039" size=".001 .017 .017" contype="0" conaffinity="0" density="0"/>
+    </body>
+
+    <!-- Virtual human receiver; activation is explicit during handoff. -->
+    <body name="human_receiver" pos=".55 .35 .82">
+      <geom name="human_left_pad" type="box" pos="0 .075 0" size=".065 .012 .07" rgba=".65 .45 .32 1"/>
+      <geom name="human_right_pad" type="box" pos="0 -.075 0" size=".065 .012 .07" rgba=".65 .45 .32 1"/>
+    </body>
+  </worldbody>
+  <equality>
+    <!-- Virtual-human fixture remains an explicit Mock handoff receiver. -->
+    <weld name="human_grasp_weld" body1="human_receiver" body2="cube" relpose="0 0 0 1 0 0 0" active="false" solref=".003 1"/>
+  </equality>
+  <actuator>
+    <position name="robot_x_ctrl" joint="robot_x_joint" kp="500"/>
+    <position name="robot_y_ctrl" joint="robot_y_joint" kp="500"/>
+    <position name="robot_z_ctrl" joint="robot_z_joint" kp="500"/>
+    <position name="wrist_yaw_ctrl" joint="wrist_yaw_joint" kp="120"/>
+    <position name="wrist_pitch_ctrl" joint="wrist_pitch_joint" kp="120"/>
+    <position name="left_finger_ctrl" joint="left_finger_joint" kp="500"/>
+    <position name="right_finger_ctrl" joint="right_finger_joint" kp="500"/>
+  </actuator>
+</mujoco>

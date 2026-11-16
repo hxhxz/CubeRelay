@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="zh-CN">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>CubeRelay 3D</title><link rel="stylesheet" href="./style.css"><link rel="stylesheet" href="./clarity.css"></head>
+<body><main>
+  <header><div><h1>CubeRelay</h1><p>Embodied Agent 实验平台</p></div><span class="mode-badge">SIM ≠ 真机</span></header>
+  <section class="setup">
+    <label class="scramble-field"><span>初始打乱</span><input id="scramble" value="R U R' F2 D"></label>
+    <button id="start" class="primary">开始解魔方</button><button id="export">导出记录</button>
+    <details class="advanced"><summary>高级设置</summary><div><label>机器人 <select id="mode"><option value="sim">Sim</option><option value="dry_run">Dry run</option><option value="real">Real（默认禁用）</option></select></label><label>协作规划 <select id="collaboration-mode"><option value="guided_shared_plan">Guided Shared Plan</option><option value="free_collaboration">Free Collaboration</option></select></label><label>控制模式 <select id="control-mode"><option value="hierarchical">分层控制</option><option value="human_face_vla_turn">人选面 / VLA选转法</option><option value="vla_discrete">VLA自主离散动作</option><option value="vla_continuous">VLA连续控制</option></select></label><label>后端地址 <input id="api-base" value="http://127.0.0.1:8000" spellcheck="false"></label></div></details>
+  </section>
+  <nav class="steps" aria-label="操作步骤"><span id="step-start" class="active">1 <b>开始任务</b></span><i></i><span id="step-face">2 <b>选择魔方面</b></span><i></i><span id="step-turn">3 <b>选择转动方式</b></span></nav>
+  <section id="turn-banner" class="turn-banner idle"><strong>尚未开始</strong><span>创建会话后显示当前回合</span></section>
+  <div class="workspace">
+    <section class="viewer-card">
+      <div id="thinking" class="thinking" hidden><span></span><b>机器推理中</b><small>正在从 actual state 生成动作计划</small></div>
+      <div id="scene" class="scene" aria-label="可拖动旋转的三维魔方"><div id="cube" class="cube3d"></div></div>
+      <div class="viewer-footer"><span>拖动魔方旋转视角 · 点击面进行选择</span><button id="reset-view">重置视角</button></div>
+    </section>
+    <aside>
+      <section class="action-card">
+        <span class="eyebrow">第 2 步 · 点击魔方选面</span><div id="selected-face" class="selected-face">尚未选择面</div><p id="recommendation">开始任务后显示推荐动作</p>
+        <div class="action-hint">第 3 步 · 选择转动几格</div>
+        <div class="turn-actions">
+          <button data-suffix="" data-turn="cw"><b>↻</b><span>顺时针一格</span><small>90°</small></button>
+          <button data-suffix="'" data-turn="ccw"><b>↺</b><span>逆时针一格</span><small>−90°</small></button>
+          <button data-suffix="2" data-turn="half"><b>↻↻</b><span>旋转两格</span><small>180°</small></button>
+        </div>
+        <button id="robot" class="robot-action">执行机器回合</button>
+        <button id="replay-robot" class="replay-action" disabled>重放上一步机器动作</button>
+        <small id="replay-note" class="replay-note">重放仅用于观察动画，不会再次修改魔方状态</small>
+        <div id="confirmation" class="confirmation" hidden>
+          <b id="confirmation-title">需要确认</b><p id="confirmation-message"></p>
+          <div id="undo-decisions"><button data-decision="allow_inverse">允许机器撤销</button><button data-decision="keep_human_move">保留 Human 操作</button></div>
+          <button id="continue-repeat" data-decision="continue">确认并继续</button>
+        </div>
+      </section>
+      <section class="timeline-card"><div class="timeline-title"><h2>操作记录</h2><span id="event-count">0 步</span></div><ol id="events"></ol></section>
+    </aside>
+  </div>
+</main><noscript>此页面需要启用 JavaScript 才能显示和操作 3D 魔方。</noscript><script src="./app.js"></script></body></html>
