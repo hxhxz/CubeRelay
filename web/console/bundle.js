@@ -9603,6 +9603,27 @@
                 " \u8F6E"
               ] })
             ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "flex items-center justify-between gap-2", children: [
+              "\u672C\u56DE\u5408\u673A\u5668\u4EBA\u6B65\u6570\u914D\u989D: ",
+              relay?.robot_moves_this_turn ?? 0,
+              " / ",
+              relay?.max_robot_moves_per_turn === null ? "\u221E" : relay?.max_robot_moves_per_turn ?? 3,
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+                "select",
+                {
+                  "aria-label": "\u6BCF\u56DE\u5408\u673A\u5668\u4EBA\u6B65\u6570",
+                  className: "rounded bg-[#080D16] border border-slate-700",
+                  value: relay?.max_robot_moves_per_turn === null ? "unlimited" : relay?.max_robot_moves_per_turn ?? 3,
+                  onChange: (e) => onRelayCommand({ type: "SET_TURN_QUOTA", quota: e.target.value === "unlimited" ? "unlimited" : Number(e.target.value) }, "\u8BBE\u7F6E\u56DE\u5408\u914D\u989D"),
+                  children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "1", children: "1 \u6B65" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "2", children: "2 \u6B65" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "3", children: "3 \u6B65" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "unlimited", children: "\u5168\u6258\u7BA1" })
+                  ]
+                }
+              )
+            ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[10px] opacity-85 leading-snug", children: turnInfo?.next_action_hint_zh || relay?.banner?.subtitle_zh || "\u7B49\u5F85\u4EFB\u52A1\u542F\u52A8\u3002" })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "p-2 rounded bg-[#080D16] border border-[#3DE8E5]/30 space-y-1.5", children: [

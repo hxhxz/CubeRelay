@@ -207,6 +207,43 @@ class _HumanPrivateTruth:
 class SimulationSession:
     """Thread-safe controller owning a real MuJoCo backend and Mission orchestrator."""
 
+    max_robot_moves_per_turn: int | None = 3
+    robot_moves_this_turn: int = 0
+
+    @property
+    def remaining_turn_quota(self) -> int | None:
+        limit = self.max_robot_moves_per_turn
+        return None if limit is None else max(0, limit - self.robot_moves_this_turn)
+
+    def _turn_quota_state(self) -> dict[str, int | None]:
+        return {
+            "max_robot_moves_per_turn": self.max_robot_moves_per_turn,
+            "robot_moves_this_turn": self.robot_moves_this_turn,
+            "remaining_turn_quota": self.remaining_turn_quota,
+        }
+
+    def _sync_turn_quota(self) -> None:
+        quota = self._turn_quota_state()
+        self.scene_state.update(quota)
+        self.scene_state.get("relay_cognitive_context", {}).update(quota)
+
+    def _update_turn_limit(self, limit: int | None) -> None:
+        if limit != self.max_robot_moves_per_turn:
+            self.max_robot_moves_per_turn = limit
+            self._sync_turn_quota()
+            self._stale_guard.invalidate("TURN_QUOTA_CHANGED")
+
+    def set_turn_quota(self, quota: int | str) -> dict[str, Any]:
+        if type(quota) is int and quota in (1, 2, 3):
+            limit = quota
+        elif quota == "unlimited":
+            limit = None
+        else:
+            raise ValueError("配额必须为 1、2、3 或 unlimited")
+        with self._hri_lock:
+            self._update_turn_limit(limit)
+        return self._emit_snapshot(refresh_frames=False)
+
     def __init__(
         self,
         *,
@@ -413,7 +450,11 @@ class SimulationSession:
 
     def get_snapshot(self) -> dict[str, Any]:
         with self._lock:
-            return dict(self._latest_snapshot)
+            snap = dict(self._latest_snapshot)
+        if snap.get("relay_state"):
+            with self._hri_lock:
+                snap["relay_state"] = {**snap["relay_state"], **self._turn_quota_state()}
+        return snap
 
     def _snapshot_with_current_camera(self) -> dict[str, Any]:
         """Update cached camera metadata without touching MuJoCo off the GL thread."""
@@ -585,6 +626,7 @@ class SimulationSession:
         self._current_obs_frame_id = None
         self._current_obs_camera_id = None
         self.scene_state = {
+            **self._turn_quota_state(),
             "simulation_initialized": True,
             "physical_u_scene_enabled": bool(b.physical_u),
             "full_26_cubie_scene_enabled": bool(getattr(b, "full_26_cubie", False)),
@@ -995,6 +1037,8 @@ class SimulationSession:
             self._relay_clarification_options: list[str] = []
             self._relay_clarification_topic: str | None = None
             self._relay_initial_optimal_steps: int | None = None
+            self.robot_moves_this_turn = 0
+            self.max_robot_moves_per_turn = 3
             self._relay_robot_moves_count = 0
             self._relay_human_turns_count = 0
             self._relay_human_inferred_moves_count = 0
@@ -1188,7 +1232,9 @@ class SimulationSession:
                 "vlm_semantic_diagnosis": vlm_diag,
             },
         }
-        self.scene_state["relay_cognitive_context"] = ctx
+        with self._hri_lock:
+            self.scene_state["relay_cognitive_context"] = ctx
+            self._sync_turn_quota()
         return ctx
 
     def _build_turn_indicator(self, phase: RelayPhase) -> dict[str, Any]:
@@ -1271,6 +1317,7 @@ class SimulationSession:
         }
         tone, title_zh, subtitle_zh = banner_map.get(phase, banner_map[RelayPhase.IDLE])
         with self._hri_lock:
+            quota = self._turn_quota_state()
             clicks = list(self._human_private.moves_this_turn)
             suggested = list(self._relay_last_suggested_moves)
             pref_done = 0
@@ -1316,6 +1363,7 @@ class SimulationSession:
         waiting = bool(self.mission is not None and self.mission.status == MissionStatus.WAITING_FOR_HUMAN_TURN)
         turn_indicator = self._build_turn_indicator(phase)
         return {
+            **quota,
             "enabled": self.selected_mission_type == MissionType.RELAY_SOLVE_CUBE,
             "phase": phase.value,
             "turn_indicator": turn_indicator,
@@ -1931,6 +1979,9 @@ class SimulationSession:
         with self._hri_lock:
             self._relay_latest_human_reply = clean
             self._relay_latest_hri_semantics = sem_payload
+            if semantics.turn_quota_override:
+                limits = {"UNLIMITED": None, "DEFAULT_3": 3, "STEP_1": 1, "STEP_2": 2}
+                self._update_turn_limit(limits[semantics.turn_quota_override])
             self._apply_hri_constraint_updates(semantics)
             if was_clarification and semantics.speech_act in {"ANSWER_CLARIFICATION", "YIELD_TURN_TO_ROBOT"}:
                 self._relay_clarification_pending = False
@@ -2043,6 +2094,8 @@ class SimulationSession:
             self._relay_paused_by_interrupt = False
             self._relay_auto_resume_after_pause = False
             self._relay_clarification_pending = False
+            self.robot_moves_this_turn = 0
+            self._sync_turn_quota()
             self._relay_human_turns_count += 1
             self._relay_phase = RelayPhase.AGENT_REASONING
 
@@ -2639,6 +2692,9 @@ class SimulationSession:
         full_26_cubie: bool | None = None,
     ) -> dict[str, Any]:
         target_seed = self.seed if seed is None else int(seed)
+        # Starting a mission internally rebuilds the scene. Retain the cadence
+        # selected on the console; an explicit scene reset still restores three.
+        initial_turn_limit = self.max_robot_moves_per_turn
         mission_wall_started = time.perf_counter()
         self._stop_event.clear()
         self._running = True
@@ -2692,6 +2748,10 @@ class SimulationSession:
             self._relay_mission_wall_started = mission_wall_started
             if mission_type == MissionType.RELAY_SOLVE_CUBE:
                 self._relay_phase = RelayPhase.AGENT_REASONING
+                with self._hri_lock:
+                    self.max_robot_moves_per_turn = initial_turn_limit
+                    self.robot_moves_this_turn = 0
+                    self._sync_turn_quota()
                 self._relay_round_number = 1
                 self._relay_round_tags = []
 
@@ -2899,11 +2959,13 @@ class SimulationSession:
                 decision_epoch = self._stale_guard.issue_epoch()
                 limits: VLMInspectionLimits | None = getattr(self.planner, "limits", None)
                 agent_obs: AgentObservation | None = None
+                quota_boundary = False
                 parking_for_interrupt = False
                 if mission.mission_type == MissionType.RELAY_SOLVE_CUBE:
                     self._relay_phase = RelayPhase.AGENT_REASONING
                     context = self._refresh_relay_cognitive_context()
                     parking_for_interrupt = context["hri_context"]["paused_by_interrupt"]
+                    quota_boundary = context["remaining_turn_quota"] == 0
                     # A stop during inference has no executing skill to retire its token.
                     # Recovery and parking must be independently interruptible.
                     token = self._active_cancellation_token
@@ -2923,7 +2985,7 @@ class SimulationSession:
 
                 if self.planner.mode == PlannerMode.LLM_AGENT:
                     if limits is not None:
-                        if not parking_for_interrupt and self._vlm_decision_rounds >= limits.max_decision_rounds:
+                        if not (parking_for_interrupt or quota_boundary) and self._vlm_decision_rounds >= limits.max_decision_rounds:
                             self._relay_phase = RelayPhase.FAILED if mission.mission_type == MissionType.RELAY_SOLVE_CUBE else self._relay_phase
                             self._fail_mission_with_reason(
                                 mission=mission,
@@ -2933,7 +2995,7 @@ class SimulationSession:
                                 source="MissionController",
                             )
                             break
-                        if not parking_for_interrupt and self._vlm_calls_count >= limits.max_vlm_calls:
+                        if not (parking_for_interrupt or quota_boundary) and self._vlm_calls_count >= limits.max_vlm_calls:
                             self._relay_phase = RelayPhase.FAILED if mission.mission_type == MissionType.RELAY_SOLVE_CUBE else self._relay_phase
                             self._fail_mission_with_reason(
                                 mission=mission,
@@ -3031,11 +3093,11 @@ class SimulationSession:
                     self._active_semantic_provided = False
 
                 last_bundle = getattr(dual_client, "last_evidence_bundle", None) if dual_client is not None else None
-                if last_bundle is not None and not parking_for_interrupt:
+                if last_bundle is not None and not (parking_for_interrupt or quota_boundary):
                     self._evidence_bundles.append(last_bundle.model_dump(mode="json"))
 
                 if self.planner.mode == PlannerMode.LLM_AGENT:
-                    if not parking_for_interrupt:
+                    if not (parking_for_interrupt or quota_boundary):
                         self._vlm_decision_rounds += 1
                     if isinstance(self.planner, LLMAgentDecisionPolicy):
                         self._vlm_calls_count = (
@@ -3069,6 +3131,7 @@ class SimulationSession:
                 self.agent_state.selection_rationale = decision.rationale_summary
                 decision_source = (
                     "FastLoopContractWatchdog" if parking_for_interrupt
+                    else "TurnQuota" if quota_boundary
                     else self._planner_event_source(fallback_used=decision.fallback_used)
                 )
 
@@ -3102,6 +3165,8 @@ class SimulationSession:
                             "MODEL_TIMEOUT",
                             "API_UNAVAILABLE",
                             "PARAMETER_OUT_OF_BOUNDS",
+                            "EXCEEDS_REMAINING_TURN_QUOTA",
+                            "TURN_QUOTA_EXHAUSTED_MUST_HANDOVER",
                             "DISALLOWED_ACTION",
                             "PREMATURE_FINISH",
                         }
@@ -3398,7 +3463,8 @@ class SimulationSession:
                 if outcome == "FAILED":
                     recoverable_relay = (
                         mission.mission_type == MissionType.RELAY_SOLVE_CUBE
-                        and step.failure_code in {"SOLVED_VERIFICATION_FAILED", "FLIP_AND_FEED_FAILED"}
+                        and step.failure_code in {"SOLVED_VERIFICATION_FAILED", "FLIP_AND_FEED_FAILED",
+                                                 "EXCEEDS_REMAINING_TURN_QUOTA", "TURN_QUOTA_EXHAUSTED_MUST_HANDOVER"}
                     )
                     if (self.allow_agent_failure_recovery or recoverable_relay) and self.planner.mode == PlannerMode.LLM_AGENT:
                         if step.failure_code == "FLIP_AND_FEED_FAILED":
@@ -5020,7 +5086,12 @@ class SimulationSession:
             preempt_info: dict[str, Any] | None = None
             aborted = False
             try:
-                for mv in moves:
+                valid, error = self.registry.validate_parameters(step.skill_id, step.parameters, self.scene_state)
+                if not valid:
+                    aborted = True
+                    failure_reason = error
+                    failure_code = (error or "PARAMETER_OUT_OF_BOUNDS").split(":", 1)[0]
+                for mv in moves if valid else ():
                     if token.is_cancelled() or self._stop_event.is_set():
                         preempt_info = {
                             "preempted": True,
@@ -5039,6 +5110,9 @@ class SimulationSession:
                         }
                         break
 
+                    if self.remaining_turn_quota == 0:
+                        break
+
                     if b._bilateral_finger_contact() or (
                         self.scene_state.get("cube_held_in_gripper") and not self.scene_state.get("cube_released_on_table")
                     ):
@@ -5054,7 +5128,7 @@ class SimulationSession:
                     self.scene_state["is_lattice_aligned"] = aligned_now
                     self.scene_state["residual_slice_angle_deg"] = res_deg_now
 
-                    if turn_res.get("preempted") or token.is_cancelled():
+                    if turn_res.get("preempted") or (token.is_cancelled() and not turn_res.get("success")):
                         self._relay_cognitive_stats["fast_loop_contract_interceptions"] += 1
                         hold_sim_ms = turn_res.get("interrupt_to_hold_sim_ms")
                         hold_wall_ms = turn_res.get("interrupt_to_hold_wall_ms")
@@ -5108,7 +5182,10 @@ class SimulationSession:
                     same_model_data = (self._initial_model_id, self._initial_data_id) == (id(b.model), id(b.data))
                     if turn_res.get("success") and no_recolor and logical_unchanged and same_model_data:
                         executed_here.append(mv)
-                        self._relay_robot_moves_count += 1
+                        with self._hri_lock:
+                            self._relay_robot_moves_count += 1
+                            self.robot_moves_this_turn += 1
+                            self._sync_turn_quota()
                         self.scene_state["physical_face_turn_executed"] = True
                         self.scene_state["executed_physical_moves"] = list(
                             self.scene_state.get("executed_physical_moves") or []

@@ -558,7 +558,7 @@ class SkillRegistry:
             cloned._skills[skill_id] = copy_desc
         return cloned
 
-    def validate_parameters(self, skill_id: str, params: dict[str, Any] | None = None) -> tuple[bool, str | None]:
+    def validate_parameters(self, skill_id: str, params: dict[str, Any] | None = None, scene_state: dict[str, Any] | None = None) -> tuple[bool, str | None]:
         descriptor = self.get(skill_id)
         if descriptor is None:
             return False, f"未注册的 Skill: {skill_id}"
@@ -616,6 +616,12 @@ class SkillRegistry:
             bad = [m for m in moves if not isinstance(m, str) or m.strip() not in LEGAL_MOVES]
             if bad:
                 return False, f"PARAMETER_OUT_OF_BOUNDS: commit_physical_moves 包含非法动作 {bad!r}"
+            state = scene_state or {}
+            remaining = state.get("remaining_turn_quota")
+            if remaining == 0 and not state.get("is_solved"):
+                return False, "TURN_QUOTA_EXHAUSTED_MUST_HANDOVER: 本回合配额已满，必须交接给人类"
+            if remaining is not None and len(moves) > remaining:
+                return False, f"EXCEEDS_REMAINING_TURN_QUOTA: 本回合已拧 {state.get('robot_moves_this_turn', 0)} 步，最多再提交 {remaining} 步"
             contract = params.get("contract")
             if contract is not None:
                 if not isinstance(contract, dict):

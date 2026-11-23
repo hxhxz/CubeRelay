@@ -333,6 +333,8 @@ def _dispatch_m3d_command(session: Any, cmd: dict[str, Any]) -> dict[str, Any]:
             dyaw_deg=float(cmd.get("dyaw_deg", 0.0)),
         )
         return {"ok": True, "snapshot": snap}
+    if ctype == "SET_TURN_QUOTA":
+        return {"ok": True, "snapshot": session.set_turn_quota(cmd.get("quota", 3))}
     if ctype == "HUMAN_SEND_CHAT":
         text = cmd.get("text") if cmd.get("text") is not None else cmd.get("message")
         auto_res = cmd.get("auto_resume")

@@ -76,6 +76,9 @@ export type RelayPhase =
   | 'FAILED';
 
 export interface RelayState {
+  max_robot_moves_per_turn?: number | null;
+  robot_moves_this_turn?: number;
+  remaining_turn_quota?: number | null;
   enabled: boolean;
   phase: RelayPhase;
   turn_indicator?: {
@@ -2891,6 +2894,15 @@ const RightOrchestrationPanel: React.FC<RightOrchestrationPanelProps> = ({
                 <span>{turnInfo?.owner_label_zh || (waitingHuman ? '🧑 轮到人类操作' : '🤖 等待/机器人回合')}</span>
                 <span className="font-mono text-[10px]">第 {relay?.round_number || 1} 轮</span>
               </div>
+              <label className="flex items-center justify-between gap-2">
+                本回合机器人步数配额: {relay?.robot_moves_this_turn ?? 0} / {relay?.max_robot_moves_per_turn === null ? '∞' : relay?.max_robot_moves_per_turn ?? 3}
+                <select aria-label="每回合机器人步数" className="rounded bg-[#080D16] border border-slate-700"
+                  value={relay?.max_robot_moves_per_turn === null ? 'unlimited' : relay?.max_robot_moves_per_turn ?? 3}
+                  onChange={e => onRelayCommand({ type: 'SET_TURN_QUOTA', quota: e.target.value === 'unlimited' ? 'unlimited' : Number(e.target.value) }, '设置回合配额')}>
+                  <option value="1">1 步</option><option value="2">2 步</option>
+                  <option value="3">3 步</option><option value="unlimited">全托管</option>
+                </select>
+              </label>
               <div className="text-[10px] opacity-85 leading-snug">
                 {turnInfo?.next_action_hint_zh || relay?.banner?.subtitle_zh || '等待任务启动。'}
               </div>

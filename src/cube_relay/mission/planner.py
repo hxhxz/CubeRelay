@@ -245,7 +245,7 @@ class DeterministicMissionPlanner:
             )
 
         next_step = pending[0]
-        param_ok, param_err = registry.validate_parameters(next_step.skill_id, next_step.parameters)
+        param_ok, param_err = registry.validate_parameters(next_step.skill_id, next_step.parameters, scene_state)
         if not param_ok:
             return SelectedAction(
                 decision_kind="BLOCK_CAPABILITY",
@@ -569,7 +569,7 @@ class _SafetyGatedPolicyBase:
                     "You are completely autonomous—choose the single best next skill or protocol action based strictly on relay_cognitive_context, observable_state, available_skills (preconditions_met=true), failure_feedback, and physical_capability_boundary. "
                     "Core principles: "
                     "(1) Information Economics: When unknown_count==54 and previous_belief_54_known==false, run observe_workspace then scan_occluded_bottom_face. After any human turn (needs_rescan==true), prefer 1s zero-contact observe_tabletop_rapid first: if deduced_54_unique==true, skip scan_occluded_bottom_face to save ~25s; if ambiguous_facelet_count>0, weigh scan_occluded_bottom_face (~25s) vs ask_human_clarification. Call request_vlm_scene_semantics on CV failure/conflict/uncertainty. "
-                    "(2) Dynamic Task Allocation: Human natural-language constraints in hri_context ALWAYS override default cost heuristics (e.g., if human refuses bottom moves or asks robot to solve/handover, obey immediately). Otherwise prefer committing 1..3 lower-cost moves via commit_physical_moves(moves, contract) and calling handover_to_human(message_zh, suggested_moves, delegation_reason_zh) before costly 2-Flip (~25s + regrasp) moves. "
+                    "(2) Dynamic Task Allocation: Human natural-language constraints in hri_context ALWAYS override default cost heuristics (e.g., if human refuses bottom moves or asks robot to solve/handover, obey immediately). Never exceed remaining_turn_quota. With explicit UNLIMITED delegation, perform all remaining moves yourself. Otherwise prefer committing 1..3 lower-cost moves via commit_physical_moves(moves, contract) and calling handover_to_human(message_zh, suggested_moves, delegation_reason_zh) before costly 2-Flip (~25s + regrasp) moves. "
                     "(3) Intent & Anti-Undo: If human_deviation_detected and undo_conflict_risk are true, check hri_context.human_dialog_history first: if human already clarified intent (keep route vs undo slip), act immediately using alternative_non_undo_solution or undo move; if human gave no explanation, call ask_human_clarification instead of blindly undoing (avoid R/R' ping-pong). "
                     "(4) Safety, Interrupts & Verification: When issuing commit_physical_moves, attach ExecutionContractSpec with interrupt_on_human_chat_command=true and mid_turn_recovery_mode='UNWIND_TO_ZERO' (preferred reversible safe-stop mode unless human explicitly asks to complete/snap forward). If the human interrupts or says pause/stop ('停', '暂停', '先别解', '等一下', urgent_interrupt), NEVER choose SAFE_STOP/STOP or abort the mission—first align lattice via recover_preempted_turn_slice if is_lattice_aligned is false, then immediately call handover_to_human so the robot parks safely on the table and pauses in WAITING_FOR_HUMAN_TURN for the human to operate or say '继续'. When is_solved is true and not post_solve_independent_verified, call verify_solved_cube_independent before FINISH."
                 )
@@ -1204,7 +1204,7 @@ class _SafetyGatedPolicyBase:
                 failure_code="DISALLOWED_ACTION",
             )
 
-        param_ok, param_err = registry.validate_parameters(mapped_action, mapped_params)
+        param_ok, param_err = registry.validate_parameters(mapped_action, mapped_params, scene_state)
         if not param_ok:
             if mapped_action in {"execute_physical_u_turn", "execute_physical_face_turn"}:
                 move = str(mapped_params.get("move", ""))
@@ -1228,6 +1228,10 @@ class _SafetyGatedPolicyBase:
                     action_candidates=candidates,
                     failure_code="CAPABILITY_UNSUPPORTED",
                 )
+            quota_error = (param_err or "").split(":", 1)[0]
+            code = quota_error if quota_error in {
+                "EXCEEDS_REMAINING_TURN_QUOTA", "TURN_QUOTA_EXHAUSTED_MUST_HANDOVER"
+            } else "PARAMETER_OUT_OF_BOUNDS"
             return SelectedAction(
                 decision_kind="FAIL_MISSION",
                 step_id=None,
@@ -1237,12 +1241,12 @@ class _SafetyGatedPolicyBase:
                 input_reference=obs_ref,
                 expected_information_gain=decision.expected_information_gain,
                 confidence=decision.confidence,
-                validation_result=f"REJECTED:PARAMETER_OUT_OF_BOUNDS:{param_err}",
+                validation_result=f"REJECTED:{param_err}",
                 model_latency_ms=call_res.latency_ms,
                 token_usage=token_usage,
                 raw_vlm_action=raw_action,
                 action_candidates=candidates,
-                failure_code="PARAMETER_OUT_OF_BOUNDS",
+                failure_code=code,
             )
 
         pre_ok, missing = registry.check_preconditions(mapped_action, scene_state)
@@ -1567,9 +1571,22 @@ class LLMAgentDecisionPolicy(_SafetyGatedPolicyBase):
         agent_observation: AgentObservation | None = None,
     ) -> SelectedAction:
         hri = scene_state.get("relay_cognitive_context", {}).get("hri_context", {})
-        if mission.mission_type == MissionType.RELAY_SOLVE_CUBE and hri.get("paused_by_interrupt"):
+        quota_boundary = scene_state.get("remaining_turn_quota") == 0
+        if mission.mission_type == MissionType.RELAY_SOLVE_CUBE and (hri.get("paused_by_interrupt") or quota_boundary):
             skill, params = self._map_action_name("SAFE_STOP", {}, mission, scene_state)
-            valid, error = registry.validate_parameters(skill, params)
+            rationale = "执行已确认的人类暂停，先确保晶格对齐，再安全停泊交接。"
+            if quota_boundary and not hri.get("paused_by_interrupt"):
+                if self._mission_ready_to_finish(mission, scene_state)[0]:
+                    return SelectedAction(decision_kind="COMPLETE_MISSION", step_id=None, skill_id=None,
+                                          parameters={}, rationale_summary="独立六面核验已确认复原，接力完成。")
+                if scene_state.get("is_solved"):
+                    skill, params = "verify_solved_cube_independent", {}
+                    rationale = "本回合最后一步达到复原态，进行独立六面核验。"
+                elif skill == "handover_to_human":
+                    rationale = "本回合步数配额已满，安全交还人类。"
+                    path = scene_state.get("symbolic_solution") or []
+                    params = {"message_zh": rationale, "delegation_reason_zh": rationale, "suggested_moves": path[:3]}
+            valid, error = registry.validate_parameters(skill, params, scene_state)
             ready, missing = registry.check_preconditions(skill, scene_state)
             reason = error if not valid else ", ".join(missing)
             self._step_counter += 1
@@ -1579,7 +1596,7 @@ class LLMAgentDecisionPolicy(_SafetyGatedPolicyBase):
                 skill_id=skill,
                 parameters=params,
                 input_reference=latest_observation.observation_id if latest_observation else None,
-                rationale_summary="执行已确认的人类暂停，先确保晶格对齐，再安全停泊交接。",
+                rationale_summary=rationale,
                 blocked_reason=reason or None,
                 validation_result="PASSED" if valid and ready else "REJECTED",
             )
