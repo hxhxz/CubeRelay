@@ -170,7 +170,7 @@
       var U = { current: null };
       var V = { transition: null };
       var W = { ReactCurrentDispatcher: U, ReactCurrentBatchConfig: V, ReactCurrentOwner: K };
-      function X() {
+      function X2() {
         throw Error("act(...) is not supported in production builds of React.");
       }
       exports.Children = { map: S, forEach: function(a, b, e) {
@@ -198,7 +198,7 @@
       exports.StrictMode = q;
       exports.Suspense = w;
       exports.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED = W;
-      exports.act = X;
+      exports.act = X2;
       exports.cloneElement = function(a, b, e) {
         if (null === a || void 0 === a) throw Error("React.cloneElement(...): The argument must be a React element, but you passed " + a + ".");
         var d = C({}, a.props), c = a.key, k = a.ref, h = a._owner;
@@ -250,7 +250,7 @@
           V.transition = b;
         }
       };
-      exports.unstable_act = X;
+      exports.unstable_act = X2;
       exports.useCallback = function(a, b) {
         return U.current.useCallback(a, b);
       };
@@ -5219,7 +5219,7 @@
         if (5 === d || 6 === d) a = a.stateNode, b ? c.insertBefore(a, b) : c.appendChild(a);
         else if (4 !== d && (a = a.child, null !== a)) for (Wj(a, b, c), a = a.sibling; null !== a; ) Wj(a, b, c), a = a.sibling;
       }
-      var X = null;
+      var X2 = null;
       var Xj = false;
       function Yj(a, b, c) {
         for (c = c.child; null !== c; ) Zj(a, b, c), c = c.sibling;
@@ -5233,23 +5233,23 @@
           case 5:
             U || Lj(c, b);
           case 6:
-            var d = X, e = Xj;
-            X = null;
+            var d = X2, e = Xj;
+            X2 = null;
             Yj(a, b, c);
-            X = d;
+            X2 = d;
             Xj = e;
-            null !== X && (Xj ? (a = X, c = c.stateNode, 8 === a.nodeType ? a.parentNode.removeChild(c) : a.removeChild(c)) : X.removeChild(c.stateNode));
+            null !== X2 && (Xj ? (a = X2, c = c.stateNode, 8 === a.nodeType ? a.parentNode.removeChild(c) : a.removeChild(c)) : X2.removeChild(c.stateNode));
             break;
           case 18:
-            null !== X && (Xj ? (a = X, c = c.stateNode, 8 === a.nodeType ? Kf(a.parentNode, c) : 1 === a.nodeType && Kf(a, c), bd(a)) : Kf(X, c.stateNode));
+            null !== X2 && (Xj ? (a = X2, c = c.stateNode, 8 === a.nodeType ? Kf(a.parentNode, c) : 1 === a.nodeType && Kf(a, c), bd(a)) : Kf(X2, c.stateNode));
             break;
           case 4:
-            d = X;
+            d = X2;
             e = Xj;
-            X = c.stateNode.containerInfo;
+            X2 = c.stateNode.containerInfo;
             Xj = true;
             Yj(a, b, c);
-            X = d;
+            X2 = d;
             Xj = e;
             break;
           case 0:
@@ -5306,23 +5306,23 @@
             a: for (; null !== h; ) {
               switch (h.tag) {
                 case 5:
-                  X = h.stateNode;
+                  X2 = h.stateNode;
                   Xj = false;
                   break a;
                 case 3:
-                  X = h.stateNode.containerInfo;
+                  X2 = h.stateNode.containerInfo;
                   Xj = true;
                   break a;
                 case 4:
-                  X = h.stateNode.containerInfo;
+                  X2 = h.stateNode.containerInfo;
                   Xj = true;
                   break a;
               }
               h = h.return;
             }
-            if (null === X) throw Error(p(160));
+            if (null === X2) throw Error(p(160));
             Zj(f, g, e);
-            X = null;
+            X2 = null;
             Xj = false;
             var k = e.alternate;
             null !== k && (k.return = null);
@@ -7441,6 +7441,13 @@
     ["path", { d: "M3 12A9 3 0 0 0 21 12", key: "mv7ke4" }]
   ]);
 
+  // web/console/node_modules/lucide-react/dist/esm/icons/download.js
+  var Download = createLucideIcon("Download", [
+    ["path", { d: "M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4", key: "ih7n3h" }],
+    ["polyline", { points: "7 10 12 15 17 10", key: "2ggqvy" }],
+    ["line", { x1: "12", x2: "12", y1: "15", y2: "3", key: "1vk2je" }]
+  ]);
+
   // web/console/node_modules/lucide-react/dist/esm/icons/file-code-2.js
   var FileCode2 = createLucideIcon("FileCode2", [
     ["path", { d: "M4 22h14a2 2 0 0 0 2-2V7l-5-5H6a2 2 0 0 0-2 2v4", key: "1pf5j1" }],
@@ -7519,6 +7526,12 @@
         key: "kqbvx6"
       }
     ]
+  ]);
+
+  // web/console/node_modules/lucide-react/dist/esm/icons/lock.js
+  var Lock = createLucideIcon("Lock", [
+    ["rect", { width: "18", height: "11", x: "3", y: "11", rx: "2", ry: "2", key: "1w4ew1" }],
+    ["path", { d: "M7 11V7a5 5 0 0 1 10 0v4", key: "fwvmzm" }]
   ]);
 
   // web/console/node_modules/lucide-react/dist/esm/icons/monitor.js
@@ -7637,6 +7650,12 @@
     ["path", { d: "m2 2 20 20", key: "1ooewy" }]
   ]);
 
+  // web/console/node_modules/lucide-react/dist/esm/icons/x.js
+  var X = createLucideIcon("X", [
+    ["path", { d: "M18 6 6 18", key: "1bl5f8" }],
+    ["path", { d: "m6 6 12 12", key: "d8bk6v" }]
+  ]);
+
   // web/console/cuberelay_v4.tsx
   var import_jsx_runtime = __toESM(require_jsx_runtime());
   var FACE_ORDER = ["U", "R", "F", "D", "L", "B"];
@@ -7658,6 +7677,12 @@
       label: "\u9B54\u65B9\u5B8C\u6574\u6C42\u89E3",
       shortDesc: "\u626B\u63CF + Kociemba \u6C42\u89E3 + \u7269\u7406\u80FD\u529B\u8FB9\u754C\u6838\u67E5",
       capabilityNote: "\u53D7\u80FD\u529B\u9650\u5236 \xB7 \u82E5\u542B R/F/L/B/D/U'/U2 \u5C06\u89E6\u53D1 CAPABILITY_BLOCKED"
+    },
+    {
+      type: "RELAY_SOLVE_CUBE",
+      label: "\u4EBA\u673A\u63A5\u529B\u590D\u539F",
+      shortDesc: "Gemini Agent \u5168\u81EA\u4E3B\u63A5\u529B + 26-Cubie \u7269\u7406\u6C42\u89E3",
+      capabilityNote: "\u5168\u81EA\u4E3B\u95ED\u73AF \xB7 1s\u5FEB\u7784/25s\u7FFB\u626B\u6743\u8861 \xB7 18\u52A8\u4F5C\u81EA\u7531\u76D8 + \u81EA\u7136\u8BED\u8A00\u5951\u7EA6\u534F\u540C"
     }
   ];
   var COLOR_MAP = {
@@ -7670,9 +7695,9 @@
     UNKNOWN: { bg: "#182338", border: "#334155", text: "#94A3B8", label: "\u672A\u77E5 ?" }
   };
   var CAMERA_PRESETS = [
+    { id: "cube_closeup", label: "\u9B54\u65B9\u7279\u5199", desc: "26-Cubie \u9B54\u65B9\u8DDF\u62CD\u7279\u5199\uFF08\u63A8\u8350\uFF09", az: 132, el: -28, dist: 0.28 },
+    { id: "gripper_closeup", label: "\u5939\u722A\u7279\u5199", desc: "\u672B\u7AEF\u53CC\u6307\u5939\u6301\u63A5\u89E6\u5C40\u90E8\u673A\u4F4D", az: 146, el: -22, dist: 0.36 },
     { id: "overview", label: "\u573A\u666F\u603B\u89C8", desc: "3/4 \u5B9E\u9A8C\u5BA4\u5DE5\u4F5C\u7AD9\u5168\u5C40\u673A\u4F4D", az: 135, el: -28, dist: 1.15 },
-    { id: "gripper_closeup", label: "\u5939\u722A\u7279\u5199", desc: "\u672B\u7AEF\u53CC\u6307\u5939\u6301\u63A5\u89E6\u5C40\u90E8\u673A\u4F4D", az: 148, el: -20, dist: 0.48 },
-    { id: "cube_closeup", label: "\u9B54\u65B9\u7279\u5199", desc: "\u9B54\u65B9\u4E0E\u8F6C\u9762\u5939\u5177\u9AD8\u500D\u7387\u89C6\u89D2", az: 125, el: -32, dist: 0.36 },
     { id: "top_ortho", label: "\u4FEF\u89C6\u76F8\u673A", desc: "\u9F99\u95E8\u67B6 XY \u5E73\u9762\u6B63\u4EA4\u4FEF\u89C6", az: 90, el: -86, dist: 0.95 }
   ];
   var SAMPLE_PREDICTED_COLORS = [
@@ -8206,6 +8231,21 @@
           result_summary: "\u6837\u672C\uFF1A\u80FD\u529B\u963B\u585E\u4E8E\u52A8\u4F5C U' / F' / R2",
           failure_reason: "\u5F53\u524D\u4EC5\u652F\u6301\u5355\u6B21\u987A\u65F6\u9488 U \u63A5\u89E6\u7269\u7406\u8F6C\u9762\uFF0C\u4E0D\u652F\u6301\u4EFB\u610F\u516D\u9762\u8FDE\u7EED\u7269\u7406\u6C42\u89E3\u3002"
         }
+      ],
+      RELAY_SOLVE_CUBE: [
+        {
+          step_id: "smp-r1",
+          index: 1,
+          title: "Agent \u4E3B\u52A8\u626B\u63CF\u5EFA\u4FE1\u4E0E\u4EA4\u63A5",
+          skill_id: "handover_to_human",
+          description: "Gemini-3.8-Flash \u81EA\u4E3B\u6743\u8861\u7FFB\u9762\u4EE3\u4EF7\u5E76\u4EA4\u63A5\u684C\u9762",
+          status: "VERIFIED",
+          implemented: true,
+          started_sim_time: 0.4,
+          ended_sim_time: 35.1,
+          elapsed_sec: 34.7,
+          result_summary: "\u6837\u672C\uFF1A\u5DF2\u63D0\u4EA4\u4F4E\u4EE3\u4EF7 U \u5E76\u4E8E 2-Flip D2 \u524D\u5B89\u5168\u79FB\u4EA4\u684C\u9762"
+        }
       ]
     };
     const steps = planStepsByMission[missionType];
@@ -8251,10 +8291,10 @@
       sim_time: isTurnMission ? ev.sim_time : 34.27,
       wall_time: ev.wall_time,
       frame_source: "SYNTHETIC_SAMPLE",
-      active_camera: "overview",
-      camera_azimuth_deg: 135,
+      active_camera: missionType === "RELAY_SOLVE_CUBE" ? "cube_closeup" : "overview",
+      camera_azimuth_deg: missionType === "RELAY_SOLVE_CUBE" ? 132 : 135,
       camera_elevation_deg: -28,
-      camera_distance_m: 1.15,
+      camera_distance_m: missionType === "RELAY_SOLVE_CUBE" ? 0.28 : 1.15,
       main_frame_url: mainFrameUrl || null,
       wrist_rgb_url: camData.rgbUrl || null,
       wrist_depth_url: camData.depthUrl || null,
@@ -8371,10 +8411,10 @@
       sim_time: 0,
       wall_time: "--:--:--",
       frame_source: "NONE",
-      active_camera: "overview",
-      camera_azimuth_deg: 135,
+      active_camera: missionType === "RELAY_SOLVE_CUBE" ? "cube_closeup" : "overview",
+      camera_azimuth_deg: missionType === "RELAY_SOLVE_CUBE" ? 132 : 135,
       camera_elevation_deg: -28,
-      camera_distance_m: 1.15,
+      camera_distance_m: missionType === "RELAY_SOLVE_CUBE" ? 0.28 : 1.15,
       main_frame_url: null,
       wrist_rgb_url: null,
       wrist_depth_url: null,
@@ -8416,7 +8456,9 @@
       },
       physical_verification: null,
       last_observation_ref: null,
-      running: false
+      running: false,
+      relay_phase: "IDLE",
+      relay_state: null
     };
   }
   function formatSimTime(sec) {
@@ -8463,6 +8505,7 @@
       PLANNING: "bg-[#548CFF]/20 text-[#548CFF] border-[#548CFF]/40",
       EXECUTING: "bg-[#548CFF]/20 text-[#548CFF] border-[#548CFF]/50",
       VERIFYING: "bg-[#3DE8E5]/15 text-[#3DE8E5] border-[#3DE8E5]/40",
+      WAITING_FOR_HUMAN_TURN: "bg-[#FFBF69]/20 text-[#FFBF69] border-[#FFBF69]/50",
       BLOCKED_CAPABILITY: "bg-[#FFBF69]/20 text-[#FFBF69] border-[#FFBF69]/50",
       COMPLETED: "bg-[#30D6A0]/15 text-[#30D6A0] border-[#30D6A0]/40",
       FAILED: "bg-[#FF667B]/15 text-[#FF667B] border-[#FF667B]/40",
@@ -8484,13 +8527,15 @@
     replayVideoRef,
     replayVideoUrl,
     onReplayTimeUpdate,
-    onLoadReplayFiles
+    onLoadReplayFiles,
+    onUrgentInterrupt
   }) => {
     const dragStateRef = (0, import_react3.useRef)({
       active: false,
       lastX: 0,
       lastY: 0
     });
+    const lastWheelRef = (0, import_react3.useRef)(0);
     const handlePointerDown = (e) => {
       if (mode !== "LIVE" || !wsConnected) return;
       const target = e.target;
@@ -8517,7 +8562,10 @@
     const handleWheel = (e) => {
       if (mode !== "LIVE" || !wsConnected) return;
       e.preventDefault();
-      onCameraZoomCommand(e.deltaY > 0 ? 0.06 : -0.06);
+      const now = performance.now();
+      if (now - lastWheelRef.current < 45) return;
+      lastWheelRef.current = now;
+      onCameraZoomCommand(e.deltaY > 0 ? 0.04 : -0.04);
     };
     const azRad = snapshot.camera_azimuth_deg * Math.PI / 180;
     const elRad = snapshot.camera_elevation_deg * Math.PI / 180;
@@ -8548,21 +8596,151 @@
               ),
               mode === "REPLAY" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "inline-flex items-center gap-1 px-2 py-0.5 rounded text-[10px] font-mono bg-[#548CFF]/15 text-[#548CFF] border border-[#548CFF]/40 shrink-0", children: "PREVIEW / REPLAY \xB7 \u5916\u90E8\u5F55\u5236\u4E0E\u622A\u56FE\u6A21\u5F0F" })
             ] }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "flex items-center gap-1 bg-[#080D16] p-0.5 rounded border border-slate-800 shrink-0", children: CAMERA_PRESETS.map((cam) => {
-              const active = snapshot.active_camera === cam.id;
-              return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                "button",
-                {
-                  type: "button",
-                  title: cam.desc,
-                  onClick: () => onCameraPresetChange(cam.id),
-                  className: `px-2 py-0.5 rounded text-[11px] font-medium transition-colors ${active ? "bg-[#548CFF] text-white" : "text-slate-400 hover:text-slate-200 hover:bg-[#182338]"}`,
-                  children: cam.label
-                },
-                cam.id
-              );
-            }) })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center gap-1 bg-[#080D16] p-0.5 rounded border border-slate-800 shrink-0", children: [
+              CAMERA_PRESETS.map((cam) => {
+                const active = snapshot.active_camera === cam.id;
+                return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                  "button",
+                  {
+                    type: "button",
+                    title: cam.desc,
+                    onClick: () => onCameraPresetChange(cam.id),
+                    className: `px-2 py-0.5 rounded text-[11px] font-medium transition-colors ${active ? "bg-[#548CFF] text-white" : "text-slate-400 hover:text-slate-200 hover:bg-[#182338]"}`,
+                    children: cam.label
+                  },
+                  cam.id
+                );
+              }),
+              mode === "LIVE" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                  "button",
+                  {
+                    type: "button",
+                    title: "\u62C9\u8FD1\u955C\u5934\u653E\u5927\u9B54\u65B9",
+                    onClick: () => onCameraZoomCommand(-0.05),
+                    className: "px-1.5 py-0.5 rounded text-[11px] font-mono text-[#3DE8E5] hover:bg-[#182338]",
+                    children: "+\u653E\u5927"
+                  }
+                ),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                  "button",
+                  {
+                    type: "button",
+                    title: "\u62C9\u8FDC\u955C\u5934",
+                    onClick: () => onCameraZoomCommand(0.05),
+                    className: "px-1.5 py-0.5 rounded text-[11px] font-mono text-slate-300 hover:bg-[#182338]",
+                    children: "-\u7F29\u5C0F"
+                  }
+                )
+              ] })
+            ] })
           ] }),
+          (snapshot.selected_mission_type === "RELAY_SOLVE_CUBE" || snapshot.relay_state?.enabled) && (() => {
+            const relay = snapshot.relay_state;
+            const tone = relay?.banner?.tone || "slate";
+            const toneClass = tone === "amber" ? "bg-[#FFBF69]/15 border-[#FFBF69]/50 text-[#FFBF69]" : tone === "violet" ? "bg-[#8B5CF6]/15 border-[#8B5CF6]/50 text-[#A78BFA]" : tone === "emerald" ? "bg-[#30D6A0]/15 border-[#30D6A0]/50 text-[#30D6A0]" : tone === "red" ? "bg-[#FF667B]/15 border-[#FF667B]/50 text-[#FF667B]" : tone === "blue" ? "bg-[#548CFF]/15 border-[#548CFF]/50 text-[#3DE8E5]" : "bg-[#182338] border-slate-700 text-slate-300";
+            const prog = relay?.progress;
+            const pct = prog ? Math.max(0, Math.min(100, prog.completion_pct)) : 0;
+            const stats = relay?.cognitive_stats;
+            const turnInfo = relay?.turn_indicator;
+            const owner = turnInfo?.owner || (relay?.phase === "WAITING_FOR_HUMAN_TURN" ? "HUMAN" : relay?.phase === "AWAITING_HUMAN_CLARIFICATION" ? "CLARIFY" : relay?.phase === "RELAY_COMPLETED_VERIFIED" ? "DONE" : relay?.phase === "ROBOT_ACTING" || relay?.phase === "AGENT_REASONING" || relay?.phase === "ROBOT_PERCEIVING" || relay?.phase === "VERIFYING_SOLVED" ? "ROBOT" : "IDLE");
+            const ownerPillCls = owner === "HUMAN" ? "bg-[#FFBF69]/20 text-[#FFBF69] border-[#FFBF69] animate-pulse" : owner === "CLARIFY" ? "bg-[#8B5CF6]/20 text-[#A78BFA] border-[#8B5CF6]/50 animate-pulse" : owner === "ROBOT" ? "bg-[#3DE8E5]/15 text-[#3DE8E5] border-[#3DE8E5]/50 animate-pulse" : owner === "DONE" ? "bg-[#30D6A0]/20 text-[#30D6A0] border-[#30D6A0]/50" : "bg-[#182338] text-slate-300 border-slate-700";
+            const ownerText = turnInfo?.owner_label_zh || (owner === "HUMAN" ? "\u{1F9D1} \u5F53\u524D\u56DE\u5408\uFF1A\u4EBA\u7C7B\u64CD\u4F5C\u4E2D" : owner === "CLARIFY" ? "\u{1F7E3} \u5F53\u524D\u56DE\u5408\uFF1A\u5F85\u4F60\u786E\u8BA4" : owner === "ROBOT" ? "\u{1F916} \u5F53\u524D\u56DE\u5408\uFF1A\u673A\u5668\u4EBA\u6267\u884C\u4E2D" : owner === "DONE" ? "\u{1F389} 100% \u590D\u539F\u5DF2\u5B8C\u6210" : "\u23F8\uFE0F \u5F85\u542F\u52A8");
+            const stageLabels = turnInfo?.stage_labels || ["\u5F00\u5C40\u626B\u9762", "\u673A\u5668\u4EBA\u64CD\u4F5C", "\u4EA4\u63A5/\u6F84\u6E05", "\u4EBA\u7C7B\u56DE\u5408", "\u5FEB\u7784/\u4FEE\u590D", "\u590D\u539F\u6838\u9A8C"];
+            const stageIdx = typeof turnInfo?.stage_index === "number" ? turnInfo.stage_index : owner === "HUMAN" ? 3 : owner === "CLARIFY" ? 2 : owner === "DONE" ? 5 : relay?.phase === "ROBOT_PERCEIVING" ? 0 : owner === "ROBOT" ? 1 : 0;
+            return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "z-20 px-3 py-1.5 bg-[#0C1422] border-b border-slate-800/90 space-y-1.5 shrink-0", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: `px-2.5 py-1.5 rounded border flex items-center justify-between gap-2 ${toneClass}`, children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "min-w-0 flex items-center gap-2", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: `px-2 py-0.5 rounded border text-[10.5px] font-bold shrink-0 ${ownerPillCls}`, children: ownerText }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "min-w-0", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[11px] font-semibold truncate", children: relay?.banner?.title_zh || "\u{1F9D1}/\u{1F916} Agent \u4EBA\u673A\u63A5\u529B\u5F85\u547D" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[9.5px] opacity-85 truncate", children: turnInfo?.next_action_hint_zh || relay?.banner?.subtitle_zh || "\u9009\u62E9\u6253\u4E71\u6B65\u6570\u5E76\u542F\u52A8\uFF0C\u5B9E\u65F6\u89C2\u770B\u9B54\u65B9 26 \u5757\u534F\u540C\u590D\u539F\u3002" })
+                  ] })
+                ] }),
+                snapshot.running && (relay?.phase === "ROBOT_ACTING" || relay?.phase === "AGENT_REASONING") && onUrgentInterrupt && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                  "button",
+                  {
+                    type: "button",
+                    onClick: onUrgentInterrupt,
+                    className: "px-2 py-1 rounded text-[10px] font-semibold bg-[#FF667B]/20 hover:bg-[#FF667B]/30 text-[#FF667B] border border-[#FF667B]/50 shrink-0 transition-colors",
+                    children: "\u26A1 \u7D27\u6025\u5239\u8F66/\u4E2D\u65AD"
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "grid grid-cols-6 gap-1 text-[9.5px] font-mono", children: stageLabels.map((stLabel, idx) => {
+                const isDoneStage = owner === "DONE" ? true : idx < stageIdx;
+                const isCurStage = owner !== "DONE" && idx === stageIdx;
+                const stageCls = isCurStage ? "bg-[#3DE8E5]/15 text-[#3DE8E5] border-[#3DE8E5]/60 font-semibold" : isDoneStage ? "bg-[#30D6A0]/10 text-[#30D6A0] border-[#30D6A0]/30" : "bg-[#080D16] text-slate-500 border-slate-800";
+                return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: `px-1.5 py-0.5 rounded border text-center truncate ${stageCls}`, children: [
+                  isDoneStage ? "\u2713 " : isCurStage ? "\u25CF " : `${idx + 1}. `,
+                  stLabel
+                ] }, stLabel);
+              }) }),
+              relay && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "space-y-1", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between gap-2 text-[10px] font-mono text-slate-300", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center gap-2 min-w-0 truncate", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
+                      "\u5269\u4F59: ",
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { className: "text-[#3DE8E5]", children: prog?.initial_optimal_steps ?? "--" }),
+                      " \u2192",
+                      " ",
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { className: "text-[#30D6A0]", children: prog?.remaining_optimal_steps ?? "--" }),
+                      " \u6B65 (",
+                      pct.toFixed(0),
+                      "%)"
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "text-slate-500", children: "\xB7" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
+                      "\u7B2C ",
+                      relay.round_number || 1,
+                      " \u8F6E"
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "text-slate-500", children: "\xB7" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
+                      "\u{1F916}",
+                      prog?.robot_moves_count ?? 0,
+                      "\u6B65 / \u{1F9D1}",
+                      prog?.human_turns_count ?? 0,
+                      "\u8F6E"
+                    ] })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center gap-1.5 shrink-0 text-[9.5px]", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "px-1.5 py-0.5 rounded bg-[#182338] border border-slate-700 text-[#3DE8E5]", children: [
+                      "\u5FEB\u7784\u514D\u7FFB:",
+                      stats?.rapid_glance_deduction_successes ?? 0
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "px-1.5 py-0.5 rounded bg-[#182338] border border-slate-700 text-[#FFBF69]", children: [
+                      "\u7701\u7FFB\u9762:",
+                      stats?.saved_high_cost_flips ?? 0
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "px-1.5 py-0.5 rounded bg-[#182338] border border-slate-700 text-slate-300", children: [
+                      "\u62A2\u5360:",
+                      stats?.fast_loop_contract_interceptions ?? 0
+                    ] })
+                  ] })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "w-full h-1.5 bg-[#182338] rounded-full overflow-hidden border border-slate-800", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                  "div",
+                  {
+                    className: "h-full bg-[#30D6A0] transition-all",
+                    style: { width: `${pct}%` }
+                  }
+                ) }),
+                prog?.round_tags && prog.round_tags.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "flex items-center gap-1 overflow-x-auto text-[9.5px] font-mono", children: prog.round_tags.map((tag, i) => {
+                  const isLatest = i === prog.round_tags.length - 1;
+                  const tagCls = isLatest ? "bg-[#3DE8E5]/15 border-[#3DE8E5]/50 text-[#3DE8E5] font-semibold" : "bg-[#182338] border-slate-700 text-slate-400";
+                  return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                    "span",
+                    {
+                      className: `px-1.5 py-0.5 rounded border shrink-0 ${tagCls}`,
+                      children: tag
+                    },
+                    `${tag}-${i}`
+                  );
+                }) })
+              ] })
+            ] });
+          })(),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "relative flex-1 flex items-center justify-center bg-[#080D16] overflow-hidden", children: [
             mode === "SAMPLE" && snapshot.main_frame_url && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
               "img",
@@ -8725,14 +8903,48 @@
       }
     );
   };
+  var RELAY_FACE_GROUPS = [
+    { face: "U", moves: ["U", "U'", "U2"] },
+    { face: "D", moves: ["D", "D'", "D2"] },
+    { face: "F", moves: ["F", "F'", "F2"] },
+    { face: "B", moves: ["B", "B'", "B2"] },
+    { face: "L", moves: ["L", "L'", "L2"] },
+    { face: "R", moves: ["R", "R'", "R2"] }
+  ];
+  var QUICK_HRI_CHIPS = [
+    { label: "\u4EA4\u7ED9\u4F60\u590D\u539F", text: "\u6211\u4E0D\u73A9\u4E86\uFF0C\u5269\u4E0B\u7684\u5168\u90E8\u4EA4\u7ED9\u4F60\u590D\u539F\uFF01" },
+    { label: "\u62D2\u62E7\u5E95\u9762D", text: "\u5E95\u9762D\u6211\u4E0D\u65B9\u4FBF\u62E7\uFF0C\u5E95\u9762\u7531\u4F60\u7FFB\u9762\u62E7\u6389\uFF0C\u7ED9\u6211\u7559\u9876\u9762\u6216\u4FA7\u9762" },
+    { label: "\u624B\u6ED1\u64A4\u56DE", text: "\u521A\u624D\u624B\u6ED1\u62E7\u9519\u4E86\uFF0C\u5E2E\u6211\u64A4\u56DE\u4E0A\u4E00\u6B65" },
+    { label: "\u987A\u8DEF\u7EBF\u89E3", text: "\u6211\u662F\u6545\u610F\u6362\u8DEF\u7EBF\u7684\uFF0C\u8BF7\u4FDD\u7559\u6211\u7684\u52A8\u4F5C\u987A\u7740\u7EE7\u7EED\u5F80\u4E0B\u89E3" },
+    { label: "\u7D27\u6025\u653E\u56DE", text: "\u505C\u4E00\u4E0B\uFF01\u5148\u522B\u89E3\u4E86\uFF0C\u628A\u9B54\u65B9\u5B89\u5168\u653E\u56DE\u684C\u9762\u4EA4\u7ED9\u6211" }
+  ];
   var RightOrchestrationPanel = ({
+    mode,
     snapshot,
     selectedMission,
-    onSelectMission
+    selectedScrambleSteps,
+    onSelectMission,
+    onSelectScrambleSteps,
+    onRelayCommand
   }) => {
     const [rightTab, setRightTab] = (0, import_react3.useState)("AGENT");
+    const [showLegacyMissions, setShowLegacyMissions] = (0, import_react3.useState)(false);
+    const [agentDrawerOpen, setAgentDrawerOpen] = (0, import_react3.useState)(false);
+    const [skillDrawerOpen, setSkillDrawerOpen] = (0, import_react3.useState)(false);
     const [expandedSkills, setExpandedSkills] = (0, import_react3.useState)(/* @__PURE__ */ new Set());
     const [expandedTraceEvents, setExpandedTraceEvents] = (0, import_react3.useState)(/* @__PURE__ */ new Set());
+    const [selectedDecisionObservationId, setSelectedDecisionObservationId] = (0, import_react3.useState)(null);
+    const [chatDraft, setChatDraft] = (0, import_react3.useState)("");
+    const [perturbDxCm, setPerturbDxCm] = (0, import_react3.useState)(0);
+    const [perturbDyCm, setPerturbDyCm] = (0, import_react3.useState)(0);
+    const [perturbYawDeg, setPerturbYawDeg] = (0, import_react3.useState)(0);
+    (0, import_react3.useEffect)(() => {
+      if (snapshot.relay_state?.perturbation) {
+        setPerturbDxCm(Math.round((snapshot.relay_state.perturbation.dx_m || 0) * 100));
+        setPerturbDyCm(Math.round((snapshot.relay_state.perturbation.dy_m || 0) * 100));
+        setPerturbYawDeg(Math.round(snapshot.relay_state.perturbation.dyaw_deg || 0));
+      }
+    }, [snapshot.relay_state?.phase, snapshot.relay_state?.perturbation?.dx_m, snapshot.relay_state?.perturbation?.dy_m, snapshot.relay_state?.perturbation?.dyaw_deg]);
     const mission = snapshot.mission;
     const plan = snapshot.plan;
     const agent = snapshot.agent_state;
@@ -8740,19 +8952,44 @@
     const executions = snapshot.skill_executions || [];
     const traceEvents = snapshot.trace_events || [];
     const policyTraceEvents = traceEvents.filter((event) => event.event_type === "decision");
+    const vlmCompositeTrace = traceEvents.find(
+      (event) => event.event_type === "composite_skill" && event.skill_id === "vlm_controlled_inspection"
+    );
+    const vlmCompositeChildren = vlmCompositeTrace ? traceEvents.filter((event) => event.parent_event_id === vlmCompositeTrace.event_id) : [];
     const missionSpec = MISSION_OPTIONS.find((m) => m.type === selectedMission);
+    const selectedDecisionObservation = (snapshot.observations || []).find(
+      (observation) => observation.observation_id === selectedDecisionObservationId
+    );
     const completedSteps = plan ? plan.steps.filter((s) => s.status === "VERIFIED").length : 0;
     const totalSteps = plan ? plan.steps.length : 0;
+    const isVlmPlanner = agent?.planner_mode === "LLM_AGENT";
+    const plannerBannerStyle = agent?.llm_connected ? "bg-[#30D6A0]/10 border-[#30D6A0]/40 text-[#30D6A0]" : isVlmPlanner ? "bg-[#FFBF69]/10 border-[#FFBF69]/40 text-[#FFBF69]" : agent?.planner_mode === "DETERMINISTIC_PLANNER" ? "bg-[#548CFF]/15 border-[#548CFF]/40 text-slate-200" : "bg-[#182338] border-slate-700 text-slate-300";
+    const safetyGateStyle = agent?.safety_gate_status && agent.safety_gate_status.startsWith("PASSED") ? "text-[#30D6A0]" : agent?.safety_gate_status && agent.safety_gate_status.includes("BLOCKED") ? "text-[#FFBF69]" : agent?.safety_gate_status ? "text-[#FF667B]" : "text-slate-400";
+    const isRelayMission = selectedMission === "RELAY_SOLVE_CUBE";
+    const showAgentPanel = isRelayMission ? agentDrawerOpen : rightTab === "AGENT";
+    const showSkillPanel = isRelayMission ? skillDrawerOpen : rightTab === "SKILL";
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "min-w-0 min-h-0 h-full bg-[#101827] border border-slate-800/90 rounded-lg p-2.5 flex flex-col gap-2", children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "space-y-1.5 border-b border-slate-800/90 pb-2 shrink-0", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between gap-1.5", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center gap-1.5 min-w-0", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(GitBranch, { className: "w-3.5 h-3.5 text-[#3DE8E5] shrink-0" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "text-[11px] font-semibold tracking-wider text-slate-200 uppercase truncate", children: "MISSION & ORCHESTRATION" })
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "text-[11px] font-semibold tracking-wider text-slate-200 uppercase truncate", children: isRelayMission ? "\u{1F9D1}/\u{1F916} \u4EBA\u673A\u63A5\u529B\u4E3B\u63A7\u53F0" : `\u5B9E\u9A8C\u6A21\u5F0F \xB7 ${missionSpec.label}` })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MissionStatusBadge, { status: mission?.status })
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center gap-1.5 shrink-0", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+              "button",
+              {
+                type: "button",
+                onClick: () => setShowLegacyMissions((v) => !v),
+                title: "\u5C55\u5F00/\u6536\u8D77\u5386\u53F2\u5355\u9636\u6BB5\u5B9E\u9A8C\uFF08\u516D\u9762\u626B\u63CF / U\u5C42\u7269\u7406\u8F6C\u52A8 / \u9B54\u65B9\u5B8C\u6574\u6C42\u89E3\uFF09",
+                className: "px-1.5 py-0.5 rounded text-[9.5px] bg-[#080D16] hover:bg-[#182338] text-slate-400 hover:text-slate-200 border border-slate-800 transition-colors",
+                children: showLegacyMissions ? "\u6536\u8D77\u5386\u53F2\u5B9E\u9A8C \u25B4" : "\u5386\u53F2\u5B9E\u9A8C \u25BE"
+              }
+            ),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(MissionStatusBadge, { status: mission?.status })
+          ] })
         ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "grid grid-cols-3 gap-1 bg-[#080D16] p-0.5 rounded border border-slate-800", children: MISSION_OPTIONS.map((opt) => {
+        (showLegacyMissions || !isRelayMission) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "grid grid-cols-2 gap-1 bg-[#080D16] p-0.5 rounded border border-slate-800", children: MISSION_OPTIONS.map((opt) => {
           const active = selectedMission === opt.type;
           return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
             "button",
@@ -8766,17 +9003,33 @@
             opt.type
           );
         }) }),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[10px] text-slate-400 bg-[#080D16] border border-slate-800/80 rounded px-2 py-1 leading-snug", children: missionSpec.capabilityNote })
+        isRelayMission && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between gap-1 bg-[#080D16] border border-slate-800 rounded px-2 py-1 text-[10px]", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "text-slate-400 shrink-0", children: "\u6253\u4E71\u6B65\u6570:" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "flex items-center gap-1", children: [4, 5, 6, 8, "random"].map((opt) => {
+            const active = selectedScrambleSteps === opt;
+            return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+              "button",
+              {
+                type: "button",
+                onClick: () => onSelectScrambleSteps(opt),
+                className: `px-1.5 py-0.5 rounded font-mono transition-colors ${active ? "bg-[#3DE8E5]/20 text-[#3DE8E5] border border-[#3DE8E5]/40" : "text-slate-400 hover:text-slate-200 bg-[#182338]"}`,
+                children: opt === "random" ? "\u968F\u673A" : `${opt}\u6B65`
+              },
+              String(opt)
+            );
+          }) })
+        ] }),
+        !isRelayMission && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[10px] text-slate-400 bg-[#080D16] border border-slate-800/80 rounded px-2 py-1 leading-snug", children: missionSpec.capabilityNote })
       ] }),
-      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "grid grid-cols-2 gap-1 bg-[#080D16] p-0.5 rounded border border-slate-800 shrink-0", children: [
+      !isRelayMission && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "grid grid-cols-2 gap-1 bg-[#080D16] p-0.5 rounded border border-slate-800 shrink-0", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
           "button",
           {
             type: "button",
             onClick: () => setRightTab("AGENT"),
-            className: `flex items-center justify-center gap-1.5 py-1 rounded text-[11px] font-semibold transition-colors ${rightTab === "AGENT" ? "bg-[#182338] text-[#3DE8E5] border border-[#3DE8E5]/40" : "text-slate-400 hover:text-slate-200"}`,
+            className: `flex items-center justify-center gap-1 py-1 rounded text-[10.5px] font-semibold transition-colors ${rightTab === "AGENT" ? "bg-[#182338] text-[#3DE8E5] border border-[#3DE8E5]/40" : "text-slate-400 hover:text-slate-200"}`,
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bot, { className: "w-3.5 h-3.5" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bot, { className: "w-3 h-3" }),
               " Agent / \u51B3\u7B56"
             ]
           }
@@ -8786,9 +9039,9 @@
           {
             type: "button",
             onClick: () => setRightTab("SKILL"),
-            className: `flex items-center justify-center gap-1.5 py-1 rounded text-[11px] font-semibold transition-colors ${rightTab === "SKILL" ? "bg-[#182338] text-[#3DE8E5] border border-[#3DE8E5]/40" : "text-slate-400 hover:text-slate-200"}`,
+            className: `flex items-center justify-center gap-1 py-1 rounded text-[10.5px] font-semibold transition-colors ${rightTab === "SKILL" ? "bg-[#182338] text-[#3DE8E5] border border-[#3DE8E5]/40" : "text-slate-400 hover:text-slate-200"}`,
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Layers, { className: "w-3.5 h-3.5" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Layers, { className: "w-3 h-3" }),
               " Skill / \u6267\u884C (",
               completedSteps,
               "/",
@@ -8798,17 +9051,102 @@
           }
         )
       ] }),
-      rightTab === "AGENT" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex-1 min-h-0 overflow-y-auto space-y-2 pr-0.5 text-[11px]", children: [
+      isRelayMission && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "order-2 shrink-0 grid grid-cols-2 gap-1.5 border-t border-slate-800/90 pt-1.5", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
-          "div",
+          "button",
           {
-            className: `px-2 py-1.5 rounded border text-[10.5px] font-medium flex items-center gap-1.5 ${agent?.llm_connected ? "bg-[#30D6A0]/10 border-[#30D6A0]/40 text-[#30D6A0]" : agent?.planner_mode === "DETERMINISTIC_PLANNER" ? "bg-[#548CFF]/15 border-[#548CFF]/40 text-slate-200" : "bg-[#182338] border-slate-700 text-slate-300"}`,
+            type: "button",
+            onClick: () => setAgentDrawerOpen((v) => !v),
+            className: `flex items-center justify-between gap-1 px-2 py-1 rounded text-[10px] font-semibold border transition-colors ${agentDrawerOpen ? "bg-[#182338] text-[#3DE8E5] border-[#3DE8E5]/40" : "bg-[#080D16] text-slate-400 border-slate-800 hover:text-slate-200"}`,
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bot, { className: "w-3.5 h-3.5 shrink-0 text-[#3DE8E5]" }),
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "leading-snug", children: agent?.llm_connected ? `LLM Agent \u5DF2\u8FDE\u63A5 (${agent.llm_model || "Gemini"})` : agent?.planner_mode === "DETERMINISTIC_PLANNER" ? agent.status_label || "\u5F53\u524D\u7531\u786E\u5B9A\u6027\u4EFB\u52A1\u89C4\u5212\u5668\u6267\u884C\uFF0CLLM Agent \u5C1A\u672A\u63A5\u5165" : "Agent \u5C1A\u672A\u63A5\u5165" })
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "flex items-center gap-1 truncate", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bot, { className: "w-3 h-3 shrink-0" }),
+                " Agent / \u51B3\u7B56"
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: agentDrawerOpen ? "\u6536\u8D77 \u25BE" : "\u5C55\u5F00 \u25B8" })
             ]
           }
         ),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+          "button",
+          {
+            type: "button",
+            onClick: () => setSkillDrawerOpen((v) => !v),
+            className: `flex items-center justify-between gap-1 px-2 py-1 rounded text-[10px] font-semibold border transition-colors ${skillDrawerOpen ? "bg-[#182338] text-[#3DE8E5] border-[#3DE8E5]/40" : "bg-[#080D16] text-slate-400 border-slate-800 hover:text-slate-200"}`,
+            children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "flex items-center gap-1 truncate", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Layers, { className: "w-3 h-3 shrink-0" }),
+                " Skill / \u6267\u884C (",
+                completedSteps,
+                "/",
+                totalSteps,
+                ")"
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: skillDrawerOpen ? "\u6536\u8D77 \u25BE" : "\u5C55\u5F00 \u25B8" })
+            ]
+          }
+        )
+      ] }),
+      showAgentPanel && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: isRelayMission ? "order-3 max-h-56 shrink-0 overflow-y-auto space-y-2 pr-0.5 text-[11px] border border-slate-800/80 rounded p-1.5 bg-[#0A101B]" : "flex-1 min-h-0 overflow-y-auto space-y-2 pr-0.5 text-[11px]", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: `px-2 py-1.5 rounded border text-[10.5px] font-medium space-y-1 ${plannerBannerStyle}`, children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center gap-1.5", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bot, { className: "w-3.5 h-3.5 shrink-0 text-[#3DE8E5]" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "leading-snug", children: agent?.llm_connected ? `LLM Agent \u5DF2\u8FDE\u63A5 (${agent.llm_model || "Gemini"})` : isVlmPlanner ? agent?.status_label || `Gemini VLM \u672A\u5B8C\u6210\u5728\u7EBF\u9A8C\u8BC1 (${agent?.llm_model || "unconfigured"})` : agent?.planner_mode === "DETERMINISTIC_PLANNER" ? agent.status_label || "\u5F53\u524D\u7531\u786E\u5B9A\u6027\u4EFB\u52A1\u89C4\u5212\u5668\u6267\u884C\uFF0CLLM Agent \u5C1A\u672A\u63A5\u5165" : "Agent \u5C1A\u672A\u63A5\u5165" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "text-[9.5px] font-mono text-slate-300 flex items-center justify-between gap-1", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: agent?.planner_name || "--" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
+              agent?.total_vlm_calls ? `VLM:${agent.total_vlm_calls}\u6B21` : "",
+              typeof agent?.model_latency_ms === "number" ? ` \xB7 ${agent.model_latency_ms.toFixed(0)}ms` : ""
+            ] })
+          ] }),
+          agent?.fallback_triggered && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "text-[9.5px] text-[#FFBF69] font-mono", children: [
+            "[FALLBACK] \u5DF2\u56DE\u9000\u786E\u5B9A\u6027\u89C4\u5212 (",
+            agent.fallback_reason || "VLM_ERROR",
+            ")"
+          ] })
+        ] }),
+        isVlmPlanner && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "grid grid-cols-2 gap-1.5", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "rounded border border-[#3DE8E5]/30 bg-[#3DE8E5]/5 p-1.5 space-y-0.5", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[9px] font-mono text-[#3DE8E5]", children: "MODEL A \xB7 VLM PERCEPTION" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[10px] text-slate-200 truncate", children: agent?.perception_model_name || "\u672A\u914D\u7F6E" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "text-[9px] text-slate-500", children: [
+              agent?.perception_connected ? "\u5DF2\u9A8C\u8BC1" : "\u672A\u9A8C\u8BC1",
+              typeof agent?.perception_latency_ms === "number" ? ` \xB7 ${agent.perception_latency_ms.toFixed(0)}ms` : ""
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "rounded border border-[#548CFF]/30 bg-[#548CFF]/5 p-1.5 space-y-0.5", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[9px] font-mono text-[#548CFF]", children: "MODEL B \xB7 AGENT PLANNER" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[10px] text-slate-200 truncate", children: agent?.agent_model_name || "\u672A\u914D\u7F6E" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "text-[9px] text-slate-500", children: [
+              agent?.agent_connected ? "\u5DF2\u9A8C\u8BC1" : "\u672A\u9A8C\u8BC1",
+              typeof agent?.agent_latency_ms === "number" ? ` \xB7 ${agent.agent_latency_ms.toFixed(0)}ms` : ""
+            ] })
+          ] })
+        ] }),
+        agent?.latest_semantic_observation && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "rounded border border-slate-800 bg-[#080D16] p-2 space-y-1", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "text-[9.5px] font-mono text-[#3DE8E5]", children: [
+            "SEMANTIC OBS \xB7 ",
+            agent.latest_semantic_observation.observation_id,
+            " \xB7 ",
+            agent.latest_semantic_observation.frame_id
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[10.5px] text-slate-200", children: agent.latest_semantic_observation.summary }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "text-[10px] text-slate-400", children: [
+            "\u5173\u7CFB\uFF1A",
+            agent.latest_semantic_observation.cube_relation_to_gripper,
+            " \xB7 ",
+            agent.latest_semantic_observation.support_relation
+          ] }),
+          agent.latest_semantic_observation.information_gaps.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "text-[10px] text-[#FFBF69]", children: [
+            "\u4FE1\u606F\u7F3A\u53E3\uFF1A",
+            agent.latest_semantic_observation.information_gaps.join("\uFF1B")
+          ] }),
+          agent.latest_semantic_observation.visual_conflicts.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "text-[10px] text-[#FF667B]", children: [
+            "\u611F\u77E5\u51B2\u7A81\uFF1A",
+            agent.latest_semantic_observation.visual_conflicts.join("\uFF1B")
+          ] })
+        ] }),
         (mission?.status === "BLOCKED_CAPABILITY" || mission?.blocked_reason || agent?.blocked_or_replan_reason) && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "p-2 rounded bg-[#FFBF69]/10 border border-[#FFBF69]/50 space-y-1", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center gap-1.5 text-[#FFBF69] font-semibold text-[11px]", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TriangleAlert, { className: "w-3.5 h-3.5 shrink-0" }),
@@ -8845,7 +9183,27 @@
         ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "p-2 rounded bg-[#080D16] border border-slate-800/90 space-y-1.5", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[10px] font-mono text-slate-400", children: "\u6700\u65B0\u89C2\u5BDF\u6458\u8981" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[10px] font-mono text-slate-400", children: "\u6700\u65B0\u89C2\u5BDF\u6458\u8981\u4E0E\u771F\u5B9E\u76F8\u673A\u8F93\u5165" }),
+            agent?.current_observation_image_url && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "my-1 rounded overflow-hidden border border-slate-800 bg-black", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                "img",
+                {
+                  src: agent.current_observation_image_url,
+                  alt: agent.current_camera_id || "VLM Input Frame",
+                  className: "w-full aspect-[3/2] object-contain"
+                }
+              ),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "px-1.5 py-0.5 text-[9px] font-mono text-slate-400 flex justify-between", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
+                  "cam:",
+                  agent.current_camera_id || "overhead"
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
+                  "frm:",
+                  agent.current_frame_id || "--"
+                ] })
+              ] })
+            ] }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[10.5px] text-slate-200 leading-snug", children: agent?.latest_observation ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { children: agent.latest_observation.summary }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "text-[9.5px] font-mono text-slate-500 mt-0.5", children: [
@@ -8859,16 +9217,49 @@
               ] })
             ] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "text-slate-500", children: "\u5C1A\u672A\u91C7\u96C6\u89C2\u6D4B\u5E27" }) })
           ] }),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "pt-1 border-t border-slate-800/80", children: [
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[10px] font-mono text-slate-400", children: "\u5F53\u524D\u9009\u62E9\u52A8\u4F5C\u4E0E\u9009\u62E9\u4F9D\u636E" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "font-mono text-[10.5px] text-[#3DE8E5]", children: agent?.selected_action || "--" }),
-            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[10.5px] text-slate-300 leading-snug mt-0.5", children: agent?.selection_rationale || plan?.rationale_summary || "\u7B49\u5F85\u4EFB\u52A1\u542F\u52A8\u540E\u7531\u786E\u5B9A\u6027\u89C4\u5212\u5668\u751F\u6210\u8BA1\u5212" })
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "pt-1 border-t border-slate-800/80 space-y-0.5", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between text-[10px] font-mono text-slate-400", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "\u5F53\u524D\u9009\u62E9\u52A8\u4F5C\u4E0E\u7ED3\u6784\u5316\u4F9D\u636E" }),
+              typeof agent?.confidence === "number" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "text-[#3DE8E5]", children: [
+                "conf:",
+                agent.confidence.toFixed(2)
+              ] })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "font-mono text-[10.5px] text-[#3DE8E5] break-all", children: [
+              agent?.selected_action || "--",
+              agent?.selected_parameters && Object.keys(agent.selected_parameters).length > 0 ? ` ${JSON.stringify(agent.selected_parameters)}` : ""
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[10.5px] text-slate-300 leading-snug mt-0.5", children: agent?.selection_rationale || plan?.rationale_summary || "\u7B49\u5F85\u4EFB\u52A1\u542F\u52A8\u540E\u7531\u89C4\u5212\u5668\u751F\u6210\u51B3\u7B56" }),
+            agent?.expected_information_gain && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "text-[9.5px] text-slate-400 leading-snug", children: [
+              "\u9884\u671F\u4FE1\u606F\u589E\u76CA\uFF1A",
+              agent.expected_information_gain
+            ] })
+          ] }),
+          agent?.safety_gate_status && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "pt-1 border-t border-slate-800/80", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[10px] font-mono text-slate-400", children: "Safety Gate \u6821\u9A8C\u7ED3\u679C" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: `font-mono text-[10px] ${safetyGateStyle}`, children: agent.safety_gate_status })
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "pt-1 border-t border-slate-800/80", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[10px] font-mono text-slate-400", children: "\u6700\u8FD1 Skill \u8C03\u7528\u4E0E\u6267\u884C\u53CD\u9988" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "font-mono text-[10px] text-slate-200", children: agent?.last_skill_call || "--" }),
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[10.5px] text-slate-400 leading-snug", children: agent?.last_execution_feedback || "--" })
           ] })
+        ] }),
+        selectedDecisionObservation?.image_url && selectedDecisionObservation.frame_source === "REAL_MUJOCO_RENDERER" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "rounded border border-[#3DE8E5]/30 bg-black overflow-hidden", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "px-2 py-1 text-[9px] font-mono text-[#3DE8E5] bg-[#080D16]", children: [
+            "\u5386\u53F2\u51B3\u7B56\u56FE\u50CF \xB7 ",
+            selectedDecisionObservation.observation_id,
+            " \xB7 ",
+            selectedDecisionObservation.frame_id || "--"
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+            "img",
+            {
+              src: selectedDecisionObservation.image_url,
+              alt: `Historical observation ${selectedDecisionObservation.observation_id}`,
+              className: "w-full max-h-36 object-contain"
+            }
+          )
         ] }),
         policyTraceEvents.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "space-y-1", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[10px] font-mono text-slate-400", children: "ACTIVE SCAN POLICY \xB7 \u786E\u5B9A\u6027\u7B56\u7565\u4F9D\u636E" }),
@@ -8891,6 +9282,31 @@
             ] })
           ] }, event.event_id))
         ] }),
+        snapshot.relay_state?.enabled && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "p-2 rounded bg-[#080D16] border border-[#548CFF]/40 space-y-1", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "text-[10px] font-mono text-[#3DE8E5] font-semibold flex items-center justify-between", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "EXECUTION CONTRACT & BELIEF \xB7 \u5951\u7EA6\u4E0E\u4FE1\u5FF5\u900F\u89C6" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: snapshot.relay_state.contract.is_lattice_aligned ? "text-[#30D6A0]" : "text-[#FFBF69]", children: snapshot.relay_state.contract.is_lattice_aligned ? "\u6676\u683C\u5BF9\u9F50" : "\u534A\u62E7\u4FDD\u6301" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "text-[10px] font-mono text-slate-300 space-y-0.5", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+              "\u5B88\u6052\u9501\u5B9A:",
+              " ",
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: snapshot.relay_state.belief.deduced_54_unique ? "text-[#30D6A0]" : "text-[#FFBF69]", children: snapshot.relay_state.belief.deduced_54_unique ? "54/54 \u552F\u4E00\u9501\u5B9A" : `\u6B67\u4E49 ${snapshot.relay_state.belief.ambiguous_facelet_count} \u683C` }),
+              " \xB7 ",
+              "\u89C6\u89C9\u53CD\u63A8: ",
+              snapshot.relay_state.belief.inferred_human_moves.join(" ") || "\u65E0"
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+              "\u5951\u7EA6\u6A21\u5F0F: ",
+              snapshot.relay_state.contract.active_contract?.mid_turn_recovery_mode || "UNWIND_TO_ZERO",
+              " \xB7 ",
+              "\u8FC7\u671F\u54CD\u5E94\u62E6\u622A: ",
+              snapshot.relay_state.contract.stale_guard?.stale_responses_discarded ?? 0,
+              " \u6B21"
+            ] }),
+            snapshot.relay_state.belief.reasoning_summary_zh && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-slate-400 font-sans text-[10px] leading-snug", children: snapshot.relay_state.belief.reasoning_summary_zh })
+          ] })
+        ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "space-y-1", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "text-[10px] font-mono text-slate-400 flex items-center justify-between", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "DECISION EVENTS \xB7 \u51B3\u7B56\u5BA1\u8BA1\u6D41" }),
@@ -8899,176 +9315,232 @@
               " \u6761"
             ] })
           ] }),
-          decisionEvents.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "p-2 rounded bg-[#080D16] border border-slate-800 text-[10.5px] text-slate-500", children: "\u6682\u65E0\u51B3\u7B56\u4E8B\u4EF6\uFF08\u70B9\u51FB\u5E95\u90E8\u300C\u5F00\u59CB\u4EFB\u52A1\u300D\u6267\u884C\u5F53\u524D Mission\uFF09" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "space-y-1", children: decisionEvents.slice().reverse().map((ev) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
-            "div",
-            {
-              className: "p-1.5 rounded bg-[#080D16] border border-slate-800/80 space-y-0.5",
-              children: [
-                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between gap-1 text-[9.5px] font-mono", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
-                    "span",
-                    {
-                      className: ev.event_type === "CAPABILITY_BLOCKED" ? "text-[#FFBF69]" : ev.event_type.includes("FAILED") ? "text-[#FF667B]" : "text-[#3DE8E5]",
-                      children: [
-                        "#",
-                        ev.sequence,
-                        " ",
-                        ev.event_type
-                      ]
-                    }
-                  ),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "text-slate-500", children: ev.sim_time !== null && ev.sim_time !== void 0 ? `${ev.sim_time.toFixed(2)}s` : ev.wall_time })
-                ] }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[10.5px] text-slate-200 leading-snug", children: ev.summary }),
-                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[10px] text-slate-400 leading-snug", children: ev.decision_rationale_summary })
-              ]
-            },
-            ev.event_id
-          )) })
+          decisionEvents.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "p-2 rounded bg-[#080D16] border border-slate-800 text-[10.5px] text-slate-500", children: "\u6682\u65E0\u51B3\u7B56\u4E8B\u4EF6\uFF08\u70B9\u51FB\u5E95\u90E8\u300C\u5F00\u59CB\u4EFB\u52A1\u300D\u6267\u884C\u5F53\u524D Mission\uFF09" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "space-y-1", children: decisionEvents.slice().reverse().map((ev) => {
+            const evColor = ev.event_type === "CAPABILITY_BLOCKED" ? "text-[#FFBF69]" : ev.event_type.includes("FAILED") ? "text-[#FF667B]" : "text-[#3DE8E5]";
+            const srcColor = ev.source === "gemini_vlm" ? "text-[#30D6A0]" : "text-slate-400";
+            return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+              "button",
+              {
+                type: "button",
+                onClick: () => ev.observation_id && setSelectedDecisionObservationId(ev.observation_id),
+                className: "w-full text-left p-1.5 rounded bg-[#080D16] border border-slate-800/80 space-y-0.5 hover:border-[#3DE8E5]/40 disabled:cursor-default",
+                children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between gap-1 text-[9.5px] font-mono", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: evColor, children: [
+                      "#",
+                      ev.sequence,
+                      " ",
+                      ev.event_type
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "text-slate-500", children: ev.sim_time !== null && ev.sim_time !== void 0 ? `${ev.sim_time.toFixed(2)}s` : ev.wall_time })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between gap-1 text-[9px] font-mono", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: srcColor, children: [
+                      "src:",
+                      ev.source
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "text-slate-500", children: [
+                      ev.validation_result ? ev.validation_result : "",
+                      typeof ev.model_latency_ms === "number" ? ` \xB7 ${ev.model_latency_ms.toFixed(0)}ms` : ""
+                    ] })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[10.5px] text-slate-200 leading-snug", children: ev.summary }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[10px] text-slate-400 leading-snug", children: ev.decision_rationale_summary })
+                ]
+              },
+              ev.event_id
+            );
+          }) })
         ] })
       ] }),
-      rightTab === "SKILL" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex-1 min-h-0 flex flex-col justify-between gap-1.5 overflow-y-auto pr-0.5", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "space-y-1 flex-1 overflow-y-auto", children: !plan || plan.steps.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "p-2.5 rounded bg-[#080D16] border border-slate-800 text-[11px] text-slate-400", children: "\u5C1A\u672A\u751F\u6210\u4EFB\u52A1\u8BA1\u5212\uFF0C\u8BF7\u9009\u62E9 Mission \u5E76\u542F\u52A8\u4EFB\u52A1\u3002" }) : plan.steps.map((st) => {
-          const isCurrent = st.step_id === plan.current_step_id && st.status === "RUNNING";
-          const execRec = executions.find((ex) => ex.step_id === st.step_id);
-          const composite = traceEvents.find(
-            (event) => event.event_type === "composite_skill" && event.skill_id === st.skill_id
-          );
-          const childEvents = composite ? traceEvents.filter((event) => event.parent_event_id === composite.event_id) : [];
-          const skillExpanded = expandedSkills.has(st.step_id);
-          return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
-            "div",
-            {
-              className: `px-2 py-1.5 rounded border space-y-1 text-[11px] ${isCurrent ? "bg-[#182338] border-[#548CFF]/60" : st.status === "BLOCKED" ? "bg-[#FFBF69]/10 border-[#FFBF69]/50" : "bg-[#080D16] border-slate-800/80"}`,
-              children: [
-                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between gap-1.5", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "min-w-0 flex-1", children: [
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center gap-1.5", children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "font-mono text-[10px] text-slate-500", children: [
-                        "0",
-                        st.index
-                      ] }),
-                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "font-medium text-slate-200 truncate", children: st.title })
-                    ] }),
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "font-mono text-[9.5px] text-[#3DE8E5] pl-5 truncate", children: st.skill_id })
+      showSkillPanel && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: isRelayMission ? "order-4 max-h-56 shrink-0 flex flex-col justify-between gap-1.5 overflow-y-auto pr-0.5 border border-slate-800/80 rounded p-1.5 bg-[#0A101B]" : "flex-1 min-h-0 flex flex-col justify-between gap-1.5 overflow-y-auto pr-0.5", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "space-y-1 flex-1 overflow-y-auto", children: [
+          vlmCompositeTrace && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "px-2 py-1.5 rounded border bg-[#0C1422] border-[#30D6A0]/40 space-y-1 text-[11px]", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+              "button",
+              {
+                type: "button",
+                onClick: () => setExpandedSkills((previous) => {
+                  const next = new Set(previous);
+                  next.has(vlmCompositeTrace.event_id) ? next.delete(vlmCompositeTrace.event_id) : next.add(vlmCompositeTrace.event_id);
+                  return next;
+                }),
+                className: "w-full flex items-center justify-between text-[10px] font-mono text-[#30D6A0]",
+                children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "flex items-center gap-1", children: [
+                    expandedSkills.has(vlmCompositeTrace.event_id) ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChevronDown, { className: "w-3 h-3" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChevronRight, { className: "w-3 h-3" }),
+                    "VLM \u95ED\u73AF\u626B\u63CF Trace \xB7 \u5B50\u4E8B\u4EF6 ",
+                    vlmCompositeChildren.length
                   ] }),
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center gap-1 shrink-0", children: [
-                    st.elapsed_sec !== null && st.elapsed_sec !== void 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "font-mono text-[9.5px] text-slate-400", children: [
-                      st.elapsed_sec.toFixed(2),
-                      "s"
-                    ] }),
-                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(StageStatusBadge, { status: st.status, implemented: st.implemented })
-                  ] })
-                ] }),
-                st.started_sim_time !== null && st.started_sim_time !== void 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "text-[9.5px] font-mono text-slate-500 pl-5", children: [
-                  "sim: ",
-                  st.started_sim_time.toFixed(2),
-                  "s \u2192",
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: vlmCompositeTrace.status })
+                ]
+              }
+            ),
+            expandedSkills.has(vlmCompositeTrace.event_id) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "ml-1 border-l border-slate-700 pl-2 space-y-1", children: vlmCompositeChildren.map((event) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "rounded border p-1 bg-[#080D16] border-slate-800 text-[9.5px]", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between font-mono", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "text-[#3DE8E5]", children: [
+                  event.event_type.toUpperCase(),
                   " ",
-                  st.ended_sim_time !== null && st.ended_sim_time !== void 0 ? `${st.ended_sim_time.toFixed(2)}s` : "..."
+                  event.name
                 ] }),
-                (st.result_summary || execRec?.result_summary) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[10px] text-slate-300 pl-5 leading-snug", children: st.result_summary || execRec?.result_summary }),
-                st.failure_reason && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "text-[10px] text-[#FF667B] pl-5 leading-snug", children: [
-                  "\u539F\u56E0: ",
-                  st.failure_reason
-                ] }),
-                composite && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "pl-5 pt-0.5", children: [
-                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
-                    "button",
-                    {
-                      type: "button",
-                      onClick: () => setExpandedSkills((previous) => {
-                        const next = new Set(previous);
-                        next.has(st.step_id) ? next.delete(st.step_id) : next.add(st.step_id);
-                        return next;
-                      }),
-                      className: "flex items-center gap-1 text-[10px] font-mono text-[#3DE8E5] hover:text-white",
-                      children: [
-                        skillExpanded ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChevronDown, { className: "w-3 h-3" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChevronRight, { className: "w-3 h-3" }),
-                        "\u5B50\u4E8B\u4EF6 ",
-                        childEvents.length,
-                        " \xB7 ",
-                        composite.status
-                      ]
-                    }
-                  ),
-                  skillExpanded && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "mt-1 ml-1 border-l border-slate-700 pl-2 space-y-1", children: childEvents.map((event) => {
-                    const eventExpanded = expandedTraceEvents.has(event.event_id);
-                    const eventFailed = event.status === "FAILED";
-                    const evidence = event.evidence || {};
-                    const target = evidence.target_parameters || {};
-                    const measured = evidence.measured_parameters || {};
-                    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: `rounded border p-1.5 ${eventFailed ? "bg-[#FF667B]/10 border-[#FF667B]/40" : "bg-[#0C1422] border-slate-800"}`, children: [
-                      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
-                        "button",
-                        {
-                          type: "button",
-                          onClick: () => setExpandedTraceEvents((previous) => {
-                            const next = new Set(previous);
-                            next.has(event.event_id) ? next.delete(event.event_id) : next.add(event.event_id);
-                            return next;
-                          }),
-                          className: "w-full text-left",
-                          children: [
-                            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between gap-1", children: [
-                              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "flex items-center gap-1 font-mono text-[9.5px] text-slate-200", children: [
-                                eventExpanded ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChevronDown, { className: "w-3 h-3" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChevronRight, { className: "w-3 h-3" }),
-                                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: event.event_type === "perception" ? "text-[#3DE8E5]" : event.event_type === "decision" ? "text-[#548CFF]" : event.event_type === "verification" ? "text-[#30D6A0]" : "text-[#FFBF69]", children: event.event_type.toUpperCase() }),
-                                event.name
-                              ] }),
-                              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "font-mono text-[9px] text-slate-500", children: [
-                                event.sim_time.toFixed(2),
-                                "\u2192",
-                                (event.end_sim_time ?? event.sim_time).toFixed(2),
-                                "s"
-                              ] })
-                            ] }),
-                            event.event_type === "perception" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "text-[9.5px] text-slate-400 pl-4 mt-0.5", children: [
-                              (evidence.camera_ids || []).join(", ") || "\u65E0\u6709\u6548\u76F8\u673A",
-                              " \xB7 \u65B0\u589E ",
-                              String(evidence.newly_observed ?? 0),
-                              " \u683C \xB7 Unknown ",
-                              String(evidence.unknown_before),
-                              "\u2192",
-                              String(evidence.unknown_after),
-                              " \xB7 \u51B2\u7A81 ",
-                              String(evidence.conflicts ?? 0)
-                            ] }),
-                            event.event_type === "action" && event.name.includes("reorient") && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "text-[9.5px] text-slate-400 pl-4 mt-0.5", children: [
-                              String(target.axis || "--"),
-                              " \xB7 \u76EE\u6807 ",
-                              typeof target.degrees === "number" ? target.degrees.toFixed(1) : "--",
-                              "\xB0 \xB7 \u5B9E\u6D4B ",
-                              typeof measured.degrees === "number" ? measured.degrees.toFixed(1) : "--",
-                              "\xB0"
-                            ] })
-                          ]
-                        }
-                      ),
-                      eventExpanded && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mt-1 pl-4 space-y-1 text-[9.5px] text-slate-400", children: [
-                        event.event_type === "perception" && evidence.camera_contributions && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "font-mono", children: Object.entries(evidence.camera_contributions).map(([camera, indices]) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
-                          camera,
-                          ": [",
-                          indices.join(", "),
-                          "]"
-                        ] }, camera)) }),
-                        Array.isArray(evidence.frame_images) && evidence.frame_images.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "grid grid-cols-2 gap-1", children: evidence.frame_images.map((frame) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("figure", { className: "bg-black/30 rounded overflow-hidden border border-slate-800", children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: frame.image_url, alt: frame.camera_id, className: "w-full aspect-[3/2] object-contain" }),
-                          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("figcaption", { className: "px-1 py-0.5 truncate font-mono text-[8.5px]", children: frame.camera_id })
-                        ] }, frame.frame_ref)) }),
-                        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("details", { children: [
-                          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("summary", { className: "cursor-pointer text-slate-500", children: "\u8BE6\u7EC6\u53C2\u6570" }),
-                          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("pre", { className: "mt-1 p-1 rounded bg-black/20 overflow-x-auto whitespace-pre-wrap break-all text-[8.5px]", children: JSON.stringify(evidence, null, 2) })
-                        ] })
-                      ] })
-                    ] }, event.event_id);
-                  }) })
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "text-slate-500", children: [
+                  event.sim_time.toFixed(2),
+                  "s"
                 ] })
-              ]
-            },
-            st.step_id
-          );
-        }) }),
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "text-slate-400", children: [
+                "src:",
+                event.source,
+                " \xB7 ",
+                event.status
+              ] })
+            ] }, event.event_id)) })
+          ] }),
+          !plan || plan.steps.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "p-2.5 rounded bg-[#080D16] border border-slate-800 text-[11px] text-slate-400", children: isVlmPlanner ? "Gemini VLM \u95ED\u73AF\u6A21\u5F0F\u4E0B\u5C06\u6309\u5B9E\u65F6\u89C6\u89C9\u89C2\u6D4B\u9010\u6B65\u52A8\u6001\u751F\u6210\u52A8\u4F5C\u3002" : "\u5C1A\u672A\u751F\u6210\u4EFB\u52A1\u8BA1\u5212\uFF0C\u8BF7\u9009\u62E9 Mission \u5E76\u542F\u52A8\u4EFB\u52A1\u3002" }) : plan.steps.map((st) => {
+            const isCurrent = st.step_id === plan.current_step_id && st.status === "RUNNING";
+            const execRec = executions.find((ex) => ex.step_id === st.step_id);
+            const composite = traceEvents.find(
+              (event) => event.event_type === "composite_skill" && event.skill_id === st.skill_id
+            );
+            const childEvents = composite ? traceEvents.filter((event) => event.parent_event_id === composite.event_id) : traceEvents.filter(
+              (event) => event.skill_id === st.skill_id && event.event_type !== "composite_skill" && event.event_type !== "mission"
+            );
+            const hasChildren = Boolean(composite) || childEvents.length > 0;
+            const skillExpanded = expandedSkills.has(st.step_id);
+            return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+              "div",
+              {
+                className: `px-2 py-1.5 rounded border space-y-1 text-[11px] ${isCurrent ? "bg-[#182338] border-[#548CFF]/60" : st.status === "BLOCKED" ? "bg-[#FFBF69]/10 border-[#FFBF69]/50" : "bg-[#080D16] border-slate-800/80"}`,
+                children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between gap-1.5", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "min-w-0 flex-1", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center gap-1.5", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "font-mono text-[10px] text-slate-500", children: [
+                          "0",
+                          st.index
+                        ] }),
+                        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "font-medium text-slate-200 truncate", children: st.title })
+                      ] }),
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "font-mono text-[9.5px] text-[#3DE8E5] pl-5 truncate", children: st.skill_id })
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center gap-1 shrink-0", children: [
+                      st.elapsed_sec !== null && st.elapsed_sec !== void 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "font-mono text-[9.5px] text-slate-400", children: [
+                        st.elapsed_sec.toFixed(2),
+                        "s"
+                      ] }),
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(StageStatusBadge, { status: st.status, implemented: st.implemented })
+                    ] })
+                  ] }),
+                  st.started_sim_time !== null && st.started_sim_time !== void 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "text-[9.5px] font-mono text-slate-500 pl-5", children: [
+                    "sim: ",
+                    st.started_sim_time.toFixed(2),
+                    "s \u2192",
+                    " ",
+                    st.ended_sim_time !== null && st.ended_sim_time !== void 0 ? `${st.ended_sim_time.toFixed(2)}s` : "..."
+                  ] }),
+                  (st.result_summary || execRec?.result_summary) && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[10px] text-slate-300 pl-5 leading-snug", children: st.result_summary || execRec?.result_summary }),
+                  st.failure_reason && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "text-[10px] text-[#FF667B] pl-5 leading-snug", children: [
+                    "\u539F\u56E0: ",
+                    st.failure_reason
+                  ] }),
+                  hasChildren && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "pl-5 pt-0.5", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+                      "button",
+                      {
+                        type: "button",
+                        onClick: () => setExpandedSkills((previous) => {
+                          const next = new Set(previous);
+                          next.has(st.step_id) ? next.delete(st.step_id) : next.add(st.step_id);
+                          return next;
+                        }),
+                        className: "flex items-center gap-1 text-[10px] font-mono text-[#3DE8E5] hover:text-white",
+                        children: [
+                          skillExpanded ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChevronDown, { className: "w-3 h-3" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChevronRight, { className: "w-3 h-3" }),
+                          "\u5B50\u4E8B\u4EF6 ",
+                          childEvents.length,
+                          " \xB7 ",
+                          composite ? composite.status : st.status
+                        ]
+                      }
+                    ),
+                    skillExpanded && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "mt-1 ml-1 border-l border-slate-700 pl-2 space-y-1", children: childEvents.map((event) => {
+                      const eventExpanded = expandedTraceEvents.has(event.event_id);
+                      const eventFailed = event.status === "FAILED";
+                      const evidence = event.evidence || {};
+                      const target = evidence.target_parameters || {};
+                      const measured = evidence.measured_parameters || {};
+                      return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: `rounded border p-1.5 ${eventFailed ? "bg-[#FF667B]/10 border-[#FF667B]/40" : "bg-[#0C1422] border-slate-800"}`, children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+                          "button",
+                          {
+                            type: "button",
+                            onClick: () => setExpandedTraceEvents((previous) => {
+                              const next = new Set(previous);
+                              next.has(event.event_id) ? next.delete(event.event_id) : next.add(event.event_id);
+                              return next;
+                            }),
+                            className: "w-full text-left",
+                            children: [
+                              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between gap-1", children: [
+                                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "flex items-center gap-1 font-mono text-[9.5px] text-slate-200", children: [
+                                  eventExpanded ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChevronDown, { className: "w-3 h-3" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)(ChevronRight, { className: "w-3 h-3" }),
+                                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: event.event_type === "perception" ? "text-[#3DE8E5]" : event.event_type === "decision" ? "text-[#548CFF]" : event.event_type === "verification" ? "text-[#30D6A0]" : "text-[#FFBF69]", children: event.event_type.toUpperCase() }),
+                                  event.name
+                                ] }),
+                                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "font-mono text-[9px] text-slate-500", children: [
+                                  event.sim_time.toFixed(2),
+                                  "\u2192",
+                                  (event.end_sim_time ?? event.sim_time).toFixed(2),
+                                  "s"
+                                ] })
+                              ] }),
+                              event.event_type === "perception" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "text-[9.5px] text-slate-400 pl-4 mt-0.5", children: [
+                                (evidence.camera_ids || []).join(", ") || "\u65E0\u6709\u6548\u76F8\u673A",
+                                " \xB7 \u65B0\u589E ",
+                                String(evidence.newly_observed ?? 0),
+                                " \u683C \xB7 Unknown ",
+                                String(evidence.unknown_before),
+                                "\u2192",
+                                String(evidence.unknown_after),
+                                " \xB7 \u51B2\u7A81 ",
+                                String(evidence.conflicts ?? 0)
+                              ] }),
+                              event.event_type === "action" && event.name.includes("reorient") && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "text-[9.5px] text-slate-400 pl-4 mt-0.5", children: [
+                                String(target.axis || "--"),
+                                " \xB7 \u76EE\u6807 ",
+                                typeof target.degrees === "number" ? target.degrees.toFixed(1) : "--",
+                                "\xB0 \xB7 \u5B9E\u6D4B ",
+                                typeof measured.degrees === "number" ? measured.degrees.toFixed(1) : "--",
+                                "\xB0"
+                              ] })
+                            ]
+                          }
+                        ),
+                        eventExpanded && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "mt-1 pl-4 space-y-1 text-[9.5px] text-slate-400", children: [
+                          event.event_type === "perception" && evidence.camera_contributions && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "font-mono", children: Object.entries(evidence.camera_contributions).map(([camera, indices]) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+                            camera,
+                            ": [",
+                            indices.join(", "),
+                            "]"
+                          ] }, camera)) }),
+                          Array.isArray(evidence.frame_images) && evidence.frame_images.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "grid grid-cols-2 gap-1", children: evidence.frame_images.map((frame) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("figure", { className: "bg-black/30 rounded overflow-hidden border border-slate-800", children: [
+                            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("img", { src: frame.image_url, alt: frame.camera_id, className: "w-full aspect-[3/2] object-contain" }),
+                            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("figcaption", { className: "px-1 py-0.5 truncate font-mono text-[8.5px]", children: frame.camera_id })
+                          ] }, frame.frame_ref)) }),
+                          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("details", { children: [
+                            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("summary", { className: "cursor-pointer text-slate-500", children: "\u8BE6\u7EC6\u53C2\u6570" }),
+                            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("pre", { className: "mt-1 p-1 rounded bg-black/20 overflow-x-auto whitespace-pre-wrap break-all text-[8.5px]", children: JSON.stringify(evidence, null, 2) })
+                          ] })
+                        ] })
+                      ] }, event.event_id);
+                    }) })
+                  ] })
+                ]
+              },
+              st.step_id
+            );
+          })
+        ] }),
         snapshot.physical_verification && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "p-2 rounded bg-[#080D16] border border-[#30D6A0]/30 text-[10px] font-mono space-y-0.5 shrink-0", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[#30D6A0] font-semibold", children: "\u7269\u7406\u63A5\u89E6\u4E0E\u89C6\u89C9\u590D\u6838\u8BC1\u636E" }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "text-slate-300", children: [
@@ -9091,7 +9563,350 @@
             snapshot.physical_verification.affected_21_verified ? "VERIFIED" : "PENDING"
           ] })
         ] })
-      ] })
+      ] }),
+      isRelayMission && (() => {
+        const relay = snapshot.relay_state;
+        const waitingHuman = Boolean(relay?.human_pad?.waiting_for_human);
+        const padActive = Boolean(relay?.human_pad?.active) && mode === "LIVE";
+        const suggested = relay?.delegation?.suggested_moves || [];
+        const prefDone = relay?.delegation?.completed_prefix_count || 0;
+        const deviated = Boolean(relay?.delegation?.deviated_this_turn);
+        const nextHint = relay?.human_pad?.highlighted_next_move;
+        const clarPending = Boolean(relay?.hri?.clarification_pending);
+        const clicks = relay?.human_pad?.clicks_this_turn || [];
+        const dialog = relay?.hri?.dialog_history || [];
+        const turnInfo = relay?.turn_indicator;
+        const owner = turnInfo?.owner || (waitingHuman ? "HUMAN" : clarPending ? "CLARIFY" : relay?.phase === "RELAY_COMPLETED_VERIFIED" ? "DONE" : snapshot.running ? "ROBOT" : "IDLE");
+        const rightTurnCls = owner === "HUMAN" ? "bg-[#FFBF69]/15 border-[#FFBF69]/60 text-[#FFBF69]" : owner === "CLARIFY" ? "bg-[#8B5CF6]/15 border-[#8B5CF6]/50 text-[#A78BFA]" : owner === "DONE" ? "bg-[#30D6A0]/15 border-[#30D6A0]/50 text-[#30D6A0]" : owner === "ROBOT" ? "bg-[#3DE8E5]/10 border-[#3DE8E5]/40 text-[#3DE8E5]" : "bg-[#080D16] border-slate-800 text-slate-300";
+        const applyPerturb = (dxCm, dyCm, dyawDeg, label) => {
+          setPerturbDxCm(dxCm);
+          setPerturbDyCm(dyCm);
+          setPerturbYawDeg(dyawDeg);
+          onRelayCommand(
+            { type: "HUMAN_PERTURB_POSE", dx_m: dxCm / 100, dy_m: dyCm / 100, dyaw_deg: dyawDeg },
+            label
+          );
+        };
+        const sendChat = (text) => {
+          const clean = text.trim();
+          if (!clean) return;
+          onRelayCommand({ type: "HUMAN_SEND_CHAT", text: clean }, `\u53D1\u9001\u6307\u4EE4: ${clean}`);
+          setChatDraft("");
+        };
+        return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "order-1 flex-1 min-h-0 overflow-y-auto space-y-2 pr-0.5 text-[11px]", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: `p-2 rounded border space-y-1 ${rightTurnCls}`, children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between gap-2 text-[11px] font-bold", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: turnInfo?.owner_label_zh || (waitingHuman ? "\u{1F9D1} \u8F6E\u5230\u4EBA\u7C7B\u64CD\u4F5C" : "\u{1F916} \u7B49\u5F85/\u673A\u5668\u4EBA\u56DE\u5408") }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "font-mono text-[10px]", children: [
+                "\u7B2C ",
+                relay?.round_number || 1,
+                " \u8F6E"
+              ] })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[10px] opacity-85 leading-snug", children: turnInfo?.next_action_hint_zh || relay?.banner?.subtitle_zh || "\u7B49\u5F85\u4EFB\u52A1\u542F\u52A8\u3002" })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "p-2 rounded bg-[#080D16] border border-[#3DE8E5]/30 space-y-1.5", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between gap-1 text-[10px] font-mono", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "text-[#3DE8E5] font-semibold", children: "AGENT DELEGATION \xB7 \u63A8\u8350\u63A5\u529B\u5E8F\u5217" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "text-slate-400", children: [
+                "\u5DF2\u7701\u9AD8\u4EE3\u4EF7\u7FFB\u9762 ",
+                relay?.delegation?.saved_high_cost_flips_count ?? 0,
+                " \u6B21"
+              ] })
+            ] }),
+            suggested.length > 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "flex items-center gap-1 flex-wrap", children: suggested.map((mv, idx) => {
+              const done = idx < prefDone && !deviated;
+              const isNext = idx === prefDone && !deviated && waitingHuman;
+              return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+                "span",
+                {
+                  className: `px-2 py-0.5 rounded font-mono text-[10.5px] border ${done ? "bg-[#30D6A0]/15 text-[#30D6A0] border-[#30D6A0]/40" : isNext ? "bg-[#FFBF69]/20 text-[#FFBF69] border-[#FFBF69]/60 animate-pulse" : "bg-[#182338] text-slate-300 border-slate-700"}`,
+                  children: [
+                    done ? "\u2713 " : `Step ${idx + 1}: `,
+                    mv
+                  ]
+                },
+                `${mv}-${idx}`
+              );
+            }) }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[10px] text-slate-400", children: "\u5F53\u524D\u65E0\u5F3A\u5236\u63A8\u8350\u5E8F\u5217\uFF08\u53EF\u81EA\u7531\u70B9\u51FB\u4E0B\u65B9 18 \u52A8\u4F5C\u6216\u53D1\u9001\u81EA\u7136\u8BED\u8A00\u8981\u6C42\uFF09\u3002" }),
+            deviated && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "px-2 py-1 rounded bg-[#FFBF69]/15 border border-[#FFBF69]/40 text-[10px] text-[#FFBF69]", children: "\u26A1 \u68C0\u6D4B\u5230\u81EA\u7531\u53D1\u6325/\u504F\u79BB\u63A8\u8350\u8DEF\u7EBF\uFF0C\u4EA4\u56DE\u540E Agent \u5C06\u9760 RGB-D \u91CD\u65B0\u8BC6\u522B\u5E76\u51B3\u5B9A\u7B56\u7565" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[10px] text-slate-300 leading-snug", children: relay?.delegation?.delegation_reason_zh || "\u7B49\u5F85 Agent \u5B8C\u6210\u611F\u77E5\u5EFA\u4FE1\u5E76\u751F\u6210\u5177\u8EAB\u4EE3\u4EF7\u5207\u5206\u5EFA\u8BAE\u3002" })
+          ] }),
+          clarPending && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "p-2 rounded bg-[#FFBF69]/10 border border-[#FFBF69]/50 space-y-1.5", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[10.5px] font-semibold text-[#FFBF69]", children: "\u{1F4AC} Agent \u8BF7\u6C42\u610F\u56FE\u6F84\u6E05" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[10.5px] text-slate-200 leading-snug", children: relay?.hri?.clarification_question_zh }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "flex flex-col gap-1", children: (relay?.hri?.clarification_options || []).map((opt) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+              "button",
+              {
+                type: "button",
+                disabled: mode !== "LIVE",
+                onClick: () => sendChat(opt),
+                className: "text-left px-2 py-1 rounded text-[10px] bg-[#182338] hover:bg-[#548CFF]/20 text-[#3DE8E5] border border-[#3DE8E5]/30 transition-colors disabled:opacity-40",
+                children: [
+                  "\u2192 ",
+                  opt
+                ]
+              },
+              opt
+            )) })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "p-2 rounded bg-[#080D16] border border-slate-800 space-y-1.5", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between gap-1 text-[10px]", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "font-mono text-slate-300 font-semibold", children: "18-MOVE PAD \xB7 26-Cubie \u771F\u5B9E\u7269\u7406\u8F6C\u5C42" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                "button",
+                {
+                  type: "button",
+                  disabled: !padActive || !relay?.human_pad?.can_undo,
+                  onClick: () => onRelayCommand({ type: "HUMAN_UNDO_MOVE" }, "\u7269\u7406\u64A4\u9500\u4E0A\u4E00\u6B65"),
+                  className: "px-1.5 py-0.5 rounded bg-[#182338] text-slate-300 border border-slate-700 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed text-[9.5px]",
+                  children: "\u64A4\u9500\u4E0A\u4E00\u6B65"
+                }
+              )
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "space-y-1", children: RELAY_FACE_GROUPS.map((grp) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "grid grid-cols-3 gap-1", children: grp.moves.map((mv) => {
+              const isHint = nextHint === mv && waitingHuman;
+              return /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                "button",
+                {
+                  type: "button",
+                  disabled: !padActive,
+                  onClick: () => onRelayCommand({ type: "HUMAN_APPLY_MOVE", move: mv }, `\u4EBA\u7C7B\u7269\u7406\u65CB\u8F6C ${mv}`),
+                  className: `py-1 rounded font-mono text-[10.5px] font-semibold border transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${isHint ? "bg-[#3DE8E5]/20 text-[#3DE8E5] border-[#3DE8E5] animate-pulse" : "bg-[#182338] hover:bg-[#548CFF]/30 text-slate-200 border-slate-700"}`,
+                  children: mv
+                },
+                mv
+              );
+            }) }, grp.face)) }),
+            clicks.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "text-[10px] font-mono text-slate-400", children: [
+              "\u672C\u8F6E\u5DF2\u62E7: ",
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "text-[#3DE8E5]", children: clicks.join(" \u2192 ") })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+              "button",
+              {
+                type: "button",
+                disabled: !waitingHuman || mode !== "LIVE",
+                onClick: () => onRelayCommand({ type: "HUMAN_FINISH_TURN" }, "\u5B8C\u6210\u672C\u56DE\u5408\uFF0C\u4EA4\u56DE\u673A\u5668\u4EBA"),
+                className: "w-full py-1.5 rounded text-[11px] font-semibold bg-[#30D6A0]/20 hover:bg-[#30D6A0]/30 text-[#30D6A0] border border-[#30D6A0]/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed",
+                children: "\u5B8C\u6210\u672C\u56DE\u5408\uFF0C\u4EA4\u56DE\u673A\u5668\u4EBA"
+              }
+            )
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "p-2 rounded bg-[#080D16] border border-slate-800 space-y-1.5", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between text-[10px] font-mono text-slate-300", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "PUT-BACK PERTURB \xB7 \u653E\u56DE\u684C\u9762\u4F4D\u7F6E\u5FAE\u6270" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "text-[#FFBF69]", children: [
+                perturbDxCm >= 0 ? `+${perturbDxCm}` : perturbDxCm,
+                "cm,",
+                " ",
+                perturbDyCm >= 0 ? `+${perturbDyCm}` : perturbDyCm,
+                "cm,",
+                " ",
+                perturbYawDeg >= 0 ? `+${perturbYawDeg}` : perturbYawDeg,
+                "\xB0"
+              ] })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "space-y-1 text-[10px] font-mono text-slate-400", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between gap-2", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "w-16", children: "\u0394X (\xB18cm)" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                  "input",
+                  {
+                    type: "range",
+                    min: -8,
+                    max: 8,
+                    step: 1,
+                    disabled: !padActive,
+                    value: perturbDxCm,
+                    onChange: (e) => setPerturbDxCm(Number(e.target.value)),
+                    onMouseUp: () => applyPerturb(perturbDxCm, perturbDyCm, perturbYawDeg, "\u8C03\u6574 \u0394X \u5FAE\u6270"),
+                    onTouchEnd: () => applyPerturb(perturbDxCm, perturbDyCm, perturbYawDeg, "\u8C03\u6574 \u0394X \u5FAE\u6270"),
+                    className: "flex-1"
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between gap-2", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "w-16", children: "\u0394Y (\xB18cm)" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                  "input",
+                  {
+                    type: "range",
+                    min: -8,
+                    max: 8,
+                    step: 1,
+                    disabled: !padActive,
+                    value: perturbDyCm,
+                    onChange: (e) => setPerturbDyCm(Number(e.target.value)),
+                    onMouseUp: () => applyPerturb(perturbDxCm, perturbDyCm, perturbYawDeg, "\u8C03\u6574 \u0394Y \u5FAE\u6270"),
+                    onTouchEnd: () => applyPerturb(perturbDxCm, perturbDyCm, perturbYawDeg, "\u8C03\u6574 \u0394Y \u5FAE\u6270"),
+                    className: "flex-1"
+                  }
+                )
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between gap-2", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "w-16", children: "\u0394Yaw(\xB140\xB0)" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                  "input",
+                  {
+                    type: "range",
+                    min: -40,
+                    max: 40,
+                    step: 1,
+                    disabled: !padActive,
+                    value: perturbYawDeg,
+                    onChange: (e) => setPerturbYawDeg(Number(e.target.value)),
+                    onMouseUp: () => applyPerturb(perturbDxCm, perturbDyCm, perturbYawDeg, "\u8C03\u6574 \u0394Yaw \u5FAE\u6270"),
+                    onTouchEnd: () => applyPerturb(perturbDxCm, perturbDyCm, perturbYawDeg, "\u8C03\u6574 \u0394Yaw \u5FAE\u6270"),
+                    className: "flex-1"
+                  }
+                )
+              ] })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "grid grid-cols-2 gap-1 text-[9.5px]", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                "button",
+                {
+                  type: "button",
+                  disabled: !padActive,
+                  onClick: () => applyPerturb(0, 0, 0, "\u9884\u8BBE: \u6807\u51C6\u539F\u4F4D"),
+                  className: "px-1.5 py-1 rounded bg-[#182338] hover:bg-slate-700 text-slate-300 border border-slate-700 disabled:opacity-40",
+                  children: "\u6807\u51C6\u539F\u4F4D"
+                }
+              ),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                "button",
+                {
+                  type: "button",
+                  disabled: !padActive,
+                  onClick: () => applyPerturb(4, 0, 15, "\u9884\u8BBE: \u8F7B\u63A8\u504F\u79FB"),
+                  className: "px-1.5 py-1 rounded bg-[#182338] hover:bg-slate-700 text-slate-300 border border-slate-700 disabled:opacity-40",
+                  children: "\u8F7B\u63A8\u504F\u79FB (+4cm,+15\xB0)"
+                }
+              ),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                "button",
+                {
+                  type: "button",
+                  disabled: !padActive,
+                  onClick: () => applyPerturb(6, -4, 20, "\u9884\u8BBE: \u8DE8\u5EA6\u5FAE\u6270"),
+                  className: "px-1.5 py-1 rounded bg-[#182338] hover:bg-slate-700 text-slate-300 border border-slate-700 disabled:opacity-40",
+                  children: "\u8DE8\u5EA6\u5FAE\u6270 (+6cm,-4cm,+20\xB0)"
+                }
+              ),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                "button",
+                {
+                  type: "button",
+                  disabled: !padActive,
+                  onClick: () => {
+                    const rx = Math.round(Math.random() * 16 - 8);
+                    const ry = Math.round(Math.random() * 16 - 8);
+                    const ryaw = Math.round(Math.random() * 76 - 38);
+                    applyPerturb(rx, ry, ryaw, "\u9884\u8BBE: \u968F\u673A\u968F\u624B\u653E");
+                  },
+                  className: "px-1.5 py-1 rounded bg-[#182338] hover:bg-slate-700 text-[#FFBF69] border border-slate-700 disabled:opacity-40",
+                  children: "\u968F\u673A\u968F\u624B\u653E"
+                }
+              )
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "p-2 rounded bg-[#080D16] border border-slate-800 space-y-1.5", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between gap-1 text-[10px] font-mono", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "text-[#3DE8E5] font-semibold", children: "LIVE HRI DIALOG \xB7 LLM \u8BED\u4E49\u610F\u56FE\u8DEF\u7531" }),
+              relay?.hri?.latest_semantics && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "px-1.5 py-0.5 rounded bg-[#182338] border border-slate-700 text-[9px] text-[#30D6A0] truncate", children: [
+                relay.hri.latest_semantics.speech_act,
+                typeof relay.hri.latest_semantics.latency_ms === "number" ? ` \xB7 ${relay.hri.latest_semantics.latency_ms.toFixed(0)}ms` : ""
+              ] })
+            ] }),
+            (relay?.hri?.active_constraints || []).length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center gap-1 flex-wrap text-[9px]", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "text-slate-400 font-mono", children: "\u6301\u4E45\u7EA6\u675F:" }),
+              (relay?.hri?.active_constraints || []).map((c, idx) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                "span",
+                {
+                  className: "px-1.5 py-0.5 rounded bg-[#30D6A0]/10 border border-[#30D6A0]/30 text-[#30D6A0]",
+                  children: c
+                },
+                `${c}-${idx}`
+              ))
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "max-h-36 overflow-y-auto space-y-1 bg-[#0C1422] border border-slate-800/70 rounded p-1.5", children: dialog.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[10px] text-slate-500", children: "\u968F\u65F6\u53EF\u53D1\u9001\u504F\u597D\u7EA6\u675F\u3001\u6F84\u6E05\u56DE\u590D\u6216\u673A\u68B0\u81C2\u6267\u884C\u4E2D\u9014\u7D27\u6025\u5239\u8F66\u6307\u4EE4\u3002" }) : dialog.map((msg, i) => {
+              const isHumanMsg = msg.role === "human";
+              const sem = msg.semantics;
+              const bubbleCls = isHumanMsg ? "bg-[#548CFF]/15 text-slate-100 border border-[#548CFF]/30" : "bg-[#182338] text-[#3DE8E5] border border-slate-700";
+              return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+                "div",
+                {
+                  className: `px-1.5 py-1 rounded text-[10px] leading-snug space-y-0.5 ${bubbleCls}`,
+                  children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "font-mono font-semibold mr-1", children: isHumanMsg ? "\u{1F9D1} \u4EBA\u7C7B:" : "\u{1F916} Agent:" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: msg.text })
+                    ] }),
+                    isHumanMsg && sem && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center gap-1 flex-wrap text-[9px] font-mono text-slate-300 pt-0.5 border-t border-slate-700/60", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "px-1 py-0.2 rounded bg-[#080D16] border border-[#3DE8E5]/40 text-[#3DE8E5]", children: sem.speech_act }),
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                        "span",
+                        {
+                          className: `px-1 py-0.2 rounded border ${sem.requires_immediate_motion_interrupt ? "bg-[#FF667B]/15 border-[#FF667B]/40 text-[#FF667B]" : "bg-[#30D6A0]/10 border-[#30D6A0]/30 text-[#30D6A0]"}`,
+                          children: sem.requires_immediate_motion_interrupt ? "\u26A1\u7ACB\u5373\u4E2D\u65AD" : "\u5E73\u6ED1\u4E0D\u4E2D\u65AD"
+                        }
+                      ),
+                      typeof sem.latency_ms === "number" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "text-slate-400", children: [
+                        sem.latency_ms.toFixed(0),
+                        "ms"
+                      ] }),
+                      sem.persistent_constraints_to_add && sem.persistent_constraints_to_add.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "text-[#FFBF69]", children: [
+                        "+\u7EA6\u675F: ",
+                        sem.persistent_constraints_to_add.join("\uFF1B")
+                      ] })
+                    ] })
+                  ]
+                },
+                i
+              );
+            }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center gap-1", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                "input",
+                {
+                  type: "text",
+                  value: chatDraft,
+                  onChange: (e) => setChatDraft(e.target.value),
+                  onKeyDown: (e) => {
+                    if (e.key === "Enter") sendChat(chatDraft);
+                  },
+                  placeholder: "\u8F93\u5165\u4E2D\u6587\u7EA6\u675F/\u610F\u56FE/\u5B9E\u65F6\u6253\u65AD\u6307\u4EE4...",
+                  disabled: mode !== "LIVE",
+                  className: "flex-1 rounded border border-slate-700 bg-[#0C1422] px-2 py-1 text-[10.5px] text-slate-100 placeholder:text-slate-600 outline-none focus:border-[#30D6A0]"
+                }
+              ),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                "button",
+                {
+                  type: "button",
+                  disabled: mode !== "LIVE" || !chatDraft.trim(),
+                  onClick: () => sendChat(chatDraft),
+                  className: "px-2 py-1 rounded text-[10.5px] font-semibold bg-[#548CFF] text-white disabled:opacity-40",
+                  children: "\u53D1\u9001"
+                }
+              )
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "flex items-center gap-1 flex-wrap", children: QUICK_HRI_CHIPS.map((chip) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+              "button",
+              {
+                type: "button",
+                disabled: mode !== "LIVE",
+                title: chip.text,
+                onClick: () => sendChat(chip.text),
+                className: "px-1.5 py-0.5 rounded text-[9.5px] bg-[#182338] hover:bg-slate-700 text-slate-300 border border-slate-700 disabled:opacity-40",
+                children: chip.label
+              },
+              chip.label
+            )) })
+          ] })
+        ] });
+      })()
     ] });
   };
   var CompactRobotCameraCard = ({ rgbUrl, depthUrl, depthRangeM, detections }) => {
@@ -9420,6 +10235,450 @@
       ] })
     ] }) });
   };
+  var DIM_LABELS = {
+    L1_SKILL_SELECTION: "L1 Skill Selection",
+    L2_STATE_AWARE_PLANNING: "L2 State-Aware Planning",
+    L3_PERCEPTION_GROUNDED_REASONING: "L3 Perception-Grounded",
+    L4_FAILURE_RECOVERY: "L4 Failure Recovery",
+    L5_GENERALIZATION: "L5 Generalization"
+  };
+  var SOURCE_BADGE_STYLES = {
+    REAL_ONLINE_MODEL: "bg-[#30D6A0]/15 text-[#30D6A0] border-[#30D6A0]/40",
+    REAL_MUJOCO: "bg-[#548CFF]/15 text-[#548CFF] border-[#548CFF]/40",
+    OFFLINE_REPLAY: "bg-[#3DE8E5]/15 text-[#3DE8E5] border-[#3DE8E5]/40",
+    COUNTERFACTUAL_TEST: "bg-[#FFBF69]/15 text-[#FFBF69] border-[#FFBF69]/40",
+    DETERMINISTIC_RULE: "bg-slate-700/60 text-slate-200 border-slate-600",
+    FAKE_PROVIDER: "bg-[#F05D5E]/20 text-[#F05D5E] border-[#F05D5E]/50"
+  };
+  function getVerdictBadgeCls(verdict) {
+    if (verdict === "PASS") return "px-1.5 py-0.2 rounded shrink-0 bg-[#30D6A0]/20 text-[#30D6A0]";
+    if (verdict === "FAIL") return "px-1.5 py-0.2 rounded shrink-0 bg-[#F05D5E]/20 text-[#F05D5E]";
+    return "px-1.5 py-0.2 rounded shrink-0 bg-slate-800 text-slate-300";
+  }
+  var TaskAgentBenchmarkView = ({ httpBase }) => {
+    const [loading, setLoading] = (0, import_react3.useState)(false);
+    const [errorMsg, setErrorMsg] = (0, import_react3.useState)(null);
+    const [apiStatus, setApiStatus] = (0, import_react3.useState)("NOT_RUN");
+    const [runs, setRuns] = (0, import_react3.useState)([]);
+    const [selectedRunId, setSelectedRunId] = (0, import_react3.useState)("");
+    const [sourceBadge, setSourceBadge] = (0, import_react3.useState)("");
+    const [result, setResult] = (0, import_react3.useState)(null);
+    const [activeSubTab, setActiveSubTab] = (0, import_react3.useState)("OVERVIEW");
+    const [traceFilterGroup, setTraceFilterGroup] = (0, import_react3.useState)("ALL");
+    const [traceFilterVerdict, setTraceFilterVerdict] = (0, import_react3.useState)("ALL");
+    const [traceFilterDim, setTraceFilterDim] = (0, import_react3.useState)("ALL");
+    const [selectedRecordId, setSelectedRecordId] = (0, import_react3.useState)("");
+    const fetchBenchmark = async (runId) => {
+      setLoading(true);
+      setErrorMsg(null);
+      try {
+        const qs = runId ? `?run_id=${encodeURIComponent(runId)}` : "";
+        const resp = await fetch(`${httpBase}/api/m4d/benchmark/latest${qs}`);
+        if (!resp.ok) {
+          throw new Error(`HTTP ${resp.status}`);
+        }
+        const data = await resp.json();
+        setRuns(Array.isArray(data.available_runs) ? data.available_runs : []);
+        if (data.status === "OK" && data.result) {
+          setApiStatus("OK");
+          setSourceBadge(String(data.source_badge || ""));
+          setResult(data.result);
+          setSelectedRunId(String(data.result.benchmark_run_id || ""));
+          if (Array.isArray(data.result.decision_records) && data.result.decision_records.length > 0) {
+            setSelectedRecordId(data.result.decision_records[0].record_id);
+          }
+        } else {
+          setApiStatus("NOT_RUN");
+          setResult(null);
+        }
+      } catch (err) {
+        setApiStatus("UNCONNECTED");
+        setErrorMsg(err instanceof Error ? err.message : "\u65E0\u6CD5\u52A0\u8F7D Benchmark API");
+      } finally {
+        setLoading(false);
+      }
+    };
+    (0, import_react3.useEffect)(() => {
+      fetchBenchmark();
+    }, [httpBase]);
+    const fmtPct = (m) => {
+      if (!m || m.value === null || m.value === void 0) return "N/A";
+      return `${(m.value * 100).toFixed(1)}% (${m.numerator}/${m.denominator})`;
+    };
+    const filteredRecords = (0, import_react3.useMemo)(() => {
+      if (!result) return [];
+      const all = [...result.decision_records || [], ...result.guide_ablation_records || []];
+      return all.filter((r) => {
+        if (traceFilterGroup !== "ALL" && r.planner_group !== traceFilterGroup) return false;
+        if (traceFilterDim !== "ALL" && r.capability_dimension !== traceFilterDim) return false;
+        if (traceFilterVerdict !== "ALL" && r.oracle_result.verdict !== traceFilterVerdict) return false;
+        return true;
+      });
+    }, [result, traceFilterGroup, traceFilterVerdict, traceFilterDim]);
+    const selectedRecord = (0, import_react3.useMemo)(
+      () => filteredRecords.find((r) => r.record_id === selectedRecordId) || filteredRecords[0] || null,
+      [filteredRecords, selectedRecordId]
+    );
+    const realCards = Object.values(result?.real_scorecards || {});
+    const fakeCards = Object.values(result?.fake_validation_scorecards || {});
+    const allCards = [...realCards, ...fakeCards];
+    const abConds = result?.vlm_ablation_summary?.by_condition || result?.vlm_ablation_summary?.fake_only?.by_condition || {};
+    return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("main", { className: "flex-1 overflow-y-auto bg-[#080D16] p-4 space-y-4 text-xs", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "bg-[#101827] border border-slate-800 rounded-lg p-3 flex flex-wrap items-center justify-between gap-3", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center gap-2.5 flex-wrap", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Bot, { className: "w-4 h-4 text-[#3DE8E5]" }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h2", { className: "font-semibold text-sm text-slate-100", children: "M4-D Task Agent \u80FD\u529B\u57FA\u51C6\u6D4B\u8BD5 (Benchmark)" }),
+          result && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: `px-2 py-0.5 rounded border text-[10px] font-mono ${SOURCE_BADGE_STYLES[sourceBadge] || "bg-slate-800 text-slate-200 border-slate-700"}`, children: sourceBadge || result.execution_mode }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-mono text-slate-300", children: [
+              "VERSION: ",
+              result.benchmark_version
+            ] })
+          ] })
+        ] }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center gap-2 flex-wrap", children: [
+          runs.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+            "select",
+            {
+              value: selectedRunId,
+              onChange: (e) => fetchBenchmark(e.target.value),
+              className: "px-2.5 py-1 rounded bg-[#080D16] border border-slate-700 text-[11px] font-mono text-slate-200",
+              children: runs.map((r) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("option", { value: r.benchmark_run_id, children: [
+                r.benchmark_run_id,
+                " (",
+                r.execution_mode,
+                " | D=",
+                r.decision_count,
+                ")"
+              ] }, r.benchmark_run_id))
+            }
+          ),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+            "button",
+            {
+              onClick: () => fetchBenchmark(selectedRunId || void 0),
+              disabled: loading,
+              className: "px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 flex items-center gap-1",
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RefreshCw, { className: `w-3.5 h-3.5 ${loading ? "animate-spin" : ""}` }),
+                " \u5237\u65B0"
+              ]
+            }
+          ),
+          result && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+            "a",
+            {
+              href: `${httpBase}/api/m4d/benchmark/export?run_id=${encodeURIComponent(result.benchmark_run_id)}`,
+              className: "px-2.5 py-1 rounded bg-[#548CFF]/20 hover:bg-[#548CFF]/30 border border-[#548CFF]/40 text-[#548CFF] flex items-center gap-1",
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Download, { className: "w-3.5 h-3.5" }),
+                " \u5BFC\u51FA Benchmark ZIP"
+              ]
+            }
+          )
+        ] })
+      ] }),
+      result?.contains_fake_provider && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "p-2.5 rounded bg-[#F05D5E]/15 border border-[#F05D5E]/40 text-[#F05D5E] flex items-center gap-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TriangleAlert, { className: "w-4 h-4 shrink-0" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
+          "\u5F53\u524D Run \u5305\u542B ",
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", { className: "font-mono font-semibold", children: "FAKE_PROVIDER" }),
+          " \u9A8C\u8BC1\u6570\u636E\uFF1AFake Provider \u4EC5\u7528\u4E8E\u9A8C\u8BC1\u6D4B\u8BD5\u7BA1\u7EBF\uFF0C\u5DF2\u4E25\u683C\u9694\u79BB\u5230",
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", { className: "font-mono", children: " fake_validation_scorecards" }),
+          "\uFF0C",
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("strong", { children: "\u7EDD\u4E0D\u8BA1\u5165\u771F\u5B9E LLM Agent \u80FD\u529B\u8BC4\u5206" }),
+          "\u3002"
+        ] })
+      ] }),
+      apiStatus === "NOT_RUN" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "bg-[#101827] border border-slate-800 rounded-lg p-6 text-center space-y-2", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-sm font-semibold text-slate-200", children: "\u5C1A\u672A\u68C0\u6D4B\u5230\u5DF2\u4FDD\u5B58\u7684 M4-D Benchmark \u7ED3\u679C (NOT_RUN)" }),
+        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "text-slate-400", children: [
+          "\u8BF7\u8FD0\u884C ",
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("code", { className: "font-mono text-[#3DE8E5]", children: "python scripts/run_m4d_benchmark.py --mode online_real --run-vlm-ablation --run-guide-ablation --closed-loop" }),
+          " \u540E\u70B9\u51FB\u5237\u65B0\u3002"
+        ] })
+      ] }),
+      apiStatus === "UNCONNECTED" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "bg-[#101827] border border-[#F05D5E]/40 rounded-lg p-4 text-[#F05D5E]", children: [
+        "\u65E0\u6CD5\u8BFB\u53D6 Benchmark \u63A5\u53E3 (",
+        httpBase,
+        "/api/m4d/benchmark/latest): ",
+        errorMsg
+      ] }),
+      result && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "flex items-center gap-1 border-b border-slate-800 pb-2", children: [
+          { id: "OVERVIEW", label: "\u4E94\u7EF4\u80FD\u529B\u699C\u5355 & \u5BF9\u7167\u7EC4" },
+          { id: "ABLATIONS", label: "VLM \u56E0\u679C\u6D88\u878D & Guide \u6D88\u878D" },
+          { id: "CLOSED_LOOP", label: `MuJoCo \u95ED\u73AF\u8BC4\u4F30 (${result.closed_loop_episodes.length})` },
+          { id: "TRACES", label: `\u9519\u8BEF\u6848\u4F8B\u4E0E Decision Trace (${result.decision_records.length})` }
+        ].map((t) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+          "button",
+          {
+            onClick: () => setActiveSubTab(t.id),
+            className: `px-3 py-1 rounded text-[11px] font-medium transition-colors ${activeSubTab === t.id ? "bg-[#3DE8E5]/15 text-[#3DE8E5] border border-[#3DE8E5]/40" : "text-slate-400 hover:text-slate-200 bg-[#101827] border border-slate-800"}`,
+            children: t.label
+          },
+          t.id
+        )) }),
+        activeSubTab === "OVERVIEW" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "space-y-4", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "bg-[#101827] border border-slate-800 rounded-lg p-3 overflow-x-auto", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { className: "font-semibold text-slate-200 mb-2", children: "\u5BF9\u7167\u7EC4\u80FD\u529B\u6307\u6807\uFF08L1-L5 \u72EC\u7ACB\u8BC4\u5206\uFF0C\u4E25\u7981\u5408\u5E76\u4E3A\u5355\u4E00\u5206\u6570\uFF09" }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("table", { className: "w-full text-left border-collapse font-mono text-[11px]", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tr", { className: "border-b border-slate-800 text-slate-400", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { className: "py-1.5 pr-3", children: "Planner Group / Guide" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { className: "py-1.5 pr-3", children: "\u6570\u636E\u6765\u6E90" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { className: "py-1.5 pr-3", children: "Legal" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { className: "py-1.5 pr-3", children: "Schema" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { className: "py-1.5 pr-3", children: "Appropriate" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { className: "py-1.5 pr-3", children: "Forbidden" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { className: "py-1.5 pr-3", children: "Evidence" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { className: "py-1.5 pr-3", children: "Mean(ms)" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { className: "py-1.5", children: "Tokens" })
+              ] }) }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("tbody", { children: allCards.map((sc) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tr", { className: "border-b border-slate-800/60 hover:bg-slate-800/30", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("td", { className: "py-1.5 pr-3 text-slate-100", children: [
+                  sc.group_label,
+                  !sc.included_in_real_agent_ranking && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "ml-1.5 px-1 py-0.2 rounded bg-[#F05D5E]/20 text-[#F05D5E] text-[9px]", children: "EXCLUDED_FAKE" })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { className: "py-1.5 pr-3", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: `px-1.5 py-0.5 rounded border text-[9.5px] ${SOURCE_BADGE_STYLES[sc.execution_source_label] || ""}`, children: sc.execution_source_label }) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { className: "py-1.5 pr-3", children: fmtPct(sc.decision_metrics.legal_action_rate) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { className: "py-1.5 pr-3", children: fmtPct(sc.decision_metrics.schema_validity_rate) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { className: "py-1.5 pr-3 font-semibold text-[#3DE8E5]", children: fmtPct(sc.decision_metrics.decision_appropriateness_rate) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { className: "py-1.5 pr-3 text-[#F05D5E]", children: fmtPct(sc.decision_metrics.forbidden_action_rate) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { className: "py-1.5 pr-3", children: fmtPct(sc.decision_metrics.evidence_grounding_rate) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { className: "py-1.5 pr-3", children: sc.latency_summary_ms?.mean_ms ?? "N/A" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { className: "py-1.5", children: sc.token_summary?.total_tokens ?? 0 })
+              ] }, sc.group_label)) })
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "grid grid-cols-1 lg:grid-cols-2 gap-4", children: allCards.map((sc) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "bg-[#101827] border border-slate-800 rounded-lg p-3 space-y-2.5", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between border-b border-slate-800 pb-1.5", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "font-mono font-semibold text-slate-100", children: sc.group_label }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: `px-1.5 py-0.5 rounded border text-[9.5px] font-mono ${SOURCE_BADGE_STYLES[sc.execution_source_label] || ""}`, children: sc.execution_source_label })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "space-y-1.5", children: Object.entries(sc.per_dimension || {}).map(([dim, ds]) => {
+              const pct = ds.pass_rate.value !== null ? Math.round(ds.pass_rate.value * 100) : 0;
+              return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "space-y-0.5", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex justify-between text-[10.5px] font-mono", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "text-slate-300", children: DIM_LABELS[dim] || dim }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "text-slate-200", children: [
+                    ds.pass_rate.value !== null ? `${pct}% (${ds.passed_count}/${ds.pass_rate.denominator})` : "N/A",
+                    ds.incomparable_count > 0 ? ` [INCOMP:${ds.incomparable_count}]` : ""
+                  ] })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "h-1.5 bg-slate-800 rounded overflow-hidden", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                  "div",
+                  {
+                    className: `h-full ${sc.is_fake_provider ? "bg-[#F05D5E]" : "bg-[#3DE8E5]"}`,
+                    style: { width: `${pct}%` }
+                  }
+                ) })
+              ] }, dim);
+            }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "pt-1 border-t border-slate-800/70 flex flex-wrap gap-1.5 text-[10px] font-mono", children: Object.entries(sc.failure_attribution_counts || {}).map(([cat, cnt]) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "px-1.5 py-0.5 rounded bg-[#080D16] border border-slate-800 text-slate-300", children: [
+              cat,
+              ": ",
+              cnt
+            ] }, cat)) })
+          ] }, sc.group_label)) })
+        ] }),
+        activeSubTab === "ABLATIONS" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "space-y-4", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "bg-[#101827] border border-slate-800 rounded-lg p-3 space-y-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { className: "font-semibold text-slate-200", children: "L3 VLM \u8BED\u4E49\u56E0\u679C\u6D88\u878D (VLM_TRUE vs ABSENT / SWAPPED / CONTRADICTORY / LOW_CONFIDENCE)" }),
+            Object.keys(abConds).length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-slate-500", children: "\u5F53\u524D Run \u672A\u5305\u542B L3 VLM \u6D88\u878D\u8BB0\u5F55\u3002" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("table", { className: "w-full text-left border-collapse font-mono text-[11px]", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tr", { className: "border-b border-slate-800 text-slate-400", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { className: "py-1.5 pr-3", children: "Condition" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { className: "py-1.5 pr-3", children: "N (Comparable)" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { className: "py-1.5 pr-3", children: "Pass" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { className: "py-1.5 pr-3", children: "Accuracy" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { className: "py-1.5 pr-3", children: "Forbidden Rate" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { className: "py-1.5", children: "Evidence Grounding" })
+              ] }) }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("tbody", { children: Object.entries(abConds).map(([cond, st]) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tr", { className: "border-b border-slate-800/60", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { className: "py-1.5 pr-3 text-[#3DE8E5]", children: cond }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("td", { className: "py-1.5 pr-3", children: [
+                  st.comparable_n,
+                  " / ",
+                  st.n
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { className: "py-1.5 pr-3", children: st.passed }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { className: "py-1.5 pr-3", children: fmtPct(st.accuracy) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { className: "py-1.5 pr-3 text-[#F05D5E]", children: fmtPct(st.forbidden_rate) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { className: "py-1.5", children: fmtPct(st.evidence_grounding_rate) })
+              ] }, cond)) })
+            ] })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "bg-[#101827] border border-slate-800 rounded-lg p-3 space-y-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { className: "font-semibold text-slate-200", children: "Prompt Guide \u6D88\u878D (GUIDE_FULL vs GUIDE_MINIMAL)" }),
+            !result.guide_ablation_summary || Object.keys(result.guide_ablation_summary).length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-slate-500", children: "\u5F53\u524D Run \u672A\u5305\u542B Prompt Guide \u6D88\u878D\u5BF9\u7167\u3002" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("table", { className: "w-full text-left border-collapse font-mono text-[11px]", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tr", { className: "border-b border-slate-800 text-slate-400", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { className: "py-1.5 pr-3", children: "Planner Group" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { className: "py-1.5 pr-3", children: "GUIDE_FULL Acc (N)" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { className: "py-1.5 pr-3", children: "GUIDE_MINIMAL Acc (N)" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { className: "py-1.5", children: "Delta (MIN - FULL)" })
+              ] }) }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("tbody", { children: Object.entries(result.guide_ablation_summary).map(([grp, st]) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tr", { className: "border-b border-slate-800/60", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { className: "py-1.5 pr-3 text-slate-100", children: grp }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("td", { className: "py-1.5 pr-3", children: [
+                  (st.guide_full_acc * 100).toFixed(1),
+                  "% (",
+                  st.guide_full_n,
+                  ")"
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("td", { className: "py-1.5 pr-3", children: [
+                  (st.guide_minimal_acc * 100).toFixed(1),
+                  "% (",
+                  st.guide_minimal_n,
+                  ")"
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("td", { className: "py-1.5 text-[#3DE8E5]", children: [
+                  st.delta_minimal_minus_full * 100 >= 0 ? "+" : "",
+                  (st.delta_minimal_minus_full * 100).toFixed(1),
+                  "%"
+                ] })
+              ] }, grp)) })
+            ] })
+          ] })
+        ] }),
+        activeSubTab === "CLOSED_LOOP" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "bg-[#101827] border border-slate-800 rounded-lg p-3 space-y-2 overflow-x-auto", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { className: "font-semibold text-slate-200", children: "Layer B \u771F\u5B9E MuJoCo \u95ED\u73AF\u8BC4\u4F30 Episodes (\u533A\u5206 Agent \u51B3\u7B56\u4E0E\u7269\u7406 Skill \u6210\u8D25)" }),
+          result.closed_loop_episodes.length === 0 ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-slate-500", children: "\u5F53\u524D Run \u672A\u5305\u542B Closed-Loop MuJoCo Episodes\u3002" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("table", { className: "w-full text-left border-collapse font-mono text-[11px]", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("thead", { children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tr", { className: "border-b border-slate-800 text-slate-400", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { className: "py-1.5 pr-3", children: "Scenario" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { className: "py-1.5 pr-3", children: "Group" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { className: "py-1.5 pr-3", children: "Sources" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { className: "py-1.5 pr-3", children: "Status" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { className: "py-1.5 pr-3", children: "Goal" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { className: "py-1.5 pr-3", children: "Attribution" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { className: "py-1.5 pr-3", children: "Skills Executed" }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("th", { className: "py-1.5", children: "Wall(s)" })
+            ] }) }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("tbody", { children: result.closed_loop_episodes.map((ep) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("tr", { className: "border-b border-slate-800/60", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { className: "py-1.5 pr-3 text-slate-100", children: ep.scenario_id }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { className: "py-1.5 pr-3", children: ep.planner_group }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { className: "py-1.5 pr-3", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "flex gap-1 flex-wrap", children: ep.execution_source_labels.map((lb) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: `px-1 py-0.2 rounded border text-[9px] ${SOURCE_BADGE_STYLES[lb] || ""}`, children: lb }, lb)) }) }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { className: "py-1.5 pr-3", children: ep.mission_status }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { className: `py-1.5 pr-3 ${ep.goal_achieved ? "text-[#30D6A0]" : "text-[#F05D5E]"}`, children: String(ep.goal_achieved) }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { className: "py-1.5 pr-3", children: ep.failure_attribution.primary_category }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { className: "py-1.5 pr-3 text-slate-300", children: ep.skills_executed.join(" -> ") }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("td", { className: "py-1.5", children: ep.wall_time_s.toFixed(2) })
+            ] }, ep.episode_id)) })
+          ] })
+        ] }),
+        activeSubTab === "TRACES" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "grid grid-cols-1 lg:grid-cols-12 gap-3", children: [
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "lg:col-span-7 bg-[#101827] border border-slate-800 rounded-lg p-3 space-y-2", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex flex-wrap gap-2 items-center justify-between", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("h3", { className: "font-semibold text-slate-200", children: [
+                "\u51B3\u7B56\u8BB0\u5F55\u4E0E\u5931\u8D25\u6848\u4F8B\u8FC7\u6EE4 (",
+                filteredRecords.length,
+                ")"
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex flex-wrap gap-1.5 font-mono text-[10.5px]", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("select", { value: traceFilterGroup, onChange: (e) => setTraceFilterGroup(e.target.value), className: "px-2 py-0.5 rounded bg-[#080D16] border border-slate-700 text-slate-200", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "ALL", children: "All Groups" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "DETERMINISTIC_BASELINE", children: "DETERMINISTIC" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "LLM_AGENT_CV_ONLY", children: "LLM_CV_ONLY" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "LLM_AGENT_CV_VLM", children: "LLM_CV_VLM" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "SINGLE_MODEL_BASELINE", children: "SINGLE_MODEL" })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("select", { value: traceFilterDim, onChange: (e) => setTraceFilterDim(e.target.value), className: "px-2 py-0.5 rounded bg-[#080D16] border border-slate-700 text-slate-200", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "ALL", children: "All Dimensions" }),
+                  Object.keys(DIM_LABELS).map((d) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: d, children: d }, d))
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("select", { value: traceFilterVerdict, onChange: (e) => setTraceFilterVerdict(e.target.value), className: "px-2 py-0.5 rounded bg-[#080D16] border border-slate-700 text-slate-200", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "ALL", children: "All Verdicts" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "FAIL", children: "FAIL Only" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "PASS", children: "PASS Only" }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "INCOMPARABLE", children: "INCOMPARABLE" })
+                ] })
+              ] })
+            ] }),
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "max-h-96 overflow-y-auto space-y-1 font-mono text-[10.5px]", children: filteredRecords.map((r) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+              "button",
+              {
+                onClick: () => setSelectedRecordId(r.record_id),
+                className: `w-full text-left p-2 rounded border flex items-center justify-between gap-2 ${selectedRecord?.record_id === r.record_id ? "bg-[#3DE8E5]/10 border-[#3DE8E5]/50" : "bg-[#080D16] border-slate-800 hover:border-slate-700"}`,
+                children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "truncate", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "text-slate-100", children: r.benchmark_case_id }),
+                    " ",
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "text-slate-400", children: [
+                      "[",
+                      r.planner_group,
+                      " / ",
+                      r.guide_mode,
+                      "]"
+                    ] }),
+                    " ",
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "text-[#3DE8E5]", children: [
+                      "-> ",
+                      r.normalized_action
+                    ] })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: getVerdictBadgeCls(r.oracle_result.verdict), children: r.oracle_result.verdict })
+                ]
+              },
+              r.record_id
+            )) })
+          ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "lg:col-span-5 bg-[#101827] border border-slate-800 rounded-lg p-3 space-y-2 font-mono text-[10.5px]", children: [
+            /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { className: "font-sans font-semibold text-xs text-slate-200", children: "Decision Trace \u8BE6\u60C5" }),
+            selectedRecord ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "space-y-2", children: [
+              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "flex flex-wrap gap-1", children: selectedRecord.execution_source_labels.map((lb) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: `px-1.5 py-0.5 rounded border text-[9.5px] ${SOURCE_BADGE_STYLES[lb] || ""}`, children: lb }, lb)) }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "p-2 rounded bg-[#080D16] border border-slate-800 space-y-1 text-slate-300", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+                  "Case: ",
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "text-slate-100", children: selectedRecord.benchmark_case_id }),
+                  " (",
+                  selectedRecord.source_type,
+                  ")"
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+                  "Action: ",
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "text-[#3DE8E5]", children: selectedRecord.normalized_action }),
+                  " params=",
+                  JSON.stringify(selectedRecord.parameters)
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+                  "Model: ",
+                  selectedRecord.model_name,
+                  " | Latency: ",
+                  selectedRecord.latency_ms,
+                  "ms | Call: ",
+                  selectedRecord.model_call_status
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+                  "Evidence Refs: ",
+                  JSON.stringify(selectedRecord.evidence_references)
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+                  "Safety Gate: ",
+                  selectedRecord.safety_validation.safety_gate_status,
+                  " (",
+                  selectedRecord.safety_validation.reason,
+                  ")"
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { children: [
+                  "Oracle Verdict: ",
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: selectedRecord.oracle_result.verdict === "PASS" ? "text-[#30D6A0]" : "text-[#F05D5E]", children: selectedRecord.oracle_result.verdict }),
+                  " | Attribution: ",
+                  selectedRecord.failure_attribution.primary_category
+                ] })
+              ] }),
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "p-2 rounded bg-[#080D16] border border-slate-800 text-slate-300 font-sans", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-slate-400 text-[10px] mb-0.5", children: "Reason Summary & Oracle Notes" }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { children: selectedRecord.reason_summary || "\u2014" }),
+                selectedRecord.oracle_result.notes.length > 0 && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "mt-1 text-[#FFBF69] font-mono text-[10px]", children: selectedRecord.oracle_result.notes.join("; ") })
+              ] }),
+              selectedRecord.prompt_sha256 && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "text-[10px] text-slate-500 truncate", children: [
+                "prompt_sha256: ",
+                selectedRecord.prompt_sha256
+              ] })
+            ] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-slate-500", children: "\u9009\u62E9\u4E00\u6761\u8BB0\u5F55\u67E5\u770B\u8BE6\u7EC6 Trace\u3002" })
+          ] })
+        ] })
+      ] })
+    ] });
+  };
   function getDefaultWsUrl() {
     if (typeof window !== "undefined" && window.location.protocol.startsWith("http")) {
       const wsProto = window.location.protocol === "https:" ? "wss:" : "ws:";
@@ -9440,9 +10699,11 @@
     const [wsUrl, setWsUrl] = (0, import_react3.useState)(() => getDefaultWsUrl());
     const [wsConnected, setWsConnected] = (0, import_react3.useState)(false);
     const [seedInput, setSeedInput] = (0, import_react3.useState)(0);
-    const [selectedMission, setSelectedMission] = (0, import_react3.useState)("INSPECT_CUBE");
+    const [selectedMission, setSelectedMission] = (0, import_react3.useState)("RELAY_SOLVE_CUBE");
+    const [selectedScrambleSteps, setSelectedScrambleSteps] = (0, import_react3.useState)(5);
+    const [techDrawerOpen, setTechDrawerOpen] = (0, import_react3.useState)(false);
     const [snapshot, setSnapshot] = (0, import_react3.useState)(
-      () => getDefaultRuntimeMode() === "LIVE" ? createDisconnectedLiveSnapshot(0, "INSPECT_CUBE") : createSampleSnapshot("INSPECT_CUBE", SAMPLE_TIMELINE[3])
+      () => getDefaultRuntimeMode() === "LIVE" ? createDisconnectedLiveSnapshot(0, "RELAY_SOLVE_CUBE") : createSampleSnapshot("RELAY_SOLVE_CUBE", SAMPLE_TIMELINE[3])
     );
     const [selectedEventId, setSelectedEventId] = (0, import_react3.useState)("ev-4");
     const [commandLog, setCommandLog] = (0, import_react3.useState)(["[INIT] CubeRelay M3-D \u63A7\u5236\u53F0\u5DF2\u521D\u59CB\u5316"]);
@@ -9457,10 +10718,43 @@
     const [replayVideoUrl, setReplayVideoUrl] = (0, import_react3.useState)(null);
     const [replayTiming, setReplayTiming] = (0, import_react3.useState)(null);
     const wsRef = (0, import_react3.useRef)(null);
+    const [startModalOpen, setStartModalOpen] = (0, import_react3.useState)(false);
+    const [startModalPassword, setStartModalPassword] = (0, import_react3.useState)("");
+    const [startModalError, setStartModalError] = (0, import_react3.useState)(null);
+    const [startModalSubmitting, setStartModalSubmitting] = (0, import_react3.useState)(false);
+    const [exportModalOpen, setExportModalOpen] = (0, import_react3.useState)(false);
+    const [exportScope, setExportScope] = (0, import_react3.useState)("full_mission");
+    const [exportIncludeRgbd, setExportIncludeRgbd] = (0, import_react3.useState)(true);
+    const [exportIncludeHighFreq, setExportIncludeHighFreq] = (0, import_react3.useState)(true);
+    const [exportIncludeAuditTruth, setExportIncludeAuditTruth] = (0, import_react3.useState)(false);
+    const [exportSelectedRunId, setExportSelectedRunId] = (0, import_react3.useState)("");
+    const [exportRuns, setExportRuns] = (0, import_react3.useState)([]);
+    const [exportSubmitting, setExportSubmitting] = (0, import_react3.useState)(false);
+    const [exportStatusMsg, setExportStatusMsg] = (0, import_react3.useState)(null);
+    const [exportErrorMsg, setExportErrorMsg] = (0, import_react3.useState)(null);
+    const startPasswordInputRef = (0, import_react3.useRef)(null);
     const appendLog = (msg) => {
       const ts = (/* @__PURE__ */ new Date()).toTimeString().slice(0, 8);
       setCommandLog((prev) => [`[${ts}] ${msg}`, ...prev.slice(0, 29)]);
     };
+    (0, import_react3.useEffect)(() => {
+      if (!startModalOpen) return;
+      const focusTimer = window.setTimeout(() => {
+        startPasswordInputRef.current?.focus();
+      }, 0);
+      const onKeyDown = (event) => {
+        if (event.key === "Escape" && !startModalSubmitting) {
+          setStartModalPassword("");
+          setStartModalError(null);
+          setStartModalOpen(false);
+        }
+      };
+      window.addEventListener("keydown", onKeyDown);
+      return () => {
+        window.clearTimeout(focusTimer);
+        window.removeEventListener("keydown", onKeyDown);
+      };
+    }, [startModalOpen, startModalSubmitting]);
     (0, import_react3.useEffect)(() => {
       if (mode !== "SAMPLE") return;
       const url = generateOffscreenMujocoFrameUrl(
@@ -9481,6 +10775,8 @@
     ]);
     const handleSwitchMode = (nextMode) => {
       setMode(nextMode);
+      setStartModalPassword("");
+      setStartModalError(null);
       if (nextMode === "SAMPLE") {
         const targetEv = SAMPLE_TIMELINE.find((e) => e.event_id === selectedEventId) || SAMPLE_TIMELINE[3];
         setSnapshot(createSampleSnapshot(selectedMission, targetEv));
@@ -9530,6 +10826,8 @@
                 if (next.selected_mission_type) {
                   setSelectedMission(next.selected_mission_type);
                 }
+              } else if (data.type === "COMMAND_RESULT" && data.ok === false) {
+                appendLog(`\u540E\u7AEF\u62D2\u7EDD\u6307\u4EE4: ${data.error || "UNKNOWN_ERROR"}`);
               }
             } catch {
             }
@@ -9554,6 +10852,34 @@
         }
       };
     }, [mode, wsUrl]);
+    const getHttpBase = () => wsUrl.replace(/^wss:/, "https:").replace(/^ws:/, "http:").replace(/\/ws\/session$/, "");
+    const postBackendCommand = async (cmd) => {
+      try {
+        const resp = await fetch(`${getHttpBase()}/api/m3d/command`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(cmd)
+        });
+        const body = await resp.json().catch(() => null);
+        if (!resp.ok) {
+          return {
+            ok: false,
+            status: resp.status,
+            body,
+            detail: typeof body?.detail === "string" ? body.detail : `HTTP ${resp.status}`
+          };
+        }
+        if (body) {
+          if (body.snapshot && body.snapshot.frame_source !== "SYNTHETIC_SAMPLE") {
+            setSnapshot(body.snapshot);
+            setWsConnected(true);
+          }
+        }
+        return { ok: true, status: resp.status, body };
+      } catch {
+        return { ok: false, status: 0, body: null, detail: "NETWORK_ERROR" };
+      }
+    };
     const sendBackendCommand = async (cmd, label) => {
       if (mode !== "LIVE") {
         appendLog(`\u5F53\u524D\u4E3A ${mode} \u53EA\u8BFB\u6A21\u5F0F\uFF0C\u6307\u4EE4 [${label}] \u4EC5\u5728 LIVE \u8FDE\u63A5\u540E\u7AEF\u65F6\u6267\u884C`);
@@ -9564,23 +10890,14 @@
         appendLog(`\u5DF2\u901A\u8FC7 WebSocket \u4E0B\u53D1\u6307\u4EE4: ${label}`);
         return;
       }
-      try {
-        const httpBase = wsUrl.replace(/^wss:/, "https:").replace(/^ws:/, "http:").replace(/\/ws\/session$/, "");
-        const resp = await fetch(`${httpBase}/api/m3d/command`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(cmd)
-        });
-        if (resp.ok) {
-          const body = await resp.json();
-          if (body.snapshot && body.snapshot.frame_source !== "SYNTHETIC_SAMPLE") {
-            setSnapshot(body.snapshot);
-            setWsConnected(true);
-          }
-          appendLog(`\u5DF2\u901A\u8FC7 HTTP \u4E0B\u53D1\u6307\u4EE4: ${label}`);
-          return;
-        }
-      } catch {
+      const res = await postBackendCommand(cmd);
+      if (res.ok) {
+        appendLog(`\u5DF2\u901A\u8FC7 HTTP \u4E0B\u53D1\u6307\u4EE4: ${label}`);
+        return;
+      }
+      if (res.status > 0) {
+        appendLog(`\u540E\u7AEF\u62D2\u7EDD\u6307\u4EE4 [${label}]: ${res.detail || `HTTP ${res.status}`}`);
+        return;
       }
       appendLog(`\u6307\u4EE4\u672A\u53D1\u9001 [${label}]: MuJoCo \u540E\u7AEF\u672A\u8FDE\u63A5`);
     };
@@ -9593,8 +10910,123 @@
         return;
       }
       if (mode === "LIVE") {
-        void sendBackendCommand({ type: "SELECT_MISSION", mission_type: missionType }, `\u9009\u62E9 Mission ${missionType}`);
+        const cmd = { type: "SELECT_MISSION", mission_type: missionType };
+        if (missionType === "RELAY_SOLVE_CUBE") {
+          cmd.scramble_steps = selectedScrambleSteps;
+        }
+        void sendBackendCommand(cmd, `\u9009\u62E9 Mission ${missionType}`);
       }
+    };
+    const handleSelectScrambleSteps = (steps) => {
+      setSelectedScrambleSteps(steps);
+      if (mode === "LIVE") {
+        void sendBackendCommand({ type: "SET_SCRAMBLE_STEPS", scramble_steps: steps }, `\u8BBE\u7F6E\u6253\u4E71\u6B65\u6570 ${steps}`);
+      }
+    };
+    const handleRelayCommand = (cmd, label) => {
+      if (mode !== "LIVE") {
+        appendLog(`\u5F53\u524D\u4E3A ${mode} \u6A21\u5F0F\uFF0C\u4EC5 LIVE \u6A21\u5F0F\u652F\u6301\u5B9E\u65F6\u63A5\u529B\u63A7\u5236 [${label}]`);
+        return;
+      }
+      void sendBackendCommand(cmd, label);
+    };
+    const openStartMissionModal = () => {
+      if (mode === "LIVE" && snapshot.running) {
+        appendLog("\u5F53\u524D\u5DF2\u6709\u4EFB\u52A1\u6B63\u5728\u8FD0\u884C\uFF0C\u8BF7\u5148\u70B9\u51FB\u300C\u5B89\u5168\u505C\u6B62\u300D\u540E\u518D\u542F\u52A8\u65B0\u4EFB\u52A1");
+        return;
+      }
+      setStartModalPassword("");
+      setStartModalError(null);
+      setStartModalSubmitting(false);
+      setStartModalOpen(true);
+    };
+    const closeStartMissionModal = () => {
+      if (startModalSubmitting) return;
+      setStartModalPassword("");
+      setStartModalError(null);
+      setStartModalOpen(false);
+    };
+    const handleLaunchMission = async (plannerMode) => {
+      if (mode !== "LIVE") {
+        setStartModalError(`\u5F53\u524D\u4E3A ${mode} \u53EA\u8BFB\u6A21\u5F0F\uFF0C\u4EC5 LIVE \u6A21\u5F0F\u652F\u6301\u6A21\u578B\u6821\u9A8C\u4E0E\u4EFB\u52A1\u542F\u52A8`);
+        appendLog(`\u5F53\u524D\u4E3A ${mode} \u53EA\u8BFB\u6A21\u5F0F\uFF0C\u65E0\u6CD5\u542F\u52A8\u4EFB\u52A1 ${selectedMission}`);
+        return;
+      }
+      if (plannerMode === "LLM_AGENT" && !startModalPassword) {
+        setStartModalError("\u8BF7\u8F93\u5165\u542F\u7528\u5BC6\u7801\u4EE5\u542F\u7528 Agent \u6A21\u578B\u548C VLM \u6A21\u578B");
+        startPasswordInputRef.current?.focus();
+        return;
+      }
+      const suppliedPassword = startModalPassword;
+      setStartModalSubmitting(true);
+      setStartModalError(null);
+      const modeCommand = {
+        type: "SET_PLANNER_MODE",
+        planner_mode: plannerMode
+      };
+      if (plannerMode === "LLM_AGENT") {
+        modeCommand.enable_password = suppliedPassword;
+      }
+      const modeRes = await postBackendCommand(modeCommand);
+      setStartModalPassword("");
+      if (!modeRes.ok) {
+        setStartModalSubmitting(false);
+        if (modeRes.status === 403) {
+          setStartModalError(`\u5BC6\u7801\u6821\u9A8C\u5931\u8D25\uFF0C\u672A\u80FD\u542F\u7528 Agent \u4E0E VLM \u6A21\u578B (${modeRes.detail || "HTTP 403"})`);
+          appendLog(`\u540E\u7AEF\u62D2\u7EDD\u542F\u7528 Agent/VLM \u6A21\u578B: ${modeRes.detail || "HTTP 403"}`);
+          window.setTimeout(() => startPasswordInputRef.current?.focus(), 0);
+          return;
+        }
+        if (modeRes.status === 503) {
+          setStartModalError(`\u670D\u52A1\u7AEF\u672A\u914D\u7F6E\u542F\u7528\u5BC6\u7801 (${modeRes.detail || "HTTP 503"})`);
+          appendLog(`\u540E\u7AEF\u672A\u914D\u7F6E\u6A21\u578B\u542F\u7528\u5BC6\u7801: ${modeRes.detail || "HTTP 503"}`);
+          return;
+        }
+        if (modeRes.status === 0) {
+          setStartModalError(`\u65E0\u6CD5\u8FDE\u63A5\u540E\u7AEF\u670D\u52A1 (${getHttpBase()})\uFF0C\u8BF7\u786E\u8BA4\u4EFF\u771F\u540E\u7AEF\u5DF2\u8FD0\u884C`);
+          appendLog(`\u542F\u52A8\u4EFB\u52A1\u5931\u8D25 [${selectedMission}]: MuJoCo \u540E\u7AEF\u672A\u8FDE\u63A5`);
+          return;
+        }
+        setStartModalError(`\u5207\u6362\u89C4\u5212\u5668\u5931\u8D25 (${modeRes.detail || `HTTP ${modeRes.status}`})`);
+        appendLog(`\u540E\u7AEF\u62D2\u7EDD\u5207\u6362 Planner: ${modeRes.detail || `HTTP ${modeRes.status}`}`);
+        return;
+      }
+      if (modeRes.body?.snapshot?.running) {
+        setStartModalSubmitting(false);
+        setStartModalError("\u5F53\u524D\u5DF2\u6709\u4EFB\u52A1\u6B63\u5728\u8FD0\u884C\uFF0C\u8BF7\u5148\u70B9\u51FB\u300C\u5B89\u5168\u505C\u6B62\u300D");
+        appendLog(`\u4EFB\u52A1\u542F\u52A8\u88AB\u8DF3\u8FC7 [${selectedMission}]: \u5F53\u524D\u5DF2\u6709\u4EFB\u52A1\u8FD0\u884C\u4E2D`);
+        return;
+      }
+      const startCmd = {
+        type: "START_MISSION",
+        mission_type: selectedMission,
+        seed: seedInput
+      };
+      if (selectedMission === "RELAY_SOLVE_CUBE") {
+        startCmd.scramble_steps = selectedScrambleSteps;
+        startCmd.full_26_cubie = true;
+      }
+      const startRes = await postBackendCommand(startCmd);
+      setStartModalSubmitting(false);
+      if (!startRes.ok) {
+        const msg = startRes.status === 0 ? `\u65E0\u6CD5\u8FDE\u63A5\u540E\u7AEF\u670D\u52A1 (${getHttpBase()})\uFF0C\u8BF7\u786E\u8BA4\u4EFF\u771F\u540E\u7AEF\u5DF2\u8FD0\u884C` : `\u542F\u52A8\u4EFB\u52A1\u88AB\u62D2\u7EDD (${startRes.detail || `HTTP ${startRes.status}`})`;
+        setStartModalError(msg);
+        appendLog(`\u540E\u7AEF\u62D2\u7EDD\u6307\u4EE4 [\u542F\u52A8\u4EFB\u52A1 ${selectedMission}]: ${startRes.detail || `HTTP ${startRes.status}`}`);
+        return;
+      }
+      if (startRes.body?.ok === false || startRes.body?.ack?.accepted === false) {
+        const reason = String(startRes.body?.ack?.reason || "MISSION_NOT_ACCEPTED");
+        setStartModalError(
+          reason === "mission_already_running" ? "\u5F53\u524D\u5DF2\u6709\u4EFB\u52A1\u6B63\u5728\u8FD0\u884C\uFF0C\u8BF7\u5148\u70B9\u51FB\u300C\u5B89\u5168\u505C\u6B62\u300D" : `\u4EFB\u52A1\u672A\u542F\u52A8: ${reason}`
+        );
+        appendLog(`\u4EFB\u52A1\u672A\u542F\u52A8 [${selectedMission}]: ${reason}`);
+        return;
+      }
+      setStartModalError(null);
+      setStartModalOpen(false);
+      appendLog(
+        plannerMode === "LLM_AGENT" ? `\u5DF2\u901A\u8FC7\u5BC6\u7801\u542F\u7528 Agent + VLM \u6A21\u578B\u5E76\u542F\u52A8\u4EFB\u52A1 ${selectedMission} (seed=${seedInput})` : `\u5DF2\u4F7F\u7528\u786E\u5B9A\u6027 Baseline \u542F\u52A8\u4EFB\u52A1 ${selectedMission} (seed=${seedInput})`
+      );
     };
     const toggleDebugFlag = (key, label) => {
       setDebugOverlays((prev) => {
@@ -9663,6 +11095,88 @@
         if (target) replayVideoRef.current.currentTime = target.video_time_sec;
       }
     };
+    const refreshExportRuns = async () => {
+      setExportErrorMsg(null);
+      if (mode === "SAMPLE" || snapshot.frame_source === "SYNTHETIC_SAMPLE") {
+        setExportRuns([]);
+        return;
+      }
+      try {
+        const resp = await fetch(`${getHttpBase()}/api/m3d/runs`);
+        if (!resp.ok) {
+          setExportErrorMsg(`\u83B7\u53D6\u5386\u53F2\u5B9E\u9A8C\u5217\u8868\u5931\u8D25: HTTP ${resp.status}`);
+          return;
+        }
+        const data = await resp.json();
+        const runs = Array.isArray(data.runs) ? data.runs : [];
+        setExportRuns(runs);
+        const preferred = data.current_run_id || snapshot.run_id || (runs[0]?.run_id ?? "");
+        if (preferred && !exportSelectedRunId) {
+          setExportSelectedRunId(preferred);
+        }
+      } catch {
+        setExportErrorMsg("\u65E0\u6CD5\u8FDE\u63A5\u540E\u7AEF\u83B7\u53D6\u5386\u53F2\u5B9E\u9A8C\u8FD0\u884C\u5217\u8868\uFF08\u8BF7\u786E\u8BA4 LIVE \u670D\u52A1\u5DF2\u542F\u52A8\uFF09");
+      }
+    };
+    const openExportModal = () => {
+      setExportModalOpen(true);
+      setExportErrorMsg(null);
+      if (snapshot.run_id) {
+        setExportSelectedRunId(snapshot.run_id);
+      }
+      if (mode !== "SAMPLE") {
+        void refreshExportRuns();
+      }
+    };
+    const handleDownloadExperimentZip = async () => {
+      setExportStatusMsg(null);
+      setExportErrorMsg(null);
+      if (mode === "SAMPLE" || snapshot.frame_source === "SYNTHETIC_SAMPLE") {
+        setExportErrorMsg("SAMPLE_MODE_FORBIDDEN: SYNTHETIC_SAMPLE \u4EC5\u7528\u4E8E\u79BB\u7EBF\u6F14\u793A\uFF0C\u7981\u6B62\u4F5C\u4E3A\u771F\u5B9E\u7269\u7406\u5B9E\u9A8C\u5BFC\u51FA");
+        return;
+      }
+      const targetRunId = (exportSelectedRunId || snapshot.run_id || "").trim() || null;
+      setExportSubmitting(true);
+      try {
+        const resp = await fetch(`${getHttpBase()}/api/m3d/export`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            run_id: targetRunId,
+            scope: exportScope,
+            include_rgbd: exportIncludeRgbd,
+            include_high_freq_trajectory: exportIncludeHighFreq,
+            include_audit_ground_truth: exportIncludeAuditTruth
+          })
+        });
+        if (!resp.ok) {
+          const errBody = await resp.json().catch(() => null);
+          const detail = typeof errBody?.detail === "string" ? errBody.detail : `HTTP ${resp.status}`;
+          setExportErrorMsg(`\u5BFC\u51FA\u5931\u8D25: ${detail}`);
+          appendLog(`\u5B9E\u9A8C\u5305\u5BFC\u51FA\u5931\u8D25: ${detail}`);
+          return;
+        }
+        const blob = await resp.blob();
+        const disp = resp.headers.get("Content-Disposition") || "";
+        const match = /filename="([^"]+)"/.exec(disp);
+        const filename = match ? match[1] : `cuberelay_${targetRunId || "export"}_${exportScope}.zip`;
+        const objectUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = objectUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(objectUrl);
+        const kb = (blob.size / 1024).toFixed(1);
+        setExportStatusMsg(`\u5DF2\u5BFC\u51FA ${filename} (${kb} KB)`);
+        appendLog(`\u5DF2\u4ECE\u540E\u7AEF\u5BFC\u51FA\u5B8C\u6574\u5B9E\u9A8C\u5305: ${filename} (${kb} KB)`);
+      } catch {
+        setExportErrorMsg("\u5BFC\u51FA\u5931\u8D25: \u540E\u7AEF\u8FDE\u63A5\u4E0D\u53EF\u7528\u6216\u8BF7\u6C42\u88AB\u4E2D\u65AD");
+      } finally {
+        setExportSubmitting(false);
+      }
+    };
     return /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "h-screen w-screen overflow-hidden bg-[#080D16] text-slate-100 flex flex-col font-sans select-none", children: [
       /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("header", { className: "h-11 shrink-0 bg-[#101827] border-b border-slate-800/90 px-3.5 flex items-center justify-between gap-3", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center gap-4", children: [
@@ -9673,7 +11187,8 @@
           ] }),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)("nav", { className: "flex items-center gap-1", children: [
             { id: "CONSOLE", label: "\u4EFB\u52A1\u63A7\u5236\u53F0" },
-            { id: "SETTINGS", label: "\u80FD\u529B\u6CE8\u518C\u8868 & \u8BBE\u7F6E" }
+            { id: "SETTINGS", label: "\u80FD\u529B\u6CE8\u518C\u8868 & \u8BBE\u7F6E" },
+            { id: "BENCHMARK", label: "Task Agent \u8BC4\u4F30" }
           ].map((tab) => /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
             "button",
             {
@@ -9736,6 +11251,19 @@
               "s"
             ] })
           ] }),
+          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+            "button",
+            {
+              type: "button",
+              onClick: openExportModal,
+              className: "inline-flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium bg-[#182338] hover:bg-slate-700 text-[#3DE8E5] border border-[#3DE8E5]/30 transition-colors",
+              title: "Experiment / Trace Export (\u540E\u7AEF\u771F\u5B9E\u5B9E\u9A8C\u5305 ZIP \u5BFC\u51FA)",
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Download, { className: "w-3 h-3" }),
+                " \u5B9E\u9A8C\u5BFC\u51FA"
+              ]
+            }
+          ),
           /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
             "button",
             {
@@ -9759,85 +11287,120 @@
           commandLog
         }
       ),
-      activeNav === "CONSOLE" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("main", { className: "flex-1 min-h-0 p-2.5 flex flex-col gap-2.5", children: [
+      activeNav === "BENCHMARK" && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(TaskAgentBenchmarkView, { httpBase: getHttpBase() }),
+      activeNav === "CONSOLE" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("main", { className: "flex-1 min-h-0 p-2.5 flex flex-col gap-2", children: [
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
           "div",
           {
-            style: { gridTemplateColumns: "minmax(0, 3fr) minmax(300px, 1fr)" },
+            style: { gridTemplateColumns: "minmax(0, 1.65fr) minmax(360px, 1fr)" },
             className: "flex-1 min-h-0 grid gap-2.5",
             children: [
-              /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "min-w-0 min-h-0 h-full", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-                SimulationViewport,
-                {
-                  mode,
-                  wsConnected,
-                  wsUrl,
-                  snapshot,
-                  debugOverlays,
-                  onCameraPresetChange: (preset) => {
-                    const found = CAMERA_PRESETS.find((c) => c.id === preset);
-                    setSnapshot((prev) => ({
-                      ...prev,
-                      active_camera: preset,
-                      camera_azimuth_deg: found?.az ?? prev.camera_azimuth_deg,
-                      camera_elevation_deg: found?.el ?? prev.camera_elevation_deg,
-                      camera_distance_m: found?.dist ?? prev.camera_distance_m
-                    }));
-                    if (mode === "LIVE") {
-                      void sendBackendCommand({ type: "SET_CAMERA_PRESET", camera: preset }, `\u5207\u6362\u76F8\u673A ${preset}`);
+              /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "min-w-0 min-h-0 h-full flex flex-col gap-2", children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "flex-1 min-h-0", children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                  SimulationViewport,
+                  {
+                    mode,
+                    wsConnected,
+                    wsUrl,
+                    snapshot,
+                    debugOverlays,
+                    onCameraPresetChange: (preset) => {
+                      const found = CAMERA_PRESETS.find((c) => c.id === preset);
+                      setSnapshot((prev) => ({
+                        ...prev,
+                        active_camera: preset,
+                        camera_azimuth_deg: found?.az ?? prev.camera_azimuth_deg,
+                        camera_elevation_deg: found?.el ?? prev.camera_elevation_deg,
+                        camera_distance_m: found?.dist ?? prev.camera_distance_m
+                      }));
+                      if (mode === "LIVE") {
+                        void sendBackendCommand({ type: "SET_CAMERA_PRESET", camera: preset }, `\u5207\u6362\u76F8\u673A ${preset}`);
+                      }
+                    },
+                    onCameraOrbitCommand: (dAz, dEl) => {
+                      void sendBackendCommand(
+                        { type: "CAMERA_ORBIT", delta_azimuth: dAz, delta_elevation: dEl },
+                        "\u65CB\u8F6C\u76F8\u673A\u89C6\u89D2"
+                      );
+                    },
+                    onCameraZoomCommand: (dDist) => {
+                      void sendBackendCommand({ type: "CAMERA_ZOOM", delta_distance: dDist }, "\u7F29\u653E\u76F8\u673A\u89C6\u89D2");
+                    },
+                    previewScreenshotUrl,
+                    onUploadPreviewScreenshot: (url) => {
+                      setPreviewScreenshotUrl(url);
+                      appendLog("\u5DF2\u5728 PREVIEW \u6A21\u5F0F\u8F7D\u5165\u5916\u90E8\u5386\u53F2\u622A\u56FE");
+                    },
+                    replayVideoRef,
+                    replayVideoUrl,
+                    onReplayTimeUpdate: handleReplayTimeUpdate,
+                    onLoadReplayFiles: handleLoadReplayFiles,
+                    onUrgentInterrupt: () => handleRelayCommand({ type: "URGENT_INTERRUPT", reason: "\u6A2A\u5E45\u7D27\u6025\u5239\u8F66/\u63A5\u7BA1" }, "\u7D27\u6025\u5239\u8F66\u4E2D\u65AD")
+                  }
+                ) }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "shrink-0 bg-[#101827] border border-slate-800/90 rounded-lg px-2.5 py-1.5 space-y-2", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+                    "button",
+                    {
+                      type: "button",
+                      onClick: () => setTechDrawerOpen((v) => !v),
+                      className: "w-full flex items-center justify-between gap-2 text-[10.5px] font-medium text-slate-300 hover:text-white transition-colors",
+                      children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "flex items-center gap-2 min-w-0 truncate", children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "font-semibold text-[#3DE8E5]", children: [
+                            techDrawerOpen ? "\u25BE" : "\u25B8",
+                            " \u673A\u5668\u4EBA\u76F8\u673A \xB7 Cube State \xB7 \u9065\u6D4B\u76D1\u63A7"
+                          ] }),
+                          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "font-mono text-[10px] text-slate-400 truncate", children: [
+                            "(",
+                            snapshot.observed_facelets.filter((f) => f.color !== "UNKNOWN").length,
+                            "/54 \u683C \xB7 \u5939\u722A",
+                            " ",
+                            snapshot.telemetry.gripperState || "UNKNOWN",
+                            ")"
+                          ] })
+                        ] }),
+                        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "px-1.5 py-0.5 rounded bg-[#080D16] border border-slate-800 text-[9.5px] font-mono text-slate-400 shrink-0", children: techDrawerOpen ? "\u6536\u8D77\u76D1\u63A7 \u25B4" : "\u5C55\u5F00\u76D1\u63A7 \u25BE" })
+                      ]
                     }
-                  },
-                  onCameraOrbitCommand: (dAz, dEl) => {
-                    void sendBackendCommand(
-                      { type: "CAMERA_ORBIT", delta_azimuth: dAz, delta_elevation: dEl },
-                      "\u65CB\u8F6C\u76F8\u673A\u89C6\u89D2"
-                    );
-                  },
-                  onCameraZoomCommand: (dDist) => {
-                    void sendBackendCommand({ type: "CAMERA_ZOOM", delta_distance: dDist }, "\u7F29\u653E\u76F8\u673A\u89C6\u89D2");
-                  },
-                  previewScreenshotUrl,
-                  onUploadPreviewScreenshot: (url) => {
-                    setPreviewScreenshotUrl(url);
-                    appendLog("\u5DF2\u5728 PREVIEW \u6A21\u5F0F\u8F7D\u5165\u5916\u90E8\u5386\u53F2\u622A\u56FE");
-                  },
-                  replayVideoRef,
-                  replayVideoUrl,
-                  onReplayTimeUpdate: handleReplayTimeUpdate,
-                  onLoadReplayFiles: handleLoadReplayFiles
-                }
-              ) }),
+                  ),
+                  techDrawerOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "h-[210px] grid grid-cols-1 md:grid-cols-3 gap-2.5", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                      CompactRobotCameraCard,
+                      {
+                        rgbUrl: snapshot.wrist_rgb_url,
+                        depthUrl: snapshot.wrist_depth_url,
+                        depthRangeM: snapshot.depth_range_m,
+                        detections: snapshot.detections
+                      }
+                    ),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                      CompactCubeStateCard,
+                      {
+                        observed: snapshot.observed_facelets,
+                        predicted: snapshot.predicted_facelets,
+                        validationStatus: snapshot.cube_validation_status
+                      }
+                    ),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CompactTelemetryCard, { telemetry: snapshot.telemetry })
+                  ] })
+                ] })
+              ] }),
               /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
                 RightOrchestrationPanel,
                 {
+                  mode,
                   snapshot,
                   selectedMission,
-                  onSelectMission: handleSelectMission
+                  selectedScrambleSteps,
+                  onSelectMission: handleSelectMission,
+                  onSelectScrambleSteps: handleSelectScrambleSteps,
+                  onRelayCommand: handleRelayCommand
                 }
               )
             ]
           }
         ),
-        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "h-[222px] shrink-0 grid grid-cols-1 md:grid-cols-3 gap-2.5", children: [
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-            CompactRobotCameraCard,
-            {
-              rgbUrl: snapshot.wrist_rgb_url,
-              depthUrl: snapshot.wrist_depth_url,
-              depthRangeM: snapshot.depth_range_m,
-              detections: snapshot.detections
-            }
-          ),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
-            CompactCubeStateCard,
-            {
-              observed: snapshot.observed_facelets,
-              predicted: snapshot.predicted_facelets,
-              validationStatus: snapshot.cube_validation_status
-            }
-          ),
-          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(CompactTelemetryCard, { telemetry: snapshot.telemetry })
-        ] }),
         /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("footer", { className: "h-10 shrink-0 bg-[#101827] border border-slate-800/90 rounded-lg px-3 flex items-center justify-between gap-3", children: [
           /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center gap-1.5 overflow-x-auto min-w-0 py-0.5", children: [
             /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "text-[10px] font-mono text-slate-500 shrink-0 mr-0.5", children: "TIMELINE:" }),
@@ -9879,12 +11442,10 @@
               "button",
               {
                 type: "button",
-                onClick: () => void sendBackendCommand(
-                  { type: "START_MISSION", mission_type: selectedMission, seed: seedInput },
-                  `\u542F\u52A8\u4EFB\u52A1 ${selectedMission} (seed=${seedInput})`
-                ),
-                title: mode === "LIVE" ? `\u542F\u52A8 Mission: ${selectedMission}` : "\u8BF7\u5207\u6362\u81F3 LIVE \u5B9E\u65F6\u4EFF\u771F\u6A21\u5F0F\u8FDE\u63A5\u540E\u7AEF\u540E\u542F\u52A8",
-                className: "inline-flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-semibold bg-[#30D6A0]/20 hover:bg-[#30D6A0]/30 text-[#30D6A0] border border-[#30D6A0]/50 transition-colors",
+                onClick: openStartMissionModal,
+                disabled: mode === "LIVE" && snapshot.running,
+                title: mode !== "LIVE" ? "\u8BF7\u5207\u6362\u81F3 LIVE \u5B9E\u65F6\u4EFF\u771F\u6A21\u5F0F\u8FDE\u63A5\u540E\u7AEF\u540E\u542F\u52A8" : snapshot.running ? "\u5F53\u524D\u4EFB\u52A1\u6B63\u5728\u8FD0\u884C\u4E2D\uFF0C\u8BF7\u5148\u70B9\u51FB\u300C\u5B89\u5168\u505C\u6B62\u300D" : `\u542F\u52A8\u524D\u8F93\u5165\u5BC6\u7801\u542F\u7528 Agent \u4E0E VLM \u6A21\u578B: ${selectedMission}`,
+                className: "inline-flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-semibold bg-[#30D6A0]/20 hover:bg-[#30D6A0]/30 text-[#30D6A0] border border-[#30D6A0]/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed",
                 children: [
                   /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Play, { className: "w-3 h-3" }),
                   " \u5F00\u59CB\u4EFB\u52A1 (",
@@ -9910,7 +11471,12 @@
               {
                 type: "button",
                 onClick: () => void sendBackendCommand(
-                  { type: "RESET_SCENE", seed: seedInput, mission_type: selectedMission },
+                  {
+                    type: "RESET_SCENE",
+                    seed: seedInput,
+                    mission_type: selectedMission,
+                    ...selectedMission === "RELAY_SOLVE_CUBE" ? { scramble_steps: selectedScrambleSteps, full_26_cubie: true } : {}
+                  },
                   `\u91CD\u7F6E\u573A\u666F (seed=${seedInput}, mission=${selectedMission})`
                 ),
                 className: "inline-flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium bg-[#182338] hover:bg-slate-700 text-slate-200 border border-slate-700 transition-colors",
@@ -9921,8 +11487,359 @@
               }
             )
           ] })
-        ] })
-      ] })
+        ] }),
+        startModalOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+          "div",
+          {
+            className: "fixed inset-0 z-40 bg-black/50 flex items-end justify-end p-3 pb-14",
+            onClick: closeStartMissionModal,
+            children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+              "div",
+              {
+                role: "dialog",
+                "aria-modal": "true",
+                "aria-labelledby": "start-mission-modal-title",
+                onClick: (e) => e.stopPropagation(),
+                className: "w-full max-w-sm bg-[#101827] border border-[#3DE8E5]/40 rounded-lg p-3.5 space-y-2.5 shadow-2xl",
+                children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between gap-2 border-b border-slate-800 pb-2", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center gap-1.5 min-w-0", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Lock, { className: "w-3.5 h-3.5 text-[#3DE8E5] shrink-0" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { id: "start-mission-modal-title", className: "text-xs font-semibold text-slate-100 truncate", children: "\u542F\u52A8\u524D\u5BC6\u7801\u542F\u7528 Agent & VLM \u6A21\u578B" })
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                      "button",
+                      {
+                        type: "button",
+                        "aria-label": "\u5173\u95ED\u5F39\u7A97",
+                        disabled: startModalSubmitting,
+                        onClick: closeStartMissionModal,
+                        className: "p-1 rounded text-slate-400 hover:text-slate-200 hover:bg-[#182338] transition-colors disabled:opacity-40 disabled:cursor-not-allowed",
+                        children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(X, { className: "w-3.5 h-3.5" })
+                      }
+                    )
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "bg-[#080D16] border border-slate-800 rounded p-2 space-y-1 text-[10.5px]", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between gap-2", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "text-slate-400", children: "\u5F85\u542F\u52A8\u4EFB\u52A1" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { className: "font-mono text-[#3DE8E5]", children: [
+                        MISSION_OPTIONS.find((m) => m.type === selectedMission)?.label,
+                        " \xB7 Seed ",
+                        seedInput
+                      ] })
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "grid grid-cols-2 gap-1.5 pt-1 border-t border-slate-800/80", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "rounded border border-[#3DE8E5]/30 bg-[#3DE8E5]/5 px-1.5 py-1", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[9px] font-mono text-[#3DE8E5]", children: "VLM \u6A21\u578B \xB7 \u611F\u77E5" }),
+                        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[10px] text-slate-200 truncate", children: snapshot.agent_state?.perception_model_name || "Visual Perception" })
+                      ] }),
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "rounded border border-[#548CFF]/30 bg-[#548CFF]/5 px-1.5 py-1", children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[9px] font-mono text-[#548CFF]", children: "Agent \u6A21\u578B \xB7 \u89C4\u5212" }),
+                        /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[10px] text-slate-200 truncate", children: snapshot.agent_state?.agent_model_name || "Action Planner" })
+                      ] })
+                    ] })
+                  ] }),
+                  mode !== "LIVE" && /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "bg-[#FFBF69]/10 border border-[#FFBF69]/40 rounded px-2 py-1.5 text-[10.5px] text-[#FFBF69] leading-snug flex items-center justify-between gap-2", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
+                      "\u5F53\u524D\u4E3A ",
+                      mode,
+                      " \u53EA\u8BFB\u6A21\u5F0F\uFF0C\u9700\u5207\u6362\u81F3 LIVE \u6A21\u5F0F\u540E\u542F\u52A8\u3002"
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                      "button",
+                      {
+                        type: "button",
+                        onClick: () => {
+                          handleSwitchMode("LIVE");
+                          setStartModalError(null);
+                        },
+                        className: "px-2 py-0.5 rounded text-[10px] font-semibold bg-[#30D6A0]/20 text-[#30D6A0] border border-[#30D6A0]/40 shrink-0",
+                        children: "\u5207\u6362 LIVE"
+                      }
+                    )
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+                    "form",
+                    {
+                      className: "space-y-2",
+                      onSubmit: (e) => {
+                        e.preventDefault();
+                        void handleLaunchMission("LLM_AGENT");
+                      },
+                      children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "space-y-1", children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("label", { htmlFor: "start-model-enable-password", className: "block text-[10.5px] text-slate-300", children: "\u6A21\u578B\u542F\u7528\u5BC6\u7801\uFF08\u6BCF\u6B21\u542F\u52A8\u524D\u6821\u9A8C\u5E76\u542F\u7528 Agent \u4E0E VLM \u6A21\u578B\uFF09" }),
+                          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                            "input",
+                            {
+                              id: "start-model-enable-password",
+                              ref: startPasswordInputRef,
+                              type: "password",
+                              value: startModalPassword,
+                              autoComplete: "current-password",
+                              "aria-label": "Agent \u4E0E VLM \u6A21\u578B\u542F\u7528\u5BC6\u7801",
+                              placeholder: "\u8F93\u5165\u5BC6\u7801\u542F\u7528 Agent \u6A21\u578B\u548C VLM \u6A21\u578B",
+                              disabled: startModalSubmitting,
+                              onChange: (e) => {
+                                setStartModalPassword(e.target.value);
+                                if (startModalError) setStartModalError(null);
+                              },
+                              className: "w-full rounded border border-slate-700 bg-[#080D16] px-2.5 py-1.5 text-[11px] text-slate-100 outline-none focus:border-[#30D6A0] placeholder:text-slate-600"
+                            }
+                          ),
+                          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "text-[9.5px] leading-tight text-slate-500", children: "\u5BC6\u7801\u4EC5\u7528\u4E8E\u672C\u6B21\u540E\u7AEF\u6821\u9A8C\uFF0C\u4E0D\u4F1A\u5199\u5165\u4EFB\u52A1 Trace \u6216\u9875\u9762\u5FEB\u7167\u3002" })
+                        ] }),
+                        startModalError && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "bg-[#FF667B]/10 border border-[#FF667B]/40 rounded px-2 py-1.5 text-[10.5px] text-[#FF667B] leading-snug", children: startModalError }),
+                        /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between gap-2 pt-1 border-t border-slate-800", children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                            "button",
+                            {
+                              type: "button",
+                              disabled: startModalSubmitting || mode !== "LIVE",
+                              onClick: () => void handleLaunchMission("DETERMINISTIC_PLANNER"),
+                              className: "shrink-0 px-2 py-1.5 rounded text-[10.5px] font-medium bg-[#182338] hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed",
+                              children: "\u786E\u5B9A\u6027 Baseline \u542F\u52A8"
+                            }
+                          ),
+                          /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center gap-1.5 shrink-0", children: [
+                            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                              "button",
+                              {
+                                type: "button",
+                                disabled: startModalSubmitting,
+                                onClick: closeStartMissionModal,
+                                className: "shrink-0 px-2.5 py-1.5 rounded text-[11px] font-medium bg-[#182338] hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed",
+                                children: "\u53D6\u6D88"
+                              }
+                            ),
+                            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                              "button",
+                              {
+                                type: "submit",
+                                disabled: startModalSubmitting || !startModalPassword || mode !== "LIVE",
+                                className: "shrink-0 inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded text-[11px] font-semibold bg-[#30D6A0]/20 hover:bg-[#30D6A0]/30 text-[#30D6A0] border border-[#30D6A0]/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed",
+                                children: startModalSubmitting ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+                                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RefreshCw, { className: "w-3 h-3 animate-spin" }),
+                                  " \u6821\u9A8C\u4E2D..."
+                                ] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+                                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Play, { className: "w-3 h-3" }),
+                                  " \u542F\u7528\u5E76\u5F00\u59CB\u4EFB\u52A1"
+                                ] })
+                              }
+                            )
+                          ] })
+                        ] })
+                      ]
+                    }
+                  )
+                ]
+              }
+            )
+          }
+        )
+      ] }),
+      exportModalOpen && /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+        "div",
+        {
+          className: "fixed inset-0 z-40 bg-black/50 flex items-center justify-center p-3",
+          onClick: () => {
+            if (!exportSubmitting) setExportModalOpen(false);
+          },
+          children: /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+            "div",
+            {
+              role: "dialog",
+              "aria-modal": "true",
+              "aria-labelledby": "experiment-export-modal-title",
+              onClick: (e) => e.stopPropagation(),
+              className: "w-full max-w-md bg-[#101827] border border-[#3DE8E5]/40 rounded-lg p-3.5 space-y-2.5 shadow-2xl",
+              children: [
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between gap-2 border-b border-slate-800 pb-2", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center gap-1.5 min-w-0", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Download, { className: "w-3.5 h-3.5 text-[#3DE8E5] shrink-0" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("h3", { id: "experiment-export-modal-title", className: "text-xs font-semibold text-slate-100 truncate", children: "Experiment / Trace Export \xB7 \u56E0\u679C\u5BA1\u8BA1\u5B9E\u9A8C\u5305" })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                    "button",
+                    {
+                      type: "button",
+                      "aria-label": "\u5173\u95ED\u5BFC\u51FA\u5F39\u7A97",
+                      disabled: exportSubmitting,
+                      onClick: () => setExportModalOpen(false),
+                      className: "p-1 rounded text-slate-400 hover:text-slate-200 hover:bg-[#182338] transition-colors disabled:opacity-40 disabled:cursor-not-allowed",
+                      children: /* @__PURE__ */ (0, import_jsx_runtime.jsx)(X, { className: "w-3.5 h-3.5" })
+                    }
+                  )
+                ] }),
+                mode === "SAMPLE" || snapshot.frame_source === "SYNTHETIC_SAMPLE" ? /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "bg-[#FF667B]/10 border border-[#FF667B]/40 rounded p-2 text-[10.5px] text-[#FF667B] leading-snug", children: "\u5F53\u524D\u4E3A SYNTHETIC_SAMPLE \u5408\u6210\u6F14\u793A\u6A21\u5F0F\uFF1ASAMPLE \u6570\u636E\u4E25\u7981\u4F5C\u4E3A\u771F\u5B9E\u7269\u7406\u5B9E\u9A8C\u6570\u636E\u5305\u5BFC\u51FA\uFF0C\u8BF7\u5207\u6362\u81F3 LIVE \u5B9E\u65F6\u4EFF\u771F\u3002" }) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "bg-[#080D16] border border-slate-800 rounded p-2 space-y-1 text-[10.5px]", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between gap-2", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "text-slate-400", children: "\u5F53\u524D run_id" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "font-mono text-[#3DE8E5] truncate", children: snapshot.run_id || "\u672A\u521B\u5EFA\u8FD0\u884C\u8BB0\u5F55" })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between gap-2", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "text-slate-400", children: "\u6570\u636E\u91C7\u96C6\u72B6\u6001" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { className: "font-mono text-[#30D6A0]", children: snapshot.experiment_recording?.status || "IDLE" })
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "grid grid-cols-3 gap-1 pt-1 border-t border-slate-800/80 font-mono text-[9.5px] text-slate-300", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
+                      "Frames: ",
+                      snapshot.experiment_recording?.counts?.frames ?? 0
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
+                      "Poses: ",
+                      snapshot.experiment_recording?.counts?.pose_estimates ?? 0
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
+                      "Targets: ",
+                      snapshot.experiment_recording?.counts?.grasp_targets ?? 0
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
+                      "States: ",
+                      snapshot.experiment_recording?.counts?.robot_states ?? 0
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
+                      "Contacts: ",
+                      snapshot.experiment_recording?.counts?.contact_samples ?? 0
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("span", { children: [
+                      "Verifs: ",
+                      snapshot.experiment_recording?.counts?.contact_verifications ?? 0
+                    ] })
+                  ] })
+                ] }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "space-y-2 text-[10.5px]", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "space-y-1", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-between", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("label", { htmlFor: "export-run-select", className: "text-slate-300", children: "\u5386\u53F2\u5B9E\u9A8C\u8FD0\u884C\u5217\u8868 (\u6309 run_id \u5BFC\u51FA)" }),
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+                        "button",
+                        {
+                          type: "button",
+                          onClick: () => void refreshExportRuns(),
+                          disabled: mode === "SAMPLE" || exportSubmitting,
+                          className: "inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9.5px] bg-[#182338] text-slate-300 border border-slate-700 hover:text-white disabled:opacity-40",
+                          children: [
+                            /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RefreshCw, { className: "w-2.5 h-2.5" }),
+                            " \u5237\u65B0\u5217\u8868"
+                          ]
+                        }
+                      )
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+                      "select",
+                      {
+                        id: "export-run-select",
+                        value: exportSelectedRunId,
+                        disabled: mode === "SAMPLE" || exportSubmitting,
+                        onChange: (e) => setExportSelectedRunId(e.target.value),
+                        className: "w-full rounded border border-slate-700 bg-[#080D16] px-2 py-1 text-[10.5px] font-mono text-slate-100 outline-none focus:border-[#30D6A0]",
+                        children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "", children: snapshot.run_id ? `\u5F53\u524D\u8FD0\u884C (${snapshot.run_id})` : "\u5F53\u524D\u6700\u65B0\u8FD0\u884C" }),
+                          exportRuns.map((run) => /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("option", { value: run.run_id, children: [
+                            run.run_id,
+                            " \xB7 ",
+                            run.mission_type || "MISSION",
+                            " \xB7 seed=",
+                            run.seed ?? 0,
+                            " \xB7 ",
+                            run.recording_status || "READY"
+                          ] }, run.run_id))
+                        ]
+                      }
+                    )
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "space-y-1", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsx)("label", { htmlFor: "export-scope-select", className: "block text-slate-300", children: "\u5BFC\u51FA\u8303\u56F4" }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(
+                      "select",
+                      {
+                        id: "export-scope-select",
+                        value: exportScope,
+                        disabled: mode === "SAMPLE" || exportSubmitting,
+                        onChange: (e) => setExportScope(e.target.value),
+                        className: "w-full rounded border border-slate-700 bg-[#080D16] px-2 py-1 text-[10.5px] font-mono text-slate-100 outline-none focus:border-[#30D6A0]",
+                        children: [
+                          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "full_mission", children: "full_mission\uFF08\u5B8C\u6574 Mission + \u89C6\u89C9 + \u8F68\u8FF9 + \u63A5\u89E6\u9A8C\u8BC1\uFF09" }),
+                          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "grasp_causal_chain", children: "grasp_causal_chain\uFF08\u6293\u53D6\u89C6\u89C9\u56E0\u679C\u94FE\u4E13\u9879\u5305\uFF09" }),
+                          /* @__PURE__ */ (0, import_jsx_runtime.jsx)("option", { value: "events_only", children: "events_only\uFF08\u4EC5\u4E8B\u4EF6\u6D41 / Snapshot / \u6821\u9A8C\u62A5\u544A\uFF09" })
+                        ]
+                      }
+                    )
+                  ] }),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "space-y-1 bg-[#080D16] border border-slate-800 rounded p-2", children: [
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "flex items-center gap-2 text-slate-300", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                        "input",
+                        {
+                          type: "checkbox",
+                          checked: exportIncludeRgbd,
+                          disabled: mode === "SAMPLE" || exportSubmitting,
+                          onChange: (e) => setExportIncludeRgbd(e.target.checked)
+                        }
+                      ),
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "\u5305\u542B\u539F\u59CB RGB (.png) \u4E0E\u7C73\u5236 Depth (.npy) + \u6807\u5B9A\u5185/\u5916\u53C2" })
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "flex items-center gap-2 text-slate-300", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                        "input",
+                        {
+                          type: "checkbox",
+                          checked: exportIncludeHighFreq,
+                          disabled: mode === "SAMPLE" || exportSubmitting,
+                          onChange: (e) => setExportIncludeHighFreq(e.target.checked)
+                        }
+                      ),
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "\u5305\u542B\u9AD8\u9891\u673A\u5668\u4EBA\u8F68\u8FF9\u4E0E\u63A5\u89E6\u65F6\u5E8F (robot_states / contact_samples)" })
+                    ] }),
+                    /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("label", { className: "flex items-center gap-2 text-slate-300", children: [
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                        "input",
+                        {
+                          type: "checkbox",
+                          checked: exportIncludeAuditTruth,
+                          disabled: mode === "SAMPLE" || exportSubmitting,
+                          onChange: (e) => setExportIncludeAuditTruth(e.target.checked)
+                        }
+                      ),
+                      /* @__PURE__ */ (0, import_jsx_runtime.jsx)("span", { children: "\u5305\u542B\u9694\u79BB\u5BA1\u8BA1\u771F\u503C (audit_only_poses.csv\uFF0C\u4EC5\u79BB\u7EBF\u5BA1\u8BA1\u7528)" })
+                    ] })
+                  ] })
+                ] }),
+                exportStatusMsg && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "bg-[#30D6A0]/15 border border-[#30D6A0]/40 rounded px-2 py-1.5 text-[10.5px] text-[#30D6A0] leading-snug", children: exportStatusMsg }),
+                exportErrorMsg && /* @__PURE__ */ (0, import_jsx_runtime.jsx)("div", { className: "bg-[#FF667B]/10 border border-[#FF667B]/40 rounded px-2 py-1.5 text-[10.5px] text-[#FF667B] leading-snug", children: exportErrorMsg }),
+                /* @__PURE__ */ (0, import_jsx_runtime.jsxs)("div", { className: "flex items-center justify-end gap-2 pt-1 border-t border-slate-800", children: [
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                    "button",
+                    {
+                      type: "button",
+                      disabled: exportSubmitting,
+                      onClick: () => setExportModalOpen(false),
+                      className: "px-2.5 py-1.5 rounded text-[11px] font-medium bg-[#182338] hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors disabled:opacity-40",
+                      children: "\u5173\u95ED"
+                    }
+                  ),
+                  /* @__PURE__ */ (0, import_jsx_runtime.jsx)(
+                    "button",
+                    {
+                      type: "button",
+                      disabled: exportSubmitting || mode === "SAMPLE" || snapshot.frame_source === "SYNTHETIC_SAMPLE",
+                      onClick: () => void handleDownloadExperimentZip(),
+                      className: "inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[11px] font-semibold bg-[#3DE8E5]/20 hover:bg-[#3DE8E5]/30 text-[#3DE8E5] border border-[#3DE8E5]/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed",
+                      children: exportSubmitting ? /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(RefreshCw, { className: "w-3 h-3 animate-spin" }),
+                        " \u6253\u5305\u4E0B\u8F7D\u4E2D..."
+                      ] }) : /* @__PURE__ */ (0, import_jsx_runtime.jsxs)(import_jsx_runtime.Fragment, { children: [
+                        /* @__PURE__ */ (0, import_jsx_runtime.jsx)(Download, { className: "w-3 h-3" }),
+                        " \u5BFC\u51FA\u5B8C\u6574 ZIP \u5B9E\u9A8C\u5305"
+                      ] })
+                    }
+                  )
+                ] })
+              ]
+            }
+          )
+        }
+      )
     ] });
   }
 
@@ -9996,6 +11913,7 @@ lucide-react/dist/esm/icons/circle-x.js:
 lucide-react/dist/esm/icons/clock.js:
 lucide-react/dist/esm/icons/cpu.js:
 lucide-react/dist/esm/icons/database.js:
+lucide-react/dist/esm/icons/download.js:
 lucide-react/dist/esm/icons/file-code-2.js:
 lucide-react/dist/esm/icons/film.js:
 lucide-react/dist/esm/icons/folder-open.js:
@@ -10003,6 +11921,7 @@ lucide-react/dist/esm/icons/git-branch.js:
 lucide-react/dist/esm/icons/grid-3x3.js:
 lucide-react/dist/esm/icons/history.js:
 lucide-react/dist/esm/icons/layers.js:
+lucide-react/dist/esm/icons/lock.js:
 lucide-react/dist/esm/icons/monitor.js:
 lucide-react/dist/esm/icons/play.js:
 lucide-react/dist/esm/icons/radio.js:
@@ -10016,6 +11935,7 @@ lucide-react/dist/esm/icons/square.js:
 lucide-react/dist/esm/icons/triangle-alert.js:
 lucide-react/dist/esm/icons/upload.js:
 lucide-react/dist/esm/icons/wifi-off.js:
+lucide-react/dist/esm/icons/x.js:
 lucide-react/dist/esm/lucide-react.js:
   (**
    * @license lucide-react v0.468.0 - ISC

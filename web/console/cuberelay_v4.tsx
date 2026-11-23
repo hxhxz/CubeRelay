@@ -10,6 +10,7 @@ import {
   Clock,
   Cpu,
   Database,
+  Download,
   FileCode2,
   Film,
   FolderOpen,
@@ -17,6 +18,7 @@ import {
   Grid,
   History,
   Layers,
+  Lock,
   Monitor,
   Play,
   Radio,
@@ -29,6 +31,7 @@ import {
   Square,
   Upload,
   WifiOff,
+  X,
   XCircle,
 } from 'lucide-react';
 
@@ -46,7 +49,7 @@ export type FaceletColor = 'W' | 'Y' | 'G' | 'B' | 'O' | 'R' | 'UNKNOWN';
 
 export type StageStatus = 'PENDING' | 'RUNNING' | 'VERIFIED' | 'FAILED' | 'BLOCKED' | 'UNAVAILABLE';
 
-export type MissionType = 'INSPECT_CUBE' | 'VERIFY_PHYSICAL_U_TURN' | 'SOLVE_CUBE';
+export type MissionType = 'INSPECT_CUBE' | 'VERIFY_PHYSICAL_U_TURN' | 'SOLVE_CUBE' | 'RELAY_SOLVE_CUBE';
 
 export type MissionStatus =
   | 'CREATED'
@@ -54,10 +57,158 @@ export type MissionStatus =
   | 'PLANNING'
   | 'EXECUTING'
   | 'VERIFYING'
+  | 'WAITING_FOR_HUMAN_TURN'
   | 'BLOCKED_CAPABILITY'
   | 'COMPLETED'
   | 'FAILED'
   | 'CANCELLED';
+
+export type RelayPhase =
+  | 'IDLE'
+  | 'AGENT_REASONING'
+  | 'ROBOT_ACTING'
+  | 'ROBOT_PERCEIVING'
+  | 'WAITING_FOR_HUMAN_TURN'
+  | 'AWAITING_HUMAN_CLARIFICATION'
+  | 'PREEMPTED_RECOVERING'
+  | 'VERIFYING_SOLVED'
+  | 'RELAY_COMPLETED_VERIFIED'
+  | 'FAILED';
+
+export interface RelayState {
+  enabled: boolean;
+  phase: RelayPhase;
+  turn_indicator?: {
+    owner: 'HUMAN' | 'CLARIFY' | 'ROBOT' | 'DONE' | 'FAILED' | 'IDLE' | string;
+    owner_label_zh: string;
+    stage_index: number;
+    stage_labels: string[];
+    next_action_hint_zh: string;
+    is_terminal: boolean;
+  };
+  scramble_steps: number | string;
+  resolved_scramble_steps: number;
+  round_number: number;
+  banner: {
+    tone: 'slate' | 'blue' | 'amber' | 'violet' | 'emerald' | 'red';
+    title_zh: string;
+    subtitle_zh: string;
+  };
+  delegation: {
+    suggested_moves: string[];
+    completed_prefix_count: number;
+    deviated_this_turn: boolean;
+    delegation_reason_zh: string;
+    message_zh: string;
+    saved_high_cost_flips_count: number;
+  };
+  human_pad: {
+    active: boolean;
+    waiting_for_human: boolean;
+    clicks_this_turn: string[];
+    can_undo: boolean;
+    highlighted_next_move: string | null;
+  };
+  perturbation: {
+    dx_m: number;
+    dy_m: number;
+    dyaw_deg: number;
+    bounds: {
+      dx_min_m: number;
+      dx_max_m: number;
+      dy_min_m: number;
+      dy_max_m: number;
+      dyaw_min_deg: number;
+      dyaw_max_deg: number;
+    };
+  };
+  hri: {
+    dialog_history: Array<{
+      role: string;
+      text: string;
+      topic?: string | null;
+      sim_time?: number;
+      wall_time?: string;
+      semantics?: {
+        speech_act: string;
+        requires_immediate_motion_interrupt: boolean;
+        should_wake_robot_from_human_turn: boolean;
+        persistent_constraints_to_add: string[];
+        constraints_to_clear?: string[];
+        deviation_intent?: string;
+        rationale_zh?: string;
+        confidence?: number;
+        latency_ms?: number;
+        provenance?: string;
+      } | null;
+    }>;
+    active_constraints: string[];
+    clarification_pending: boolean;
+    clarification_question_zh: string | null;
+    clarification_options: string[];
+    clarification_topic: string | null;
+    latest_semantics?: {
+      speech_act: string;
+      requires_immediate_motion_interrupt: boolean;
+      should_wake_robot_from_human_turn: boolean;
+      persistent_constraints_to_add: string[];
+      constraints_to_clear?: string[];
+      deviation_intent?: string;
+      rationale_zh?: string;
+      confidence?: number;
+      latency_ms?: number;
+      provenance?: string;
+    } | null;
+  };
+  progress: {
+    initial_optimal_steps: number | null;
+    remaining_optimal_steps: number | null;
+    completion_pct: number;
+    robot_moves_count: number;
+    human_turns_count: number;
+    human_moves_inferred_count: number;
+    is_solved: boolean;
+    post_solve_independent_verified: boolean;
+    round_tags: string[];
+  };
+  belief: {
+    deduced_54_unique: boolean;
+    ambiguous_facelet_count: number;
+    ambiguous_facelet_indices: number[];
+    occluded_face: string | null;
+    inferred_human_moves: string[];
+    human_deviation_detected: boolean;
+    undo_conflict_risk: boolean;
+    reasoning_summary_zh: string;
+  };
+  contract: {
+    active_contract: {
+      max_target_drift_m?: number;
+      interrupt_on_human_chat_command?: boolean;
+      mid_turn_recovery_mode?: string;
+      abort_on_unexpected_flip?: boolean;
+    } | null;
+    is_lattice_aligned: boolean;
+    residual_slice_angle_deg: number;
+    latest_preemption: Record<string, unknown> | null;
+    stale_guard: {
+      current_epoch: number;
+      stale_responses_discarded: number;
+      last_invalidation_reason: string | null;
+    };
+    vlm_semantic_diagnosis: Record<string, unknown> | null;
+  };
+  cognitive_stats: {
+    rapid_glance_deduction_successes: number;
+    full_bottom_scans: number;
+    on_demand_vlm_calls: number;
+    fast_loop_contract_interceptions: number;
+    stale_responses_discarded: number;
+    clarifications_requested: number;
+    saved_high_cost_flips: number;
+  };
+  cube_location?: string;
+}
 
 export type PlannerMode = 'DETERMINISTIC_PLANNER' | 'LLM_AGENT' | 'UNCONNECTED';
 
@@ -74,7 +225,24 @@ export type DecisionEventType =
   | 'REPLAN_REQUESTED'
   | 'CAPABILITY_BLOCKED'
   | 'MISSION_COMPLETED'
-  | 'MISSION_FAILED';
+  | 'MISSION_FAILED'
+  | 'OBSERVATION_CAPTURED'
+  | 'VLM_INFERENCE_STARTED'
+  | 'VLM_INFERENCE_COMPLETED'
+  | 'PERCEPTION_UPDATED'
+  | 'AGENT_DECISION_STARTED'
+  | 'AGENT_DECISION_COMPLETED'
+  | 'SKILL_VALIDATED'
+  | 'SKILL_REJECTED'
+  | 'REOBSERVATION_COMPLETED'
+  | 'REPLAN_TRIGGERED'
+  | 'HANDOVER_COMPLETED'
+  | 'HUMAN_TURN_FINISHED'
+  | 'CLARIFICATION_REQUESTED'
+  | 'HUMAN_CHAT_RECEIVED'
+  | 'PREEMPTION_TRIGGERED'
+  | 'STALE_RESPONSE_DISCARDED'
+  | 'RAPID_GLANCE_DEDUCED';
 
 export interface ObservationReference {
   observation_id: string;
@@ -182,6 +350,20 @@ export interface DecisionEvent {
   output_reference?: string | null;
   status: string;
   failure_reason?: string | null;
+  planner_mode?: string | null;
+  model_provider?: string | null;
+  model_name?: string | null;
+  observation_id?: string | null;
+  input_frame_ids?: string[];
+  action_candidates?: string[];
+  parameters?: Record<string, unknown>;
+  expected_information_gain?: string | null;
+  confidence?: number | null;
+  validation_result?: string | null;
+  skill_execution_id?: string | null;
+  feedback_observation_id?: string | null;
+  model_latency_ms?: number | null;
+  token_usage?: Record<string, unknown> | null;
 }
 
 export type TraceEventType =
@@ -239,13 +421,53 @@ export interface AgentObservabilityState {
   planner_name: string;
   llm_connected: boolean;
   llm_model?: string | null;
+  model_provider?: string | null;
   status_label: string;
   latest_observation?: ObservationReference | null;
+  current_observation_id?: string | null;
+  current_frame_id?: string | null;
+  current_camera_id?: string | null;
+  current_observation_image_url?: string | null;
   selected_action?: string | null;
+  selected_parameters?: Record<string, unknown>;
   selection_rationale?: string | null;
+  expected_information_gain?: string | null;
+  confidence?: number | null;
+  safety_gate_status?: string | null;
+  safety_gate_detail?: string | null;
   last_skill_call?: string | null;
   last_execution_feedback?: string | null;
+  next_decision_hint?: string | null;
   blocked_or_replan_reason?: string | null;
+  model_latency_ms?: number | null;
+  total_vlm_calls?: number;
+  total_input_tokens?: number;
+  total_output_tokens?: number;
+  fallback_triggered?: boolean;
+  fallback_reason?: string | null;
+  perception_model_provider?: string | null;
+  perception_model_name?: string | null;
+  perception_connected?: boolean;
+  perception_latency_ms?: number | null;
+  agent_model_provider?: string | null;
+  agent_model_name?: string | null;
+  agent_connected?: boolean;
+  agent_latency_ms?: number | null;
+  latest_semantic_observation?: {
+    observation_id: string;
+    frame_id: string;
+    camera_id: string;
+    cube_visible: boolean;
+    cube_relation_to_gripper: string;
+    support_relation: string;
+    visible_regions: string[];
+    occluded_regions: string[];
+    information_gaps: string[];
+    suggested_observations: string[];
+    visual_conflicts: string[];
+    confidence: number;
+    summary: string;
+  } | null;
 }
 
 export interface TaskStage {
@@ -327,7 +549,9 @@ export interface SimulationSnapshot {
   wrist_depth_url: string | null;
   depth_range_m: [number, number];
   detections: CameraDetectionBox[];
-  task_status: 'IDLE' | 'RUNNING' | 'PAUSED' | 'COMPLETED' | 'FAILED' | 'STOPPED';
+  task_status: 'IDLE' | 'RUNNING' | 'WAITING_FOR_HUMAN_TURN' | 'PAUSED' | 'COMPLETED' | 'FAILED' | 'STOPPED';
+  relay_phase?: RelayPhase;
+  relay_state?: RelayState | null;
   current_stage_id: string;
   current_skill: string;
   stages: TaskStage[];
@@ -344,17 +568,49 @@ export interface SimulationSnapshot {
   trace_events?: TraceEvent[];
   observations?: Array<{
     observation_id: string;
+    frame_id?: string;
     camera_ids: string[];
     frame_refs: string[];
     visual_summary: string;
     coverage: number;
     sim_time: number;
+    image_url?: string;
+    frame_source?: string;
   }>;
   capabilities?: CapabilityRegistrySnapshot | null;
   agent_state?: AgentObservabilityState | null;
   physical_verification?: Record<string, unknown> | null;
   last_observation_ref?: ObservationReference | null;
+  timing_metrics?: {
+    sim_time: number;
+    skill_duration_sim_s: number;
+    total_execution_wall_s: number;
+    model_latency_ms: number;
+    vlm_calls: number;
+    input_tokens: number;
+    output_tokens: number;
+  } | null;
   running?: boolean;
+  run_id?: string | null;
+  experiment_recording?: {
+    run_id?: string | null;
+    status?: string;
+    include_audit_ground_truth?: boolean;
+    trajectory_sample_hz?: number;
+    counts?: Record<string, number>;
+  } | null;
+}
+
+export interface HistoricalRunSummary {
+  run_id: string;
+  session_id?: string;
+  seed?: number;
+  mission_type?: string;
+  planner_mode?: string;
+  recording_status?: string;
+  sim_time?: number;
+  updated_utc?: string;
+  counts?: Record<string, number>;
 }
 
 export interface ReplayTimingFile {
@@ -407,6 +663,12 @@ const MISSION_OPTIONS: Array<{
     shortDesc: '扫描 + Kociemba 求解 + 物理能力边界核查',
     capabilityNote: '受能力限制 · 若含 R/F/L/B/D/U\'/U2 将触发 CAPABILITY_BLOCKED',
   },
+  {
+    type: 'RELAY_SOLVE_CUBE',
+    label: '人机接力复原',
+    shortDesc: 'Gemini Agent 全自主接力 + 26-Cubie 物理求解',
+    capabilityNote: '全自主闭环 · 1s快瞄/25s翻扫权衡 · 18动作自由盘 + 自然语言契约协同',
+  },
 ];
 
 const COLOR_MAP: Record<FaceletColor, { bg: string; border: string; text: string; label: string }> = {
@@ -420,9 +682,9 @@ const COLOR_MAP: Record<FaceletColor, { bg: string; border: string; text: string
 };
 
 const CAMERA_PRESETS: Array<{ id: CameraPresetId; label: string; desc: string; az: number; el: number; dist: number }> = [
+  { id: 'cube_closeup', label: '魔方特写', desc: '26-Cubie 魔方跟拍特写（推荐）', az: 132, el: -28, dist: 0.28 },
+  { id: 'gripper_closeup', label: '夹爪特写', desc: '末端双指夹持接触局部机位', az: 146, el: -22, dist: 0.36 },
   { id: 'overview', label: '场景总览', desc: '3/4 实验室工作站全局机位', az: 135, el: -28, dist: 1.15 },
-  { id: 'gripper_closeup', label: '夹爪特写', desc: '末端双指夹持接触局部机位', az: 148, el: -20, dist: 0.48 },
-  { id: 'cube_closeup', label: '魔方特写', desc: '魔方与转面夹具高倍率视角', az: 125, el: -32, dist: 0.36 },
   { id: 'top_ortho', label: '俯视相机', desc: '龙门架 XY 平面正交俯视', az: 90, el: -86, dist: 0.95 },
 ];
 
@@ -953,6 +1215,21 @@ function createSampleSnapshot(missionType: MissionType, event?: TimelineEvent): 
         failure_reason: '当前仅支持单次顺时针 U 接触物理转面，不支持任意六面连续物理求解。',
       },
     ],
+    RELAY_SOLVE_CUBE: [
+      {
+        step_id: 'smp-r1',
+        index: 1,
+        title: 'Agent 主动扫描建信与交接',
+        skill_id: 'handover_to_human',
+        description: 'Gemini-3.8-Flash 自主权衡翻面代价并交接桌面',
+        status: 'VERIFIED',
+        implemented: true,
+        started_sim_time: 0.4,
+        ended_sim_time: 35.1,
+        elapsed_sec: 34.7,
+        result_summary: '样本：已提交低代价 U 并于 2-Flip D2 前安全移交桌面',
+      },
+    ],
   };
 
   const steps = planStepsByMission[missionType];
@@ -1014,10 +1291,10 @@ function createSampleSnapshot(missionType: MissionType, event?: TimelineEvent): 
     sim_time: isTurnMission ? ev.sim_time : 34.27,
     wall_time: ev.wall_time,
     frame_source: 'SYNTHETIC_SAMPLE',
-    active_camera: 'overview',
-    camera_azimuth_deg: 135,
+    active_camera: missionType === 'RELAY_SOLVE_CUBE' ? 'cube_closeup' : 'overview',
+    camera_azimuth_deg: missionType === 'RELAY_SOLVE_CUBE' ? 132 : 135,
     camera_elevation_deg: -28,
-    camera_distance_m: 1.15,
+    camera_distance_m: missionType === 'RELAY_SOLVE_CUBE' ? 0.28 : 1.15,
     main_frame_url: mainFrameUrl || null,
     wrist_rgb_url: camData.rgbUrl || null,
     wrist_depth_url: camData.depthUrl || null,
@@ -1148,10 +1425,10 @@ function createDisconnectedLiveSnapshot(seed: number, missionType: MissionType):
     sim_time: 0,
     wall_time: '--:--:--',
     frame_source: 'NONE',
-    active_camera: 'overview',
-    camera_azimuth_deg: 135,
+    active_camera: missionType === 'RELAY_SOLVE_CUBE' ? 'cube_closeup' : 'overview',
+    camera_azimuth_deg: missionType === 'RELAY_SOLVE_CUBE' ? 132 : 135,
     camera_elevation_deg: -28,
-    camera_distance_m: 1.15,
+    camera_distance_m: missionType === 'RELAY_SOLVE_CUBE' ? 0.28 : 1.15,
     main_frame_url: null,
     wrist_rgb_url: null,
     wrist_depth_url: null,
@@ -1194,6 +1471,8 @@ function createDisconnectedLiveSnapshot(seed: number, missionType: MissionType):
     physical_verification: null,
     last_observation_ref: null,
     running: false,
+    relay_phase: 'IDLE',
+    relay_state: null,
   };
 }
 
@@ -1263,6 +1542,7 @@ const MissionStatusBadge: React.FC<{ status?: MissionStatus | null }> = ({ statu
     PLANNING: 'bg-[#548CFF]/20 text-[#548CFF] border-[#548CFF]/40',
     EXECUTING: 'bg-[#548CFF]/20 text-[#548CFF] border-[#548CFF]/50',
     VERIFYING: 'bg-[#3DE8E5]/15 text-[#3DE8E5] border-[#3DE8E5]/40',
+    WAITING_FOR_HUMAN_TURN: 'bg-[#FFBF69]/20 text-[#FFBF69] border-[#FFBF69]/50',
     BLOCKED_CAPABILITY: 'bg-[#FFBF69]/20 text-[#FFBF69] border-[#FFBF69]/50',
     COMPLETED: 'bg-[#30D6A0]/15 text-[#30D6A0] border-[#30D6A0]/40',
     FAILED: 'bg-[#FF667B]/15 text-[#FF667B] border-[#FF667B]/40',
@@ -1299,6 +1579,7 @@ interface SimulationViewportProps {
   replayVideoUrl: string | null;
   onReplayTimeUpdate: (videoTimeSec: number) => void;
   onLoadReplayFiles: (videoFile: File | null, timingFile: File | null) => void;
+  onUrgentInterrupt?: () => void;
 }
 
 const SimulationViewport: React.FC<SimulationViewportProps> = ({
@@ -1316,12 +1597,14 @@ const SimulationViewport: React.FC<SimulationViewportProps> = ({
   replayVideoUrl,
   onReplayTimeUpdate,
   onLoadReplayFiles,
+  onUrgentInterrupt,
 }) => {
   const dragStateRef = useRef<{ active: boolean; lastX: number; lastY: number }>({
     active: false,
     lastX: 0,
     lastY: 0,
   });
+  const lastWheelRef = useRef<number>(0);
 
   const handlePointerDown = (e: React.PointerEvent<HTMLDivElement>) => {
     if (mode !== 'LIVE' || !wsConnected) return;
@@ -1355,7 +1638,10 @@ const SimulationViewport: React.FC<SimulationViewportProps> = ({
   const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
     if (mode !== 'LIVE' || !wsConnected) return;
     e.preventDefault();
-    onCameraZoomCommand(e.deltaY > 0 ? 0.06 : -0.06);
+    const now = performance.now();
+    if (now - lastWheelRef.current < 45) return;
+    lastWheelRef.current = now;
+    onCameraZoomCommand(e.deltaY > 0 ? 0.04 : -0.04);
   };
 
   const azRad = (snapshot.camera_azimuth_deg * Math.PI) / 180;
@@ -1423,8 +1709,196 @@ const SimulationViewport: React.FC<SimulationViewportProps> = ({
               </button>
             );
           })}
+          {mode === 'LIVE' && (
+            <>
+              <button
+                type="button"
+                title="拉近镜头放大魔方"
+                onClick={() => onCameraZoomCommand(-0.05)}
+                className="px-1.5 py-0.5 rounded text-[11px] font-mono text-[#3DE8E5] hover:bg-[#182338]"
+              >
+                +放大
+              </button>
+              <button
+                type="button"
+                title="拉远镜头"
+                onClick={() => onCameraZoomCommand(0.05)}
+                className="px-1.5 py-0.5 rounded text-[11px] font-mono text-slate-300 hover:bg-[#182338]"
+              >
+                -缩小
+              </button>
+            </>
+          )}
         </div>
       </div>
+
+      {/* M5 Agent Relay 模块 1 & 模块 6: 清晰回合归属指示灯 + 6阶段回合步进条 + 实时进度 */}
+      {(snapshot.selected_mission_type === 'RELAY_SOLVE_CUBE' || snapshot.relay_state?.enabled) && (() => {
+        const relay = snapshot.relay_state;
+        const tone = relay?.banner?.tone || 'slate';
+        const toneClass =
+          tone === 'amber'
+            ? 'bg-[#FFBF69]/15 border-[#FFBF69]/50 text-[#FFBF69]'
+            : tone === 'violet'
+            ? 'bg-[#8B5CF6]/15 border-[#8B5CF6]/50 text-[#A78BFA]'
+            : tone === 'emerald'
+            ? 'bg-[#30D6A0]/15 border-[#30D6A0]/50 text-[#30D6A0]'
+            : tone === 'red'
+            ? 'bg-[#FF667B]/15 border-[#FF667B]/50 text-[#FF667B]'
+            : tone === 'blue'
+            ? 'bg-[#548CFF]/15 border-[#548CFF]/50 text-[#3DE8E5]'
+            : 'bg-[#182338] border-slate-700 text-slate-300';
+        const prog = relay?.progress;
+        const pct = prog ? Math.max(0, Math.min(100, prog.completion_pct)) : 0;
+        const stats = relay?.cognitive_stats;
+        const turnInfo = relay?.turn_indicator;
+        const owner = turnInfo?.owner || (
+          relay?.phase === 'WAITING_FOR_HUMAN_TURN'
+            ? 'HUMAN'
+            : relay?.phase === 'AWAITING_HUMAN_CLARIFICATION'
+            ? 'CLARIFY'
+            : relay?.phase === 'RELAY_COMPLETED_VERIFIED'
+            ? 'DONE'
+            : relay?.phase === 'ROBOT_ACTING' || relay?.phase === 'AGENT_REASONING' || relay?.phase === 'ROBOT_PERCEIVING' || relay?.phase === 'VERIFYING_SOLVED'
+            ? 'ROBOT'
+            : 'IDLE'
+        );
+        const ownerPillCls =
+          owner === 'HUMAN'
+            ? 'bg-[#FFBF69]/20 text-[#FFBF69] border-[#FFBF69] animate-pulse'
+            : owner === 'CLARIFY'
+            ? 'bg-[#8B5CF6]/20 text-[#A78BFA] border-[#8B5CF6]/50 animate-pulse'
+            : owner === 'ROBOT'
+            ? 'bg-[#3DE8E5]/15 text-[#3DE8E5] border-[#3DE8E5]/50 animate-pulse'
+            : owner === 'DONE'
+            ? 'bg-[#30D6A0]/20 text-[#30D6A0] border-[#30D6A0]/50'
+            : 'bg-[#182338] text-slate-300 border-slate-700';
+        const ownerText =
+          turnInfo?.owner_label_zh ||
+          (owner === 'HUMAN'
+            ? '🧑 当前回合：人类操作中'
+            : owner === 'CLARIFY'
+            ? '🟣 当前回合：待你确认'
+            : owner === 'ROBOT'
+            ? '🤖 当前回合：机器人执行中'
+            : owner === 'DONE'
+            ? '🎉 100% 复原已完成'
+            : '⏸️ 待启动');
+        const stageLabels = turnInfo?.stage_labels || ['开局扫面', '机器人操作', '交接/澄清', '人类回合', '快瞄/修复', '复原核验'];
+        const stageIdx = typeof turnInfo?.stage_index === 'number'
+          ? turnInfo.stage_index
+          : owner === 'HUMAN'
+          ? 3
+          : owner === 'CLARIFY'
+          ? 2
+          : owner === 'DONE'
+          ? 5
+          : relay?.phase === 'ROBOT_PERCEIVING'
+          ? 0
+          : owner === 'ROBOT'
+          ? 1
+          : 0;
+
+        return (
+          <div className="z-20 px-3 py-1.5 bg-[#0C1422] border-b border-slate-800/90 space-y-1.5 shrink-0">
+            <div className={`px-2.5 py-1.5 rounded border flex items-center justify-between gap-2 ${toneClass}`}>
+              <div className="min-w-0 flex items-center gap-2">
+                <span className={`px-2 py-0.5 rounded border text-[10.5px] font-bold shrink-0 ${ownerPillCls}`}>
+                  {ownerText}
+                </span>
+                <div className="min-w-0">
+                  <div className="text-[11px] font-semibold truncate">
+                    {relay?.banner?.title_zh || '🧑/🤖 Agent 人机接力待命'}
+                  </div>
+                  <div className="text-[9.5px] opacity-85 truncate">
+                    {turnInfo?.next_action_hint_zh || relay?.banner?.subtitle_zh || '选择打乱步数并启动，实时观看魔方 26 块协同复原。'}
+                  </div>
+                </div>
+              </div>
+              {snapshot.running && (relay?.phase === 'ROBOT_ACTING' || relay?.phase === 'AGENT_REASONING') && onUrgentInterrupt && (
+                <button
+                  type="button"
+                  onClick={onUrgentInterrupt}
+                  className="px-2 py-1 rounded text-[10px] font-semibold bg-[#FF667B]/20 hover:bg-[#FF667B]/30 text-[#FF667B] border border-[#FF667B]/50 shrink-0 transition-colors"
+                >
+                  ⚡ 紧急刹车/中断
+                </button>
+              )}
+            </div>
+
+            <div className="grid grid-cols-6 gap-1 text-[9.5px] font-mono">
+              {stageLabels.map((stLabel, idx) => {
+                const isDoneStage = owner === 'DONE' ? true : idx < stageIdx;
+                const isCurStage = owner !== 'DONE' && idx === stageIdx;
+                const stageCls = isCurStage
+                  ? 'bg-[#3DE8E5]/15 text-[#3DE8E5] border-[#3DE8E5]/60 font-semibold'
+                  : isDoneStage
+                  ? 'bg-[#30D6A0]/10 text-[#30D6A0] border-[#30D6A0]/30'
+                  : 'bg-[#080D16] text-slate-500 border-slate-800';
+                return (
+                  <div key={stLabel} className={`px-1.5 py-0.5 rounded border text-center truncate ${stageCls}`}>
+                    {isDoneStage ? '✓ ' : isCurStage ? '● ' : `${idx + 1}. `}
+                    {stLabel}
+                  </div>
+                );
+              })}
+            </div>
+
+            {relay && (
+              <div className="space-y-1">
+                <div className="flex items-center justify-between gap-2 text-[10px] font-mono text-slate-300">
+                  <div className="flex items-center gap-2 min-w-0 truncate">
+                    <span>
+                      剩余: <strong className="text-[#3DE8E5]">{prog?.initial_optimal_steps ?? '--'}</strong> →{' '}
+                      <strong className="text-[#30D6A0]">{prog?.remaining_optimal_steps ?? '--'}</strong> 步 (
+                      {pct.toFixed(0)}%)
+                    </span>
+                    <span className="text-slate-500">·</span>
+                    <span>第 {relay.round_number || 1} 轮</span>
+                    <span className="text-slate-500">·</span>
+                    <span>🤖{prog?.robot_moves_count ?? 0}步 / 🧑{prog?.human_turns_count ?? 0}轮</span>
+                  </div>
+                  <div className="flex items-center gap-1.5 shrink-0 text-[9.5px]">
+                    <span className="px-1.5 py-0.5 rounded bg-[#182338] border border-slate-700 text-[#3DE8E5]">
+                      快瞄免翻:{stats?.rapid_glance_deduction_successes ?? 0}
+                    </span>
+                    <span className="px-1.5 py-0.5 rounded bg-[#182338] border border-slate-700 text-[#FFBF69]">
+                      省翻面:{stats?.saved_high_cost_flips ?? 0}
+                    </span>
+                    <span className="px-1.5 py-0.5 rounded bg-[#182338] border border-slate-700 text-slate-300">
+                      抢占:{stats?.fast_loop_contract_interceptions ?? 0}
+                    </span>
+                  </div>
+                </div>
+                <div className="w-full h-1.5 bg-[#182338] rounded-full overflow-hidden border border-slate-800">
+                  <div
+                    className="h-full bg-[#30D6A0] transition-all"
+                    style={{ width: `${pct}%` }}
+                  />
+                </div>
+                {prog?.round_tags && prog.round_tags.length > 0 && (
+                  <div className="flex items-center gap-1 overflow-x-auto text-[9.5px] font-mono">
+                    {prog.round_tags.map((tag, i) => {
+                      const isLatest = i === prog.round_tags.length - 1;
+                      const tagCls = isLatest
+                        ? 'bg-[#3DE8E5]/15 border-[#3DE8E5]/50 text-[#3DE8E5] font-semibold'
+                        : 'bg-[#182338] border-slate-700 text-slate-400';
+                      return (
+                        <span
+                          key={`${tag}-${i}`}
+                          className={`px-1.5 py-0.5 rounded border shrink-0 ${tagCls}`}
+                        >
+                          {tag}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* 核心画面区域 */}
       <div className="relative flex-1 flex items-center justify-center bg-[#080D16] overflow-hidden">
@@ -1587,19 +2061,60 @@ const SimulationViewport: React.FC<SimulationViewportProps> = ({
 // ============================================================================
 
 interface RightOrchestrationPanelProps {
+  mode: RuntimeMode;
   snapshot: SimulationSnapshot;
   selectedMission: MissionType;
+  selectedScrambleSteps: number | 'random';
   onSelectMission: (missionType: MissionType) => void;
+  onSelectScrambleSteps: (steps: number | 'random') => void;
+  onRelayCommand: (cmd: Record<string, unknown>, label: string) => void;
 }
 
+const RELAY_FACE_GROUPS: Array<{ face: FaceId; moves: [string, string, string] }> = [
+  { face: 'U', moves: ['U', "U'", 'U2'] },
+  { face: 'D', moves: ['D', "D'", 'D2'] },
+  { face: 'F', moves: ['F', "F'", 'F2'] },
+  { face: 'B', moves: ['B', "B'", 'B2'] },
+  { face: 'L', moves: ['L', "L'", 'L2'] },
+  { face: 'R', moves: ['R', "R'", 'R2'] },
+];
+
+const QUICK_HRI_CHIPS = [
+  { label: '交给你复原', text: '我不玩了，剩下的全部交给你复原！' },
+  { label: '拒拧底面D', text: '底面D我不方便拧，底面由你翻面拧掉，给我留顶面或侧面' },
+  { label: '手滑撤回', text: '刚才手滑拧错了，帮我撤回上一步' },
+  { label: '顺路线解', text: '我是故意换路线的，请保留我的动作顺着继续往下解' },
+  { label: '紧急放回', text: '停一下！先别解了，把魔方安全放回桌面交给我' },
+];
+
 const RightOrchestrationPanel: React.FC<RightOrchestrationPanelProps> = ({
+  mode,
   snapshot,
   selectedMission,
+  selectedScrambleSteps,
   onSelectMission,
+  onSelectScrambleSteps,
+  onRelayCommand,
 }) => {
   const [rightTab, setRightTab] = useState<'AGENT' | 'SKILL'>('AGENT');
+  const [showLegacyMissions, setShowLegacyMissions] = useState<boolean>(false);
+  const [agentDrawerOpen, setAgentDrawerOpen] = useState<boolean>(false);
+  const [skillDrawerOpen, setSkillDrawerOpen] = useState<boolean>(false);
   const [expandedSkills, setExpandedSkills] = useState<Set<string>>(new Set());
   const [expandedTraceEvents, setExpandedTraceEvents] = useState<Set<string>>(new Set());
+  const [selectedDecisionObservationId, setSelectedDecisionObservationId] = useState<string | null>(null);
+  const [chatDraft, setChatDraft] = useState<string>('');
+  const [perturbDxCm, setPerturbDxCm] = useState<number>(0);
+  const [perturbDyCm, setPerturbDyCm] = useState<number>(0);
+  const [perturbYawDeg, setPerturbYawDeg] = useState<number>(0);
+
+  useEffect(() => {
+    if (snapshot.relay_state?.perturbation) {
+      setPerturbDxCm(Math.round((snapshot.relay_state.perturbation.dx_m || 0) * 100));
+      setPerturbDyCm(Math.round((snapshot.relay_state.perturbation.dy_m || 0) * 100));
+      setPerturbYawDeg(Math.round(snapshot.relay_state.perturbation.dyaw_deg || 0));
+    }
+  }, [snapshot.relay_state?.phase, snapshot.relay_state?.perturbation?.dx_m, snapshot.relay_state?.perturbation?.dy_m, snapshot.relay_state?.perturbation?.dyaw_deg]);
 
   const mission = snapshot.mission;
   const plan = snapshot.plan;
@@ -1608,99 +2123,254 @@ const RightOrchestrationPanel: React.FC<RightOrchestrationPanelProps> = ({
   const executions = snapshot.skill_executions || [];
   const traceEvents = snapshot.trace_events || [];
   const policyTraceEvents = traceEvents.filter((event) => event.event_type === 'decision');
+  const vlmCompositeTrace = traceEvents.find(
+    (event) => event.event_type === 'composite_skill' && event.skill_id === 'vlm_controlled_inspection'
+  );
+  const vlmCompositeChildren = vlmCompositeTrace
+    ? traceEvents.filter((event) => event.parent_event_id === vlmCompositeTrace.event_id)
+    : [];
   const missionSpec = MISSION_OPTIONS.find((m) => m.type === selectedMission)!;
+  const selectedDecisionObservation = (snapshot.observations || []).find(
+    (observation) => observation.observation_id === selectedDecisionObservationId
+  );
 
   const completedSteps = plan ? plan.steps.filter((s) => s.status === 'VERIFIED').length : 0;
   const totalSteps = plan ? plan.steps.length : 0;
+  const isVlmPlanner = agent?.planner_mode === 'LLM_AGENT';
+  const plannerBannerStyle = agent?.llm_connected
+    ? 'bg-[#30D6A0]/10 border-[#30D6A0]/40 text-[#30D6A0]'
+    : isVlmPlanner
+    ? 'bg-[#FFBF69]/10 border-[#FFBF69]/40 text-[#FFBF69]'
+    : agent?.planner_mode === 'DETERMINISTIC_PLANNER'
+    ? 'bg-[#548CFF]/15 border-[#548CFF]/40 text-slate-200'
+    : 'bg-[#182338] border-slate-700 text-slate-300';
+  const safetyGateStyle =
+    agent?.safety_gate_status && agent.safety_gate_status.startsWith('PASSED')
+      ? 'text-[#30D6A0]'
+      : agent?.safety_gate_status && agent.safety_gate_status.includes('BLOCKED')
+      ? 'text-[#FFBF69]'
+      : agent?.safety_gate_status
+      ? 'text-[#FF667B]'
+      : 'text-slate-400';
+
+  const isRelayMission = selectedMission === 'RELAY_SOLVE_CUBE';
+  const showAgentPanel = isRelayMission ? agentDrawerOpen : rightTab === 'AGENT';
+  const showSkillPanel = isRelayMission ? skillDrawerOpen : rightTab === 'SKILL';
 
   return (
     <div className="min-w-0 min-h-0 h-full bg-[#101827] border border-slate-800/90 rounded-lg p-2.5 flex flex-col gap-2">
-      {/* 顶部标题与 Mission 选择器 */}
+      {/* 顶部标题与精简任务栏（默认聚焦人机接力，历史实验可折叠切换） */}
       <div className="space-y-1.5 border-b border-slate-800/90 pb-2 shrink-0">
         <div className="flex items-center justify-between gap-1.5">
           <div className="flex items-center gap-1.5 min-w-0">
             <GitBranch className="w-3.5 h-3.5 text-[#3DE8E5] shrink-0" />
             <span className="text-[11px] font-semibold tracking-wider text-slate-200 uppercase truncate">
-              MISSION & ORCHESTRATION
+              {isRelayMission ? '🧑/🤖 人机接力主控台' : `实验模式 · ${missionSpec.label}`}
             </span>
           </div>
-          <MissionStatusBadge status={mission?.status} />
+          <div className="flex items-center gap-1.5 shrink-0">
+            <button
+              type="button"
+              onClick={() => setShowLegacyMissions((v) => !v)}
+              title="展开/收起历史单阶段实验（六面扫描 / U层物理转动 / 魔方完整求解）"
+              className="px-1.5 py-0.5 rounded text-[9.5px] bg-[#080D16] hover:bg-[#182338] text-slate-400 hover:text-slate-200 border border-slate-800 transition-colors"
+            >
+              {showLegacyMissions ? '收起历史实验 ▴' : '历史实验 ▾'}
+            </button>
+            <MissionStatusBadge status={mission?.status} />
+          </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-1 bg-[#080D16] p-0.5 rounded border border-slate-800">
-          {MISSION_OPTIONS.map((opt) => {
-            const active = selectedMission === opt.type;
-            return (
-              <button
-                key={opt.type}
-                type="button"
-                title={opt.shortDesc}
-                onClick={() => onSelectMission(opt.type)}
-                className={`px-1.5 py-1 rounded text-[10.5px] font-medium truncate transition-colors ${
-                  active
-                    ? 'bg-[#548CFF] text-white'
-                    : 'text-slate-400 hover:text-slate-200 hover:bg-[#182338]'
-                }`}
-              >
-                {opt.label}
-              </button>
-            );
-          })}
-        </div>
+        {(showLegacyMissions || !isRelayMission) && (
+          <div className="grid grid-cols-2 gap-1 bg-[#080D16] p-0.5 rounded border border-slate-800">
+            {MISSION_OPTIONS.map((opt) => {
+              const active = selectedMission === opt.type;
+              return (
+                <button
+                  key={opt.type}
+                  type="button"
+                  title={opt.shortDesc}
+                  onClick={() => onSelectMission(opt.type)}
+                  className={`px-1.5 py-1 rounded text-[10.5px] font-medium truncate transition-colors ${
+                    active
+                      ? 'bg-[#548CFF] text-white'
+                      : 'text-slate-400 hover:text-slate-200 hover:bg-[#182338]'
+                  }`}
+                >
+                  {opt.label}
+                </button>
+              );
+            })}
+          </div>
+        )}
 
-        <div className="text-[10px] text-slate-400 bg-[#080D16] border border-slate-800/80 rounded px-2 py-1 leading-snug">
-          {missionSpec.capabilityNote}
-        </div>
+        {isRelayMission && (
+          <div className="flex items-center justify-between gap-1 bg-[#080D16] border border-slate-800 rounded px-2 py-1 text-[10px]">
+            <span className="text-slate-400 shrink-0">打乱步数:</span>
+            <div className="flex items-center gap-1">
+              {([4, 5, 6, 8, 'random'] as Array<number | 'random'>).map((opt) => {
+                const active = selectedScrambleSteps === opt;
+                return (
+                  <button
+                    key={String(opt)}
+                    type="button"
+                    onClick={() => onSelectScrambleSteps(opt)}
+                    className={`px-1.5 py-0.5 rounded font-mono transition-colors ${
+                      active
+                        ? 'bg-[#3DE8E5]/20 text-[#3DE8E5] border border-[#3DE8E5]/40'
+                        : 'text-slate-400 hover:text-slate-200 bg-[#182338]'
+                    }`}
+                  >
+                    {opt === 'random' ? '随机' : `${opt}步`}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {!isRelayMission && (
+          <div className="text-[10px] text-slate-400 bg-[#080D16] border border-slate-800/80 rounded px-2 py-1 leading-snug">
+            {missionSpec.capabilityNote}
+          </div>
+        )}
       </div>
 
-      {/* 双标签页切换: Agent / 决策 vs Skill / 执行 */}
-      <div className="grid grid-cols-2 gap-1 bg-[#080D16] p-0.5 rounded border border-slate-800 shrink-0">
-        <button
-          type="button"
-          onClick={() => setRightTab('AGENT')}
-          className={`flex items-center justify-center gap-1.5 py-1 rounded text-[11px] font-semibold transition-colors ${
-            rightTab === 'AGENT'
-              ? 'bg-[#182338] text-[#3DE8E5] border border-[#3DE8E5]/40'
-              : 'text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          <Bot className="w-3.5 h-3.5" /> Agent / 决策
-        </button>
-        <button
-          type="button"
-          onClick={() => setRightTab('SKILL')}
-          className={`flex items-center justify-center gap-1.5 py-1 rounded text-[11px] font-semibold transition-colors ${
-            rightTab === 'SKILL'
-              ? 'bg-[#182338] text-[#3DE8E5] border border-[#3DE8E5]/40'
-              : 'text-slate-400 hover:text-slate-200'
-          }`}
-        >
-          <Layers className="w-3.5 h-3.5" /> Skill / 执行 ({completedSteps}/{totalSteps})
-        </button>
-      </div>
-
-      {/* 标签 A: Agent / 决策可观测性 */}
-      {rightTab === 'AGENT' && (
-        <div className="flex-1 min-h-0 overflow-y-auto space-y-2 pr-0.5 text-[11px]">
-          {/* 明确区分规划器 / LLM 状态（无 LLM 连接时禁止伪造思考日志） */}
-          <div
-            className={`px-2 py-1.5 rounded border text-[10.5px] font-medium flex items-center gap-1.5 ${
-              agent?.llm_connected
-                ? 'bg-[#30D6A0]/10 border-[#30D6A0]/40 text-[#30D6A0]'
-                : agent?.planner_mode === 'DETERMINISTIC_PLANNER'
-                ? 'bg-[#548CFF]/15 border-[#548CFF]/40 text-slate-200'
-                : 'bg-[#182338] border-slate-700 text-slate-300'
+      {/* 非人机接力历史任务时保留双标签页切换 */}
+      {!isRelayMission && (
+        <div className="grid grid-cols-2 gap-1 bg-[#080D16] p-0.5 rounded border border-slate-800 shrink-0">
+          <button
+            type="button"
+            onClick={() => setRightTab('AGENT')}
+            className={`flex items-center justify-center gap-1 py-1 rounded text-[10.5px] font-semibold transition-colors ${
+              rightTab === 'AGENT'
+                ? 'bg-[#182338] text-[#3DE8E5] border border-[#3DE8E5]/40'
+                : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            <Bot className="w-3.5 h-3.5 shrink-0 text-[#3DE8E5]" />
-            <span className="leading-snug">
-              {agent?.llm_connected
-                ? `LLM Agent 已连接 (${agent.llm_model || 'Gemini'})`
-                : agent?.planner_mode === 'DETERMINISTIC_PLANNER'
-                ? agent.status_label || '当前由确定性任务规划器执行，LLM Agent 尚未接入'
-                : 'Agent 尚未接入'}
+            <Bot className="w-3 h-3" /> Agent / 决策
+          </button>
+          <button
+            type="button"
+            onClick={() => setRightTab('SKILL')}
+            className={`flex items-center justify-center gap-1 py-1 rounded text-[10.5px] font-semibold transition-colors ${
+              rightTab === 'SKILL'
+                ? 'bg-[#182338] text-[#3DE8E5] border border-[#3DE8E5]/40'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            <Layers className="w-3 h-3" /> Skill / 执行 ({completedSteps}/{totalSteps})
+          </button>
+        </div>
+      )}
+
+      {/* 折叠抽屉栏（人机接力模式下默认折叠在底部） */}
+      {isRelayMission && (
+        <div className="order-2 shrink-0 grid grid-cols-2 gap-1.5 border-t border-slate-800/90 pt-1.5">
+          <button
+            type="button"
+            onClick={() => setAgentDrawerOpen((v) => !v)}
+            className={`flex items-center justify-between gap-1 px-2 py-1 rounded text-[10px] font-semibold border transition-colors ${
+              agentDrawerOpen
+                ? 'bg-[#182338] text-[#3DE8E5] border-[#3DE8E5]/40'
+                : 'bg-[#080D16] text-slate-400 border-slate-800 hover:text-slate-200'
+            }`}
+          >
+            <span className="flex items-center gap-1 truncate">
+              <Bot className="w-3 h-3 shrink-0" /> Agent / 决策
             </span>
+            <span>{agentDrawerOpen ? '收起 ▾' : '展开 ▸'}</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setSkillDrawerOpen((v) => !v)}
+            className={`flex items-center justify-between gap-1 px-2 py-1 rounded text-[10px] font-semibold border transition-colors ${
+              skillDrawerOpen
+                ? 'bg-[#182338] text-[#3DE8E5] border-[#3DE8E5]/40'
+                : 'bg-[#080D16] text-slate-400 border-slate-800 hover:text-slate-200'
+            }`}
+          >
+            <span className="flex items-center gap-1 truncate">
+              <Layers className="w-3 h-3 shrink-0" /> Skill / 执行 ({completedSteps}/{totalSteps})
+            </span>
+            <span>{skillDrawerOpen ? '收起 ▾' : '展开 ▸'}</span>
+          </button>
+        </div>
+      )}
+
+      {/* Agent / 决策可观测性（接力模式下点击折叠开关展开） */}
+      {showAgentPanel && (
+        <div className={isRelayMission ? 'order-3 max-h-56 shrink-0 overflow-y-auto space-y-2 pr-0.5 text-[11px] border border-slate-800/80 rounded p-1.5 bg-[#0A101B]' : 'flex-1 min-h-0 overflow-y-auto space-y-2 pr-0.5 text-[11px]'}>
+          {/* 明确区分规划器 / LLM 状态（只有真实在线调用成功后才显示已连接） */}
+          <div className={`px-2 py-1.5 rounded border text-[10.5px] font-medium space-y-1 ${plannerBannerStyle}`}>
+            <div className="flex items-center gap-1.5">
+              <Bot className="w-3.5 h-3.5 shrink-0 text-[#3DE8E5]" />
+              <span className="leading-snug">
+                {agent?.llm_connected
+                  ? `LLM Agent 已连接 (${agent.llm_model || 'Gemini'})`
+                  : isVlmPlanner
+                  ? agent?.status_label || `Gemini VLM 未完成在线验证 (${agent?.llm_model || 'unconfigured'})`
+                  : agent?.planner_mode === 'DETERMINISTIC_PLANNER'
+                  ? agent.status_label || '当前由确定性任务规划器执行，LLM Agent 尚未接入'
+                  : 'Agent 尚未接入'}
+              </span>
+            </div>
+            <div className="text-[9.5px] font-mono text-slate-300 flex items-center justify-between gap-1">
+              <span>{agent?.planner_name || '--'}</span>
+              <span>
+                {agent?.total_vlm_calls ? `VLM:${agent.total_vlm_calls}次` : ''}
+                {typeof agent?.model_latency_ms === 'number' ? ` · ${agent.model_latency_ms.toFixed(0)}ms` : ''}
+              </span>
+            </div>
+            {agent?.fallback_triggered && (
+              <div className="text-[9.5px] text-[#FFBF69] font-mono">
+                [FALLBACK] 已回退确定性规划 ({agent.fallback_reason || 'VLM_ERROR'})
+              </div>
+            )}
           </div>
+
+          {isVlmPlanner && (
+            <div className="grid grid-cols-2 gap-1.5">
+              <div className="rounded border border-[#3DE8E5]/30 bg-[#3DE8E5]/5 p-1.5 space-y-0.5">
+                <div className="text-[9px] font-mono text-[#3DE8E5]">MODEL A · VLM PERCEPTION</div>
+                <div className="text-[10px] text-slate-200 truncate">{agent?.perception_model_name || '未配置'}</div>
+                <div className="text-[9px] text-slate-500">
+                  {agent?.perception_connected ? '已验证' : '未验证'}
+                  {typeof agent?.perception_latency_ms === 'number' ? ` · ${agent.perception_latency_ms.toFixed(0)}ms` : ''}
+                </div>
+              </div>
+              <div className="rounded border border-[#548CFF]/30 bg-[#548CFF]/5 p-1.5 space-y-0.5">
+                <div className="text-[9px] font-mono text-[#548CFF]">MODEL B · AGENT PLANNER</div>
+                <div className="text-[10px] text-slate-200 truncate">{agent?.agent_model_name || '未配置'}</div>
+                <div className="text-[9px] text-slate-500">
+                  {agent?.agent_connected ? '已验证' : '未验证'}
+                  {typeof agent?.agent_latency_ms === 'number' ? ` · ${agent.agent_latency_ms.toFixed(0)}ms` : ''}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {agent?.latest_semantic_observation && (
+            <div className="rounded border border-slate-800 bg-[#080D16] p-2 space-y-1">
+              <div className="text-[9.5px] font-mono text-[#3DE8E5]">
+                SEMANTIC OBS · {agent.latest_semantic_observation.observation_id} · {agent.latest_semantic_observation.frame_id}
+              </div>
+              <div className="text-[10.5px] text-slate-200">{agent.latest_semantic_observation.summary}</div>
+              <div className="text-[10px] text-slate-400">
+                关系：{agent.latest_semantic_observation.cube_relation_to_gripper} · {agent.latest_semantic_observation.support_relation}
+              </div>
+              {agent.latest_semantic_observation.information_gaps.length > 0 && (
+                <div className="text-[10px] text-[#FFBF69]">
+                  信息缺口：{agent.latest_semantic_observation.information_gaps.join('；')}
+                </div>
+              )}
+              {agent.latest_semantic_observation.visual_conflicts.length > 0 && (
+                <div className="text-[10px] text-[#FF667B]">
+                  感知冲突：{agent.latest_semantic_observation.visual_conflicts.join('；')}
+                </div>
+              )}
+            </div>
+          )}
 
           {/* 能力阻塞或失败显式警告框 */}
           {(mission?.status === 'BLOCKED_CAPABILITY' || mission?.blocked_reason || agent?.blocked_or_replan_reason) && (
@@ -1742,10 +2412,23 @@ const RightOrchestrationPanel: React.FC<RightOrchestrationPanelProps> = ({
             )}
           </div>
 
-          {/* 观察摘要与决策依据 */}
+          {/* 观察摘要、实时观测帧引用、决策依据与 Safety Gate */}
           <div className="p-2 rounded bg-[#080D16] border border-slate-800/90 space-y-1.5">
             <div>
-              <div className="text-[10px] font-mono text-slate-400">最新观察摘要</div>
+              <div className="text-[10px] font-mono text-slate-400">最新观察摘要与真实相机输入</div>
+              {agent?.current_observation_image_url && (
+                <div className="my-1 rounded overflow-hidden border border-slate-800 bg-black">
+                  <img
+                    src={agent.current_observation_image_url}
+                    alt={agent.current_camera_id || 'VLM Input Frame'}
+                    className="w-full aspect-[3/2] object-contain"
+                  />
+                  <div className="px-1.5 py-0.5 text-[9px] font-mono text-slate-400 flex justify-between">
+                    <span>cam:{agent.current_camera_id || 'overhead'}</span>
+                    <span>frm:{agent.current_frame_id || '--'}</span>
+                  </div>
+                </div>
+              )}
               <div className="text-[10.5px] text-slate-200 leading-snug">
                 {agent?.latest_observation ? (
                   <>
@@ -1761,15 +2444,37 @@ const RightOrchestrationPanel: React.FC<RightOrchestrationPanelProps> = ({
               </div>
             </div>
 
-            <div className="pt-1 border-t border-slate-800/80">
-              <div className="text-[10px] font-mono text-slate-400">当前选择动作与选择依据</div>
-              <div className="font-mono text-[10.5px] text-[#3DE8E5]">
+            <div className="pt-1 border-t border-slate-800/80 space-y-0.5">
+              <div className="flex items-center justify-between text-[10px] font-mono text-slate-400">
+                <span>当前选择动作与结构化依据</span>
+                {typeof agent?.confidence === 'number' && (
+                  <span className="text-[#3DE8E5]">conf:{agent.confidence.toFixed(2)}</span>
+                )}
+              </div>
+              <div className="font-mono text-[10.5px] text-[#3DE8E5] break-all">
                 {agent?.selected_action || '--'}
+                {agent?.selected_parameters && Object.keys(agent.selected_parameters).length > 0
+                  ? ` ${JSON.stringify(agent.selected_parameters)}`
+                  : ''}
               </div>
               <div className="text-[10.5px] text-slate-300 leading-snug mt-0.5">
-                {agent?.selection_rationale || plan?.rationale_summary || '等待任务启动后由确定性规划器生成计划'}
+                {agent?.selection_rationale || plan?.rationale_summary || '等待任务启动后由规划器生成决策'}
               </div>
+              {agent?.expected_information_gain && (
+                <div className="text-[9.5px] text-slate-400 leading-snug">
+                  预期信息增益：{agent.expected_information_gain}
+                </div>
+              )}
             </div>
+
+            {agent?.safety_gate_status && (
+              <div className="pt-1 border-t border-slate-800/80">
+                <div className="text-[10px] font-mono text-slate-400">Safety Gate 校验结果</div>
+                <div className={`font-mono text-[10px] ${safetyGateStyle}`}>
+                  {agent.safety_gate_status}
+                </div>
+              </div>
+            )}
 
             <div className="pt-1 border-t border-slate-800/80">
               <div className="text-[10px] font-mono text-slate-400">最近 Skill 调用与执行反馈</div>
@@ -1781,6 +2486,18 @@ const RightOrchestrationPanel: React.FC<RightOrchestrationPanelProps> = ({
           </div>
 
           {/* 可审计决策事件流 (DecisionEvent) */}
+          {selectedDecisionObservation?.image_url && selectedDecisionObservation.frame_source === 'REAL_MUJOCO_RENDERER' && (
+            <div className="rounded border border-[#3DE8E5]/30 bg-black overflow-hidden">
+              <div className="px-2 py-1 text-[9px] font-mono text-[#3DE8E5] bg-[#080D16]">
+                历史决策图像 · {selectedDecisionObservation.observation_id} · {selectedDecisionObservation.frame_id || '--'}
+              </div>
+              <img
+                src={selectedDecisionObservation.image_url}
+                alt={`Historical observation ${selectedDecisionObservation.observation_id}`}
+                className="w-full max-h-36 object-contain"
+              />
+            </div>
+          )}
           {policyTraceEvents.length > 0 && (
             <div className="space-y-1">
               <div className="text-[10px] font-mono text-slate-400">
@@ -1804,6 +2521,35 @@ const RightOrchestrationPanel: React.FC<RightOrchestrationPanelProps> = ({
             </div>
           )}
 
+          {snapshot.relay_state?.enabled && (
+            <div className="p-2 rounded bg-[#080D16] border border-[#548CFF]/40 space-y-1">
+              <div className="text-[10px] font-mono text-[#3DE8E5] font-semibold flex items-center justify-between">
+                <span>EXECUTION CONTRACT &amp; BELIEF · 契约与信念透视</span>
+                <span className={snapshot.relay_state.contract.is_lattice_aligned ? 'text-[#30D6A0]' : 'text-[#FFBF69]'}>
+                  {snapshot.relay_state.contract.is_lattice_aligned ? '晶格对齐' : '半拧保持'}
+                </span>
+              </div>
+              <div className="text-[10px] font-mono text-slate-300 space-y-0.5">
+                <div>
+                  守恒锁定:{' '}
+                  <span className={snapshot.relay_state.belief.deduced_54_unique ? 'text-[#30D6A0]' : 'text-[#FFBF69]'}>
+                    {snapshot.relay_state.belief.deduced_54_unique ? '54/54 唯一锁定' : `歧义 ${snapshot.relay_state.belief.ambiguous_facelet_count} 格`}
+                  </span>
+                  {' · '}视觉反推: {snapshot.relay_state.belief.inferred_human_moves.join(' ') || '无'}
+                </div>
+                <div>
+                  契约模式: {snapshot.relay_state.contract.active_contract?.mid_turn_recovery_mode || 'UNWIND_TO_ZERO'}
+                  {' · '}过期响应拦截: {snapshot.relay_state.contract.stale_guard?.stale_responses_discarded ?? 0} 次
+                </div>
+                {snapshot.relay_state.belief.reasoning_summary_zh && (
+                  <div className="text-slate-400 font-sans text-[10px] leading-snug">
+                    {snapshot.relay_state.belief.reasoning_summary_zh}
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
           <div className="space-y-1">
             <div className="text-[10px] font-mono text-slate-400 flex items-center justify-between">
               <span>DECISION EVENTS · 决策审计流</span>
@@ -1818,44 +2564,90 @@ const RightOrchestrationPanel: React.FC<RightOrchestrationPanelProps> = ({
                 {decisionEvents
                   .slice()
                   .reverse()
-                  .map((ev) => (
-                    <div
-                      key={ev.event_id}
-                      className="p-1.5 rounded bg-[#080D16] border border-slate-800/80 space-y-0.5"
-                    >
-                      <div className="flex items-center justify-between gap-1 text-[9.5px] font-mono">
-                        <span
-                          className={
-                            ev.event_type === 'CAPABILITY_BLOCKED'
-                              ? 'text-[#FFBF69]'
-                              : ev.event_type.includes('FAILED')
-                              ? 'text-[#FF667B]'
-                              : 'text-[#3DE8E5]'
-                          }
-                        >
-                          #{ev.sequence} {ev.event_type}
-                        </span>
-                        <span className="text-slate-500">
-                          {ev.sim_time !== null && ev.sim_time !== undefined ? `${ev.sim_time.toFixed(2)}s` : ev.wall_time}
-                        </span>
-                      </div>
-                      <div className="text-[10.5px] text-slate-200 leading-snug">{ev.summary}</div>
-                      <div className="text-[10px] text-slate-400 leading-snug">{ev.decision_rationale_summary}</div>
-                    </div>
-                  ))}
+                  .map((ev) => {
+                    const evColor =
+                      ev.event_type === 'CAPABILITY_BLOCKED'
+                        ? 'text-[#FFBF69]'
+                        : ev.event_type.includes('FAILED')
+                        ? 'text-[#FF667B]'
+                        : 'text-[#3DE8E5]';
+                    const srcColor = ev.source === 'gemini_vlm' ? 'text-[#30D6A0]' : 'text-slate-400';
+                    return (
+                      <button
+                        type="button"
+                        key={ev.event_id}
+                        onClick={() => ev.observation_id && setSelectedDecisionObservationId(ev.observation_id)}
+                        className="w-full text-left p-1.5 rounded bg-[#080D16] border border-slate-800/80 space-y-0.5 hover:border-[#3DE8E5]/40 disabled:cursor-default"
+                      >
+                        <div className="flex items-center justify-between gap-1 text-[9.5px] font-mono">
+                          <span className={evColor}>
+                            #{ev.sequence} {ev.event_type}
+                          </span>
+                          <span className="text-slate-500">
+                            {ev.sim_time !== null && ev.sim_time !== undefined ? `${ev.sim_time.toFixed(2)}s` : ev.wall_time}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between gap-1 text-[9px] font-mono">
+                          <span className={srcColor}>src:{ev.source}</span>
+                          <span className="text-slate-500">
+                            {ev.validation_result ? ev.validation_result : ''}
+                            {typeof ev.model_latency_ms === 'number' ? ` · ${ev.model_latency_ms.toFixed(0)}ms` : ''}
+                          </span>
+                        </div>
+                        <div className="text-[10.5px] text-slate-200 leading-snug">{ev.summary}</div>
+                        <div className="text-[10px] text-slate-400 leading-snug">{ev.decision_rationale_summary}</div>
+                      </button>
+                    );
+                  })}
               </div>
             )}
           </div>
         </div>
       )}
 
-      {/* 标签 B: Skill / 执行流水线 (严格来自当前 Mission 动态计划) */}
-      {rightTab === 'SKILL' && (
-        <div className="flex-1 min-h-0 flex flex-col justify-between gap-1.5 overflow-y-auto pr-0.5">
+      {/* Skill / 执行流水线（接力模式下点击折叠开关展开） */}
+      {showSkillPanel && (
+        <div className={isRelayMission ? 'order-4 max-h-56 shrink-0 flex flex-col justify-between gap-1.5 overflow-y-auto pr-0.5 border border-slate-800/80 rounded p-1.5 bg-[#0A101B]' : 'flex-1 min-h-0 flex flex-col justify-between gap-1.5 overflow-y-auto pr-0.5'}>
           <div className="space-y-1 flex-1 overflow-y-auto">
+            {vlmCompositeTrace && (
+              <div className="px-2 py-1.5 rounded border bg-[#0C1422] border-[#30D6A0]/40 space-y-1 text-[11px]">
+                <button
+                  type="button"
+                  onClick={() => setExpandedSkills((previous) => {
+                    const next = new Set(previous);
+                    next.has(vlmCompositeTrace.event_id)
+                      ? next.delete(vlmCompositeTrace.event_id)
+                      : next.add(vlmCompositeTrace.event_id);
+                    return next;
+                  })}
+                  className="w-full flex items-center justify-between text-[10px] font-mono text-[#30D6A0]"
+                >
+                  <span className="flex items-center gap-1">
+                    {expandedSkills.has(vlmCompositeTrace.event_id) ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
+                    VLM 闭环扫描 Trace · 子事件 {vlmCompositeChildren.length}
+                  </span>
+                  <span>{vlmCompositeTrace.status}</span>
+                </button>
+                {expandedSkills.has(vlmCompositeTrace.event_id) && (
+                  <div className="ml-1 border-l border-slate-700 pl-2 space-y-1">
+                    {vlmCompositeChildren.map((event) => (
+                      <div key={event.event_id} className="rounded border p-1 bg-[#080D16] border-slate-800 text-[9.5px]">
+                        <div className="flex items-center justify-between font-mono">
+                          <span className="text-[#3DE8E5]">{event.event_type.toUpperCase()} {event.name}</span>
+                          <span className="text-slate-500">{event.sim_time.toFixed(2)}s</span>
+                        </div>
+                        <div className="text-slate-400">src:{event.source} · {event.status}</div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
             {!plan || plan.steps.length === 0 ? (
               <div className="p-2.5 rounded bg-[#080D16] border border-slate-800 text-[11px] text-slate-400">
-                尚未生成任务计划，请选择 Mission 并启动任务。
+                {isVlmPlanner
+                  ? 'Gemini VLM 闭环模式下将按实时视觉观测逐步动态生成动作。'
+                  : '尚未生成任务计划，请选择 Mission 并启动任务。'}
               </div>
             ) : (
               plan.steps.map((st) => {
@@ -1866,7 +2658,13 @@ const RightOrchestrationPanel: React.FC<RightOrchestrationPanelProps> = ({
                 );
                 const childEvents = composite
                   ? traceEvents.filter((event) => event.parent_event_id === composite.event_id)
-                  : [];
+                  : traceEvents.filter(
+                      (event) =>
+                        event.skill_id === st.skill_id &&
+                        event.event_type !== 'composite_skill' &&
+                        event.event_type !== 'mission'
+                    );
+                const hasChildren = Boolean(composite) || childEvents.length > 0;
                 const skillExpanded = expandedSkills.has(st.step_id);
                 return (
                   <div
@@ -1918,7 +2716,7 @@ const RightOrchestrationPanel: React.FC<RightOrchestrationPanelProps> = ({
                       </div>
                     )}
 
-                    {composite && (
+                    {hasChildren && (
                       <div className="pl-5 pt-0.5">
                         <button
                           type="button"
@@ -1930,7 +2728,7 @@ const RightOrchestrationPanel: React.FC<RightOrchestrationPanelProps> = ({
                           className="flex items-center gap-1 text-[10px] font-mono text-[#3DE8E5] hover:text-white"
                         >
                           {skillExpanded ? <ChevronDown className="w-3 h-3" /> : <ChevronRight className="w-3 h-3" />}
-                          子事件 {childEvents.length} · {composite.status}
+                          子事件 {childEvents.length} · {composite ? composite.status : st.status}
                         </button>
 
                         {skillExpanded && (
@@ -2040,6 +2838,398 @@ const RightOrchestrationPanel: React.FC<RightOrchestrationPanelProps> = ({
           )}
         </div>
       )}
+
+      {/* M5 Agent 人机接力主控制面板 (接力模式下直接常驻展开) */}
+      {isRelayMission && (() => {
+        const relay = snapshot.relay_state;
+        const waitingHuman = Boolean(relay?.human_pad?.waiting_for_human);
+        const padActive = Boolean(relay?.human_pad?.active) && mode === 'LIVE';
+        const suggested = relay?.delegation?.suggested_moves || [];
+        const prefDone = relay?.delegation?.completed_prefix_count || 0;
+        const deviated = Boolean(relay?.delegation?.deviated_this_turn);
+        const nextHint = relay?.human_pad?.highlighted_next_move;
+        const clarPending = Boolean(relay?.hri?.clarification_pending);
+        const clicks = relay?.human_pad?.clicks_this_turn || [];
+        const dialog = relay?.hri?.dialog_history || [];
+        const turnInfo = relay?.turn_indicator;
+        const owner = turnInfo?.owner || (
+          waitingHuman ? 'HUMAN' : clarPending ? 'CLARIFY' : relay?.phase === 'RELAY_COMPLETED_VERIFIED' ? 'DONE' : snapshot.running ? 'ROBOT' : 'IDLE'
+        );
+        const rightTurnCls =
+          owner === 'HUMAN'
+            ? 'bg-[#FFBF69]/15 border-[#FFBF69]/60 text-[#FFBF69]'
+            : owner === 'CLARIFY'
+            ? 'bg-[#8B5CF6]/15 border-[#8B5CF6]/50 text-[#A78BFA]'
+            : owner === 'DONE'
+            ? 'bg-[#30D6A0]/15 border-[#30D6A0]/50 text-[#30D6A0]'
+            : owner === 'ROBOT'
+            ? 'bg-[#3DE8E5]/10 border-[#3DE8E5]/40 text-[#3DE8E5]'
+            : 'bg-[#080D16] border-slate-800 text-slate-300';
+
+        const applyPerturb = (dxCm: number, dyCm: number, dyawDeg: number, label: string) => {
+          setPerturbDxCm(dxCm);
+          setPerturbDyCm(dyCm);
+          setPerturbYawDeg(dyawDeg);
+          onRelayCommand(
+            { type: 'HUMAN_PERTURB_POSE', dx_m: dxCm / 100.0, dy_m: dyCm / 100.0, dyaw_deg: dyawDeg },
+            label
+          );
+        };
+
+        const sendChat = (text: string) => {
+          const clean = text.trim();
+          if (!clean) return;
+          onRelayCommand({ type: 'HUMAN_SEND_CHAT', text: clean }, `发送指令: ${clean}`);
+          setChatDraft('');
+        };
+
+        return (
+          <div className="order-1 flex-1 min-h-0 overflow-y-auto space-y-2 pr-0.5 text-[11px]">
+            {/* 回合归属醒目指示卡 */}
+            <div className={`p-2 rounded border space-y-1 ${rightTurnCls}`}>
+              <div className="flex items-center justify-between gap-2 text-[11px] font-bold">
+                <span>{turnInfo?.owner_label_zh || (waitingHuman ? '🧑 轮到人类操作' : '🤖 等待/机器人回合')}</span>
+                <span className="font-mono text-[10px]">第 {relay?.round_number || 1} 轮</span>
+              </div>
+              <div className="text-[10px] opacity-85 leading-snug">
+                {turnInfo?.next_action_hint_zh || relay?.banner?.subtitle_zh || '等待任务启动。'}
+              </div>
+            </div>
+            {/* 模块 2: 推荐 1~3 步高亮提示与 Agent 具身委派说明卡 */}
+            <div className="p-2 rounded bg-[#080D16] border border-[#3DE8E5]/30 space-y-1.5">
+              <div className="flex items-center justify-between gap-1 text-[10px] font-mono">
+                <span className="text-[#3DE8E5] font-semibold">AGENT DELEGATION · 推荐接力序列</span>
+                <span className="text-slate-400">已省高代价翻面 {relay?.delegation?.saved_high_cost_flips_count ?? 0} 次</span>
+              </div>
+              {suggested.length > 0 ? (
+                <div className="flex items-center gap-1 flex-wrap">
+                  {suggested.map((mv, idx) => {
+                    const done = idx < prefDone && !deviated;
+                    const isNext = idx === prefDone && !deviated && waitingHuman;
+                    return (
+                      <span
+                        key={`${mv}-${idx}`}
+                        className={`px-2 py-0.5 rounded font-mono text-[10.5px] border ${
+                          done
+                            ? 'bg-[#30D6A0]/15 text-[#30D6A0] border-[#30D6A0]/40'
+                            : isNext
+                            ? 'bg-[#FFBF69]/20 text-[#FFBF69] border-[#FFBF69]/60 animate-pulse'
+                            : 'bg-[#182338] text-slate-300 border-slate-700'
+                        }`}
+                      >
+                        {done ? '✓ ' : `Step ${idx + 1}: `}
+                        {mv}
+                      </span>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-[10px] text-slate-400">
+                  当前无强制推荐序列（可自由点击下方 18 动作或发送自然语言要求）。
+                </div>
+              )}
+              {deviated && (
+                <div className="px-2 py-1 rounded bg-[#FFBF69]/15 border border-[#FFBF69]/40 text-[10px] text-[#FFBF69]">
+                  ⚡ 检测到自由发挥/偏离推荐路线，交回后 Agent 将靠 RGB-D 重新识别并决定策略
+                </div>
+              )}
+              <div className="text-[10px] text-slate-300 leading-snug">
+                {relay?.delegation?.delegation_reason_zh || '等待 Agent 完成感知建信并生成具身代价切分建议。'}
+              </div>
+            </div>
+
+            {/* 澄清问题回应卡片 (当 Agent 调用 ask_human_clarification) */}
+            {clarPending && (
+              <div className="p-2 rounded bg-[#FFBF69]/10 border border-[#FFBF69]/50 space-y-1.5">
+                <div className="text-[10.5px] font-semibold text-[#FFBF69]">
+                  💬 Agent 请求意图澄清
+                </div>
+                <div className="text-[10.5px] text-slate-200 leading-snug">
+                  {relay?.hri?.clarification_question_zh}
+                </div>
+                <div className="flex flex-col gap-1">
+                  {(relay?.hri?.clarification_options || []).map((opt) => (
+                    <button
+                      key={opt}
+                      type="button"
+                      disabled={mode !== 'LIVE'}
+                      onClick={() => sendChat(opt)}
+                      className="text-left px-2 py-1 rounded text-[10px] bg-[#182338] hover:bg-[#548CFF]/20 text-[#3DE8E5] border border-[#3DE8E5]/30 transition-colors disabled:opacity-40"
+                    >
+                      → {opt}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 模块 3: 18 动作自由点击盘 (全 18 按钮 100% 开放) */}
+            <div className="p-2 rounded bg-[#080D16] border border-slate-800 space-y-1.5">
+              <div className="flex items-center justify-between gap-1 text-[10px]">
+                <span className="font-mono text-slate-300 font-semibold">18-MOVE PAD · 26-Cubie 真实物理转层</span>
+                <button
+                  type="button"
+                  disabled={!padActive || !relay?.human_pad?.can_undo}
+                  onClick={() => onRelayCommand({ type: 'HUMAN_UNDO_MOVE' }, '物理撤销上一步')}
+                  className="px-1.5 py-0.5 rounded bg-[#182338] text-slate-300 border border-slate-700 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed text-[9.5px]"
+                >
+                  撤销上一步
+                </button>
+              </div>
+              <div className="space-y-1">
+                {RELAY_FACE_GROUPS.map((grp) => (
+                  <div key={grp.face} className="grid grid-cols-3 gap-1">
+                    {grp.moves.map((mv) => {
+                      const isHint = nextHint === mv && waitingHuman;
+                      return (
+                        <button
+                          key={mv}
+                          type="button"
+                          disabled={!padActive}
+                          onClick={() => onRelayCommand({ type: 'HUMAN_APPLY_MOVE', move: mv }, `人类物理旋转 ${mv}`)}
+                          className={`py-1 rounded font-mono text-[10.5px] font-semibold border transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                            isHint
+                              ? 'bg-[#3DE8E5]/20 text-[#3DE8E5] border-[#3DE8E5] animate-pulse'
+                              : 'bg-[#182338] hover:bg-[#548CFF]/30 text-slate-200 border-slate-700'
+                          }`}
+                        >
+                          {mv}
+                        </button>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+              {clicks.length > 0 && (
+                <div className="text-[10px] font-mono text-slate-400">
+                  本轮已拧: <span className="text-[#3DE8E5]">{clicks.join(' → ')}</span>
+                </div>
+              )}
+              <button
+                type="button"
+                disabled={!waitingHuman || mode !== 'LIVE'}
+                onClick={() => onRelayCommand({ type: 'HUMAN_FINISH_TURN' }, '完成本回合，交回机器人')}
+                className="w-full py-1.5 rounded text-[11px] font-semibold bg-[#30D6A0]/20 hover:bg-[#30D6A0]/30 text-[#30D6A0] border border-[#30D6A0]/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                完成本回合，交回机器人
+              </button>
+            </div>
+
+            {/* 模块 4: 放回位置微扰控件 */}
+            <div className="p-2 rounded bg-[#080D16] border border-slate-800 space-y-1.5">
+              <div className="flex items-center justify-between text-[10px] font-mono text-slate-300">
+                <span>PUT-BACK PERTURB · 放回桌面位置微扰</span>
+                <span className="text-[#FFBF69]">
+                  {perturbDxCm >= 0 ? `+${perturbDxCm}` : perturbDxCm}cm,{' '}
+                  {perturbDyCm >= 0 ? `+${perturbDyCm}` : perturbDyCm}cm,{' '}
+                  {perturbYawDeg >= 0 ? `+${perturbYawDeg}` : perturbYawDeg}°
+                </span>
+              </div>
+              <div className="space-y-1 text-[10px] font-mono text-slate-400">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="w-16">ΔX (±8cm)</span>
+                  <input
+                    type="range"
+                    min={-8}
+                    max={8}
+                    step={1}
+                    disabled={!padActive}
+                    value={perturbDxCm}
+                    onChange={(e) => setPerturbDxCm(Number(e.target.value))}
+                    onMouseUp={() => applyPerturb(perturbDxCm, perturbDyCm, perturbYawDeg, '调整 ΔX 微扰')}
+                    onTouchEnd={() => applyPerturb(perturbDxCm, perturbDyCm, perturbYawDeg, '调整 ΔX 微扰')}
+                    className="flex-1"
+                  />
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="w-16">ΔY (±8cm)</span>
+                  <input
+                    type="range"
+                    min={-8}
+                    max={8}
+                    step={1}
+                    disabled={!padActive}
+                    value={perturbDyCm}
+                    onChange={(e) => setPerturbDyCm(Number(e.target.value))}
+                    onMouseUp={() => applyPerturb(perturbDxCm, perturbDyCm, perturbYawDeg, '调整 ΔY 微扰')}
+                    onTouchEnd={() => applyPerturb(perturbDxCm, perturbDyCm, perturbYawDeg, '调整 ΔY 微扰')}
+                    className="flex-1"
+                  />
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="w-16">ΔYaw(±40°)</span>
+                  <input
+                    type="range"
+                    min={-40}
+                    max={40}
+                    step={1}
+                    disabled={!padActive}
+                    value={perturbYawDeg}
+                    onChange={(e) => setPerturbYawDeg(Number(e.target.value))}
+                    onMouseUp={() => applyPerturb(perturbDxCm, perturbDyCm, perturbYawDeg, '调整 ΔYaw 微扰')}
+                    onTouchEnd={() => applyPerturb(perturbDxCm, perturbDyCm, perturbYawDeg, '调整 ΔYaw 微扰')}
+                    className="flex-1"
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-1 text-[9.5px]">
+                <button
+                  type="button"
+                  disabled={!padActive}
+                  onClick={() => applyPerturb(0, 0, 0, '预设: 标准原位')}
+                  className="px-1.5 py-1 rounded bg-[#182338] hover:bg-slate-700 text-slate-300 border border-slate-700 disabled:opacity-40"
+                >
+                  标准原位
+                </button>
+                <button
+                  type="button"
+                  disabled={!padActive}
+                  onClick={() => applyPerturb(4, 0, 15, '预设: 轻推偏移')}
+                  className="px-1.5 py-1 rounded bg-[#182338] hover:bg-slate-700 text-slate-300 border border-slate-700 disabled:opacity-40"
+                >
+                  轻推偏移 (+4cm,+15°)
+                </button>
+                <button
+                  type="button"
+                  disabled={!padActive}
+                  onClick={() => applyPerturb(6, -4, 20, '预设: 跨度微扰')}
+                  className="px-1.5 py-1 rounded bg-[#182338] hover:bg-slate-700 text-slate-300 border border-slate-700 disabled:opacity-40"
+                >
+                  跨度微扰 (+6cm,-4cm,+20°)
+                </button>
+                <button
+                  type="button"
+                  disabled={!padActive}
+                  onClick={() => {
+                    const rx = Math.round((Math.random() * 16 - 8));
+                    const ry = Math.round((Math.random() * 16 - 8));
+                    const ryaw = Math.round((Math.random() * 76 - 38));
+                    applyPerturb(rx, ry, ryaw, '预设: 随机随手放');
+                  }}
+                  className="px-1.5 py-1 rounded bg-[#182338] hover:bg-slate-700 text-[#FFBF69] border border-slate-700 disabled:opacity-40"
+                >
+                  随机随手放
+                </button>
+              </div>
+            </div>
+
+            {/* 模块 5: 人机自然语言协作对话与快捷意图栏 */}
+            <div className="p-2 rounded bg-[#080D16] border border-slate-800 space-y-1.5">
+              <div className="flex items-center justify-between gap-1 text-[10px] font-mono">
+                <span className="text-[#3DE8E5] font-semibold">
+                  LIVE HRI DIALOG · LLM 语义意图路由
+                </span>
+                {relay?.hri?.latest_semantics && (
+                  <span className="px-1.5 py-0.5 rounded bg-[#182338] border border-slate-700 text-[9px] text-[#30D6A0] truncate">
+                    {relay.hri.latest_semantics.speech_act}
+                    {typeof relay.hri.latest_semantics.latency_ms === 'number'
+                      ? ` · ${relay.hri.latest_semantics.latency_ms.toFixed(0)}ms`
+                      : ''}
+                  </span>
+                )}
+              </div>
+              {(relay?.hri?.active_constraints || []).length > 0 && (
+                <div className="flex items-center gap-1 flex-wrap text-[9px]">
+                  <span className="text-slate-400 font-mono">持久约束:</span>
+                  {(relay?.hri?.active_constraints || []).map((c, idx) => (
+                    <span
+                      key={`${c}-${idx}`}
+                      className="px-1.5 py-0.5 rounded bg-[#30D6A0]/10 border border-[#30D6A0]/30 text-[#30D6A0]"
+                    >
+                      {c}
+                    </span>
+                  ))}
+                </div>
+              )}
+              <div className="max-h-36 overflow-y-auto space-y-1 bg-[#0C1422] border border-slate-800/70 rounded p-1.5">
+                {dialog.length === 0 ? (
+                  <div className="text-[10px] text-slate-500">随时可发送偏好约束、澄清回复或机械臂执行中途紧急刹车指令。</div>
+                ) : (
+                  dialog.map((msg, i) => {
+                    const isHumanMsg = msg.role === 'human';
+                    const sem = msg.semantics;
+                    const bubbleCls = isHumanMsg
+                      ? 'bg-[#548CFF]/15 text-slate-100 border border-[#548CFF]/30'
+                      : 'bg-[#182338] text-[#3DE8E5] border border-slate-700';
+                    return (
+                    <div
+                      key={i}
+                      className={`px-1.5 py-1 rounded text-[10px] leading-snug space-y-0.5 ${bubbleCls}`}
+                    >
+                      <div>
+                        <span className="font-mono font-semibold mr-1">
+                          {isHumanMsg ? '🧑 人类:' : '🤖 Agent:'}
+                        </span>
+                        <span>{msg.text}</span>
+                      </div>
+                      {isHumanMsg && sem && (
+                        <div className="flex items-center gap-1 flex-wrap text-[9px] font-mono text-slate-300 pt-0.5 border-t border-slate-700/60">
+                          <span className="px-1 py-0.2 rounded bg-[#080D16] border border-[#3DE8E5]/40 text-[#3DE8E5]">
+                            {sem.speech_act}
+                          </span>
+                          <span
+                            className={`px-1 py-0.2 rounded border ${
+                              sem.requires_immediate_motion_interrupt
+                                ? 'bg-[#FF667B]/15 border-[#FF667B]/40 text-[#FF667B]'
+                                : 'bg-[#30D6A0]/10 border-[#30D6A0]/30 text-[#30D6A0]'
+                            }`}
+                          >
+                            {sem.requires_immediate_motion_interrupt ? '⚡立即中断' : '平滑不中断'}
+                          </span>
+                          {typeof sem.latency_ms === 'number' && (
+                            <span className="text-slate-400">{sem.latency_ms.toFixed(0)}ms</span>
+                          )}
+                          {sem.persistent_constraints_to_add && sem.persistent_constraints_to_add.length > 0 && (
+                            <span className="text-[#FFBF69]">
+                              +约束: {sem.persistent_constraints_to_add.join('；')}
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    );
+                  })
+                )}
+              </div>
+              <div className="flex items-center gap-1">
+                <input
+                  type="text"
+                  value={chatDraft}
+                  onChange={(e) => setChatDraft(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') sendChat(chatDraft);
+                  }}
+                  placeholder="输入中文约束/意图/实时打断指令..."
+                  disabled={mode !== 'LIVE'}
+                  className="flex-1 rounded border border-slate-700 bg-[#0C1422] px-2 py-1 text-[10.5px] text-slate-100 placeholder:text-slate-600 outline-none focus:border-[#30D6A0]"
+                />
+                <button
+                  type="button"
+                  disabled={mode !== 'LIVE' || !chatDraft.trim()}
+                  onClick={() => sendChat(chatDraft)}
+                  className="px-2 py-1 rounded text-[10.5px] font-semibold bg-[#548CFF] text-white disabled:opacity-40"
+                >
+                  发送
+                </button>
+              </div>
+              <div className="flex items-center gap-1 flex-wrap">
+                {QUICK_HRI_CHIPS.map((chip) => (
+                  <button
+                    key={chip.label}
+                    type="button"
+                    disabled={mode !== 'LIVE'}
+                    title={chip.text}
+                    onClick={() => sendChat(chip.text)}
+                    className="px-1.5 py-0.5 rounded text-[9.5px] bg-[#182338] hover:bg-slate-700 text-slate-300 border border-slate-700 disabled:opacity-40"
+                  >
+                    {chip.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        );
+      })()}
     </div>
   );
 };
@@ -2466,6 +3656,640 @@ const CapabilityAndSettingsView: React.FC<{
 };
 
 // ============================================================================
+// 8.5 Task Agent 能力评估视图 (M4-D Benchmark: Replay / Ablation / MuJoCo)
+// ============================================================================
+
+interface M4DMetricValue {
+  value: number | null;
+  numerator: number;
+  denominator: number;
+  formula: string;
+  ci_95_low?: number | null;
+  ci_95_high?: number | null;
+  notes?: string | null;
+}
+
+interface M4DDimensionSummary {
+  dimension: string;
+  total_samples: number;
+  passed_count: number;
+  failed_count: number;
+  requires_review_count: number;
+  incomparable_count: number;
+  not_run_count: number;
+  pass_rate: M4DMetricValue;
+  attribution_counts: Record<string, number>;
+}
+
+interface M4DScorecard {
+  group_label: string;
+  planner_group: string;
+  guide_mode: string;
+  execution_source_label: string;
+  is_fake_provider: boolean;
+  included_in_real_agent_ranking: boolean;
+  sample_count: number;
+  decision_metrics: Record<string, M4DMetricValue>;
+  perception_metrics: Record<string, M4DMetricValue>;
+  recovery_metrics: Record<string, M4DMetricValue>;
+  closed_loop_metrics: Record<string, M4DMetricValue>;
+  per_dimension: Record<string, M4DDimensionSummary>;
+  failure_attribution_counts: Record<string, number>;
+  latency_summary_ms: Record<string, number | null>;
+  token_summary: Record<string, number>;
+  notes: string[];
+}
+
+interface M4DDecisionRecord {
+  record_id: string;
+  benchmark_case_id: string;
+  capability_dimension: string;
+  source_type: string;
+  planner_group: string;
+  planner_mode: string;
+  model_name?: string | null;
+  model_provider?: string | null;
+  is_fake_provider: boolean;
+  is_online_model: boolean;
+  execution_source_labels: string[];
+  guide_mode: string;
+  vlm_ablation_condition?: string | null;
+  prompt_sha256?: string | null;
+  redacted_prompt_summary?: string | null;
+  observation_id?: string | null;
+  semantic_observation_id?: string | null;
+  decision_kind: string;
+  selected_action?: string | null;
+  selected_skill?: string | null;
+  normalized_action?: string | null;
+  parameters: Record<string, unknown>;
+  reason_summary: string;
+  evidence_references: string[];
+  safety_validation: {
+    passed: boolean;
+    safety_gate_status: string;
+    reason: string;
+  };
+  oracle_result: {
+    verdict: string;
+    legal_action: boolean;
+    evidence_grounded: boolean;
+    decision_appropriate: boolean;
+    forbidden_violation?: string | null;
+    notes: string[];
+  };
+  failure_attribution: {
+    primary_category: string;
+    secondary_categories: string[];
+    explanation: string;
+  };
+  latency_ms: number;
+  token_usage: { input_tokens?: number; output_tokens?: number; total_tokens?: number };
+  model_call_status: string;
+  incomparable_reason?: string | null;
+}
+
+interface M4DClosedLoopEpisode {
+  episode_id: string;
+  scenario_id: string;
+  mission_type: string;
+  planner_group: string;
+  guide_mode: string;
+  is_fake_provider: boolean;
+  is_online_model: boolean;
+  execution_source_labels: string[];
+  seed: number;
+  mission_status: string;
+  goal_achieved: boolean;
+  failure_reason?: string | null;
+  failure_attribution: { primary_category: string; explanation: string };
+  skills_executed: string[];
+  sim_time_s: number;
+  wall_time_s: number;
+  run_id?: string | null;
+}
+
+interface M4DBenchmarkResult {
+  benchmark_run_id: string;
+  benchmark_version: string;
+  generated_utc: string;
+  execution_mode: string;
+  contains_fake_provider: boolean;
+  decision_records: M4DDecisionRecord[];
+  vlm_ablation_records: M4DDecisionRecord[];
+  guide_ablation_records: M4DDecisionRecord[];
+  closed_loop_episodes: M4DClosedLoopEpisode[];
+  real_scorecards: Record<string, M4DScorecard>;
+  fake_validation_scorecards: Record<string, M4DScorecard>;
+  vlm_ablation_summary?: {
+    by_condition?: Record<string, { n: number; comparable_n: number; passed: number; accuracy?: M4DMetricValue; forbidden_rate?: M4DMetricValue; evidence_grounding_rate?: M4DMetricValue }>;
+    case_matrix?: Array<Record<string, unknown>>;
+    fake_only?: {
+      by_condition?: Record<string, { n: number; comparable_n: number; passed: number; accuracy?: M4DMetricValue; forbidden_rate?: M4DMetricValue; evidence_grounding_rate?: M4DMetricValue }>;
+    };
+  };
+  guide_ablation_summary?: Record<string, { guide_full_n: number; guide_full_acc: number; guide_minimal_n: number; guide_minimal_acc: number; delta_minimal_minus_full: number }>;
+  incomparabilities: string[];
+}
+
+const DIM_LABELS: Record<string, string> = {
+  L1_SKILL_SELECTION: 'L1 Skill Selection',
+  L2_STATE_AWARE_PLANNING: 'L2 State-Aware Planning',
+  L3_PERCEPTION_GROUNDED_REASONING: 'L3 Perception-Grounded',
+  L4_FAILURE_RECOVERY: 'L4 Failure Recovery',
+  L5_GENERALIZATION: 'L5 Generalization',
+};
+
+const SOURCE_BADGE_STYLES: Record<string, string> = {
+  REAL_ONLINE_MODEL: 'bg-[#30D6A0]/15 text-[#30D6A0] border-[#30D6A0]/40',
+  REAL_MUJOCO: 'bg-[#548CFF]/15 text-[#548CFF] border-[#548CFF]/40',
+  OFFLINE_REPLAY: 'bg-[#3DE8E5]/15 text-[#3DE8E5] border-[#3DE8E5]/40',
+  COUNTERFACTUAL_TEST: 'bg-[#FFBF69]/15 text-[#FFBF69] border-[#FFBF69]/40',
+  DETERMINISTIC_RULE: 'bg-slate-700/60 text-slate-200 border-slate-600',
+  FAKE_PROVIDER: 'bg-[#F05D5E]/20 text-[#F05D5E] border-[#F05D5E]/50',
+};
+
+function getVerdictBadgeCls(verdict: string): string {
+  if (verdict === 'PASS') return 'px-1.5 py-0.2 rounded shrink-0 bg-[#30D6A0]/20 text-[#30D6A0]';
+  if (verdict === 'FAIL') return 'px-1.5 py-0.2 rounded shrink-0 bg-[#F05D5E]/20 text-[#F05D5E]';
+  return 'px-1.5 py-0.2 rounded shrink-0 bg-slate-800 text-slate-300';
+}
+
+const TaskAgentBenchmarkView: React.FC<{ httpBase: string }> = ({ httpBase }) => {
+  const [loading, setLoading] = useState<boolean>(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [apiStatus, setApiStatus] = useState<'OK' | 'NOT_RUN' | 'UNCONNECTED'>('NOT_RUN');
+  const [runs, setRuns] = useState<Array<{ benchmark_run_id: string; execution_mode: string; generated_utc: string; contains_fake_provider: boolean; decision_count?: number }>>([]);
+  const [selectedRunId, setSelectedRunId] = useState<string>('');
+  const [sourceBadge, setSourceBadge] = useState<string>('');
+  const [result, setResult] = useState<M4DBenchmarkResult | null>(null);
+  const [activeSubTab, setActiveSubTab] = useState<'OVERVIEW' | 'ABLATIONS' | 'TRACES' | 'CLOSED_LOOP'>('OVERVIEW');
+  const [traceFilterGroup, setTraceFilterGroup] = useState<string>('ALL');
+  const [traceFilterVerdict, setTraceFilterVerdict] = useState<string>('ALL');
+  const [traceFilterDim, setTraceFilterDim] = useState<string>('ALL');
+  const [selectedRecordId, setSelectedRecordId] = useState<string>('');
+
+  const fetchBenchmark = async (runId?: string) => {
+    setLoading(true);
+    setErrorMsg(null);
+    try {
+      const qs = runId ? `?run_id=${encodeURIComponent(runId)}` : '';
+      const resp = await fetch(`${httpBase}/api/m4d/benchmark/latest${qs}`);
+      if (!resp.ok) {
+        throw new Error(`HTTP ${resp.status}`);
+      }
+      const data = await resp.json();
+      setRuns(Array.isArray(data.available_runs) ? data.available_runs : []);
+      if (data.status === 'OK' && data.result) {
+        setApiStatus('OK');
+        setSourceBadge(String(data.source_badge || ''));
+        setResult(data.result);
+        setSelectedRunId(String(data.result.benchmark_run_id || ''));
+        if (Array.isArray(data.result.decision_records) && data.result.decision_records.length > 0) {
+          setSelectedRecordId(data.result.decision_records[0].record_id);
+        }
+      } else {
+        setApiStatus('NOT_RUN');
+        setResult(null);
+      }
+    } catch (err) {
+      setApiStatus('UNCONNECTED');
+      setErrorMsg(err instanceof Error ? err.message : '无法加载 Benchmark API');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBenchmark();
+  }, [httpBase]);
+
+  const fmtPct = (m?: M4DMetricValue) => {
+    if (!m || m.value === null || m.value === undefined) return 'N/A';
+    return `${(m.value * 100).toFixed(1)}% (${m.numerator}/${m.denominator})`;
+  };
+
+  const filteredRecords = useMemo(() => {
+    if (!result) return [];
+    const all = [...(result.decision_records || []), ...(result.guide_ablation_records || [])];
+    return all.filter((r) => {
+      if (traceFilterGroup !== 'ALL' && r.planner_group !== traceFilterGroup) return false;
+      if (traceFilterDim !== 'ALL' && r.capability_dimension !== traceFilterDim) return false;
+      if (traceFilterVerdict !== 'ALL' && r.oracle_result.verdict !== traceFilterVerdict) return false;
+      return true;
+    });
+  }, [result, traceFilterGroup, traceFilterVerdict, traceFilterDim]);
+
+  const selectedRecord = useMemo(
+    () => filteredRecords.find((r) => r.record_id === selectedRecordId) || filteredRecords[0] || null,
+    [filteredRecords, selectedRecordId]
+  );
+
+  const realCards = Object.values(result?.real_scorecards || {});
+  const fakeCards = Object.values(result?.fake_validation_scorecards || {});
+  const allCards = [...realCards, ...fakeCards];
+  const abConds = result?.vlm_ablation_summary?.by_condition || result?.vlm_ablation_summary?.fake_only?.by_condition || {};
+
+  return (
+    <main className="flex-1 overflow-y-auto bg-[#080D16] p-4 space-y-4 text-xs">
+      {/* Top Toolbar */}
+      <div className="bg-[#101827] border border-slate-800 rounded-lg p-3 flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5 flex-wrap">
+          <Bot className="w-4 h-4 text-[#3DE8E5]" />
+          <h2 className="font-semibold text-sm text-slate-100">M4-D Task Agent 能力基准测试 (Benchmark)</h2>
+          {result && (
+            <>
+              <span className={`px-2 py-0.5 rounded border text-[10px] font-mono ${SOURCE_BADGE_STYLES[sourceBadge] || 'bg-slate-800 text-slate-200 border-slate-700'}`}>
+                {sourceBadge || result.execution_mode}
+              </span>
+              <span className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 text-[10px] font-mono text-slate-300">
+                VERSION: {result.benchmark_version}
+              </span>
+            </>
+          )}
+        </div>
+
+        <div className="flex items-center gap-2 flex-wrap">
+          {runs.length > 0 && (
+            <select
+              value={selectedRunId}
+              onChange={(e) => fetchBenchmark(e.target.value)}
+              className="px-2.5 py-1 rounded bg-[#080D16] border border-slate-700 text-[11px] font-mono text-slate-200"
+            >
+              {runs.map((r) => (
+                <option key={r.benchmark_run_id} value={r.benchmark_run_id}>
+                  {r.benchmark_run_id} ({r.execution_mode} | D={r.decision_count})
+                </option>
+              ))}
+            </select>
+          )}
+          <button
+            onClick={() => fetchBenchmark(selectedRunId || undefined)}
+            disabled={loading}
+            className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 flex items-center gap-1"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} /> 刷新
+          </button>
+          {result && (
+            <a
+              href={`${httpBase}/api/m4d/benchmark/export?run_id=${encodeURIComponent(result.benchmark_run_id)}`}
+              className="px-2.5 py-1 rounded bg-[#548CFF]/20 hover:bg-[#548CFF]/30 border border-[#548CFF]/40 text-[#548CFF] flex items-center gap-1"
+            >
+              <Download className="w-3.5 h-3.5" /> 导出 Benchmark ZIP
+            </a>
+          )}
+        </div>
+      </div>
+
+      {/* Warning banner for Fake Provider */}
+      {result?.contains_fake_provider && (
+        <div className="p-2.5 rounded bg-[#F05D5E]/15 border border-[#F05D5E]/40 text-[#F05D5E] flex items-center gap-2">
+          <AlertTriangle className="w-4 h-4 shrink-0" />
+          <span>
+            当前 Run 包含 <code className="font-mono font-semibold">FAKE_PROVIDER</code> 验证数据：Fake Provider 仅用于验证测试管线，已严格隔离到
+            <code className="font-mono"> fake_validation_scorecards</code>，<strong>绝不计入真实 LLM Agent 能力评分</strong>。
+          </span>
+        </div>
+      )}
+
+      {apiStatus === 'NOT_RUN' && (
+        <div className="bg-[#101827] border border-slate-800 rounded-lg p-6 text-center space-y-2">
+          <div className="text-sm font-semibold text-slate-200">尚未检测到已保存的 M4-D Benchmark 结果 (NOT_RUN)</div>
+          <div className="text-slate-400">
+            请运行 <code className="font-mono text-[#3DE8E5]">python scripts/run_m4d_benchmark.py --mode online_real --run-vlm-ablation --run-guide-ablation --closed-loop</code> 后点击刷新。
+          </div>
+        </div>
+      )}
+
+      {apiStatus === 'UNCONNECTED' && (
+        <div className="bg-[#101827] border border-[#F05D5E]/40 rounded-lg p-4 text-[#F05D5E]">
+          无法读取 Benchmark 接口 ({httpBase}/api/m4d/benchmark/latest): {errorMsg}
+        </div>
+      )}
+
+      {result && (
+        <>
+          {/* Sub-tabs */}
+          <div className="flex items-center gap-1 border-b border-slate-800 pb-2">
+            {(
+              [
+                { id: 'OVERVIEW', label: '五维能力榜单 & 对照组' },
+                { id: 'ABLATIONS', label: 'VLM 因果消融 & Guide 消融' },
+                { id: 'CLOSED_LOOP', label: `MuJoCo 闭环评估 (${result.closed_loop_episodes.length})` },
+                { id: 'TRACES', label: `错误案例与 Decision Trace (${result.decision_records.length})` },
+              ] as const
+            ).map((t) => (
+              <button
+                key={t.id}
+                onClick={() => setActiveSubTab(t.id)}
+                className={`px-3 py-1 rounded text-[11px] font-medium transition-colors ${
+                  activeSubTab === t.id
+                    ? 'bg-[#3DE8E5]/15 text-[#3DE8E5] border border-[#3DE8E5]/40'
+                    : 'text-slate-400 hover:text-slate-200 bg-[#101827] border border-slate-800'
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+
+          {activeSubTab === 'OVERVIEW' && (
+            <div className="space-y-4">
+              {/* Group Comparison Table */}
+              <div className="bg-[#101827] border border-slate-800 rounded-lg p-3 overflow-x-auto">
+                <h3 className="font-semibold text-slate-200 mb-2">对照组能力指标（L1-L5 独立评分，严禁合并为单一分数）</h3>
+                <table className="w-full text-left border-collapse font-mono text-[11px]">
+                  <thead>
+                    <tr className="border-b border-slate-800 text-slate-400">
+                      <th className="py-1.5 pr-3">Planner Group / Guide</th>
+                      <th className="py-1.5 pr-3">数据来源</th>
+                      <th className="py-1.5 pr-3">Legal</th>
+                      <th className="py-1.5 pr-3">Schema</th>
+                      <th className="py-1.5 pr-3">Appropriate</th>
+                      <th className="py-1.5 pr-3">Forbidden</th>
+                      <th className="py-1.5 pr-3">Evidence</th>
+                      <th className="py-1.5 pr-3">Mean(ms)</th>
+                      <th className="py-1.5">Tokens</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {allCards.map((sc) => (
+                      <tr key={sc.group_label} className="border-b border-slate-800/60 hover:bg-slate-800/30">
+                        <td className="py-1.5 pr-3 text-slate-100">
+                          {sc.group_label}
+                          {!sc.included_in_real_agent_ranking && (
+                            <span className="ml-1.5 px-1 py-0.2 rounded bg-[#F05D5E]/20 text-[#F05D5E] text-[9px]">EXCLUDED_FAKE</span>
+                          )}
+                        </td>
+                        <td className="py-1.5 pr-3">
+                          <span className={`px-1.5 py-0.5 rounded border text-[9.5px] ${SOURCE_BADGE_STYLES[sc.execution_source_label] || ''}`}>
+                            {sc.execution_source_label}
+                          </span>
+                        </td>
+                        <td className="py-1.5 pr-3">{fmtPct(sc.decision_metrics.legal_action_rate)}</td>
+                        <td className="py-1.5 pr-3">{fmtPct(sc.decision_metrics.schema_validity_rate)}</td>
+                        <td className="py-1.5 pr-3 font-semibold text-[#3DE8E5]">{fmtPct(sc.decision_metrics.decision_appropriateness_rate)}</td>
+                        <td className="py-1.5 pr-3 text-[#F05D5E]">{fmtPct(sc.decision_metrics.forbidden_action_rate)}</td>
+                        <td className="py-1.5 pr-3">{fmtPct(sc.decision_metrics.evidence_grounding_rate)}</td>
+                        <td className="py-1.5 pr-3">{sc.latency_summary_ms?.mean_ms ?? 'N/A'}</td>
+                        <td className="py-1.5">{sc.token_summary?.total_tokens ?? 0}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Per-Dimension Cards + Attribution */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {allCards.map((sc) => (
+                  <div key={sc.group_label} className="bg-[#101827] border border-slate-800 rounded-lg p-3 space-y-2.5">
+                    <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
+                      <span className="font-mono font-semibold text-slate-100">{sc.group_label}</span>
+                      <span className={`px-1.5 py-0.5 rounded border text-[9.5px] font-mono ${SOURCE_BADGE_STYLES[sc.execution_source_label] || ''}`}>
+                        {sc.execution_source_label}
+                      </span>
+                    </div>
+                    <div className="space-y-1.5">
+                      {Object.entries(sc.per_dimension || {}).map(([dim, ds]) => {
+                        const pct = ds.pass_rate.value !== null ? Math.round(ds.pass_rate.value * 100) : 0;
+                        return (
+                          <div key={dim} className="space-y-0.5">
+                            <div className="flex justify-between text-[10.5px] font-mono">
+                              <span className="text-slate-300">{DIM_LABELS[dim] || dim}</span>
+                              <span className="text-slate-200">
+                                {ds.pass_rate.value !== null ? `${pct}% (${ds.passed_count}/${ds.pass_rate.denominator})` : 'N/A'}
+                                {ds.incomparable_count > 0 ? ` [INCOMP:${ds.incomparable_count}]` : ''}
+                              </span>
+                            </div>
+                            <div className="h-1.5 bg-slate-800 rounded overflow-hidden">
+                              <div
+                                className={`h-full ${sc.is_fake_provider ? 'bg-[#F05D5E]' : 'bg-[#3DE8E5]'}`}
+                                style={{ width: `${pct}%` }}
+                              />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div className="pt-1 border-t border-slate-800/70 flex flex-wrap gap-1.5 text-[10px] font-mono">
+                      {Object.entries(sc.failure_attribution_counts || {}).map(([cat, cnt]) => (
+                        <span key={cat} className="px-1.5 py-0.5 rounded bg-[#080D16] border border-slate-800 text-slate-300">
+                          {cat}: {cnt}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {activeSubTab === 'ABLATIONS' && (
+            <div className="space-y-4">
+              {/* VLM Ablation Table */}
+              <div className="bg-[#101827] border border-slate-800 rounded-lg p-3 space-y-2">
+                <h3 className="font-semibold text-slate-200">L3 VLM 语义因果消融 (VLM_TRUE vs ABSENT / SWAPPED / CONTRADICTORY / LOW_CONFIDENCE)</h3>
+                {Object.keys(abConds).length === 0 ? (
+                  <div className="text-slate-500">当前 Run 未包含 L3 VLM 消融记录。</div>
+                ) : (
+                  <table className="w-full text-left border-collapse font-mono text-[11px]">
+                    <thead>
+                      <tr className="border-b border-slate-800 text-slate-400">
+                        <th className="py-1.5 pr-3">Condition</th>
+                        <th className="py-1.5 pr-3">N (Comparable)</th>
+                        <th className="py-1.5 pr-3">Pass</th>
+                        <th className="py-1.5 pr-3">Accuracy</th>
+                        <th className="py-1.5 pr-3">Forbidden Rate</th>
+                        <th className="py-1.5">Evidence Grounding</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Object.entries(abConds).map(([cond, st]) => (
+                        <tr key={cond} className="border-b border-slate-800/60">
+                          <td className="py-1.5 pr-3 text-[#3DE8E5]">{cond}</td>
+                          <td className="py-1.5 pr-3">{st.comparable_n} / {st.n}</td>
+                          <td className="py-1.5 pr-3">{st.passed}</td>
+                          <td className="py-1.5 pr-3">{fmtPct(st.accuracy)}</td>
+                          <td className="py-1.5 pr-3 text-[#F05D5E]">{fmtPct(st.forbidden_rate)}</td>
+                          <td className="py-1.5">{fmtPct(st.evidence_grounding_rate)}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+
+              {/* Guide Ablation Table */}
+              <div className="bg-[#101827] border border-slate-800 rounded-lg p-3 space-y-2">
+                <h3 className="font-semibold text-slate-200">Prompt Guide 消融 (GUIDE_FULL vs GUIDE_MINIMAL)</h3>
+                {!result.guide_ablation_summary || Object.keys(result.guide_ablation_summary).length === 0 ? (
+                  <div className="text-slate-500">当前 Run 未包含 Prompt Guide 消融对照。</div>
+                ) : (
+                  <table className="w-full text-left border-collapse font-mono text-[11px]">
+                    <thead>
+                      <tr className="border-b border-slate-800 text-slate-400">
+                        <th className="py-1.5 pr-3">Planner Group</th>
+                        <th className="py-1.5 pr-3">GUIDE_FULL Acc (N)</th>
+                        <th className="py-1.5 pr-3">GUIDE_MINIMAL Acc (N)</th>
+                        <th className="py-1.5">Delta (MIN - FULL)</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Object.entries(result.guide_ablation_summary).map(([grp, st]) => (
+                        <tr key={grp} className="border-b border-slate-800/60">
+                          <td className="py-1.5 pr-3 text-slate-100">{grp}</td>
+                          <td className="py-1.5 pr-3">{(st.guide_full_acc * 100).toFixed(1)}% ({st.guide_full_n})</td>
+                          <td className="py-1.5 pr-3">{(st.guide_minimal_acc * 100).toFixed(1)}% ({st.guide_minimal_n})</td>
+                          <td className="py-1.5 text-[#3DE8E5]">{(st.delta_minimal_minus_full * 100 >= 0 ? '+' : '')}{(st.delta_minimal_minus_full * 100).toFixed(1)}%</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </div>
+          )}
+
+          {activeSubTab === 'CLOSED_LOOP' && (
+            <div className="bg-[#101827] border border-slate-800 rounded-lg p-3 space-y-2 overflow-x-auto">
+              <h3 className="font-semibold text-slate-200">Layer B 真实 MuJoCo 闭环评估 Episodes (区分 Agent 决策与物理 Skill 成败)</h3>
+              {result.closed_loop_episodes.length === 0 ? (
+                <div className="text-slate-500">当前 Run 未包含 Closed-Loop MuJoCo Episodes。</div>
+              ) : (
+                <table className="w-full text-left border-collapse font-mono text-[11px]">
+                  <thead>
+                    <tr className="border-b border-slate-800 text-slate-400">
+                      <th className="py-1.5 pr-3">Scenario</th>
+                      <th className="py-1.5 pr-3">Group</th>
+                      <th className="py-1.5 pr-3">Sources</th>
+                      <th className="py-1.5 pr-3">Status</th>
+                      <th className="py-1.5 pr-3">Goal</th>
+                      <th className="py-1.5 pr-3">Attribution</th>
+                      <th className="py-1.5 pr-3">Skills Executed</th>
+                      <th className="py-1.5">Wall(s)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {result.closed_loop_episodes.map((ep) => (
+                      <tr key={ep.episode_id} className="border-b border-slate-800/60">
+                        <td className="py-1.5 pr-3 text-slate-100">{ep.scenario_id}</td>
+                        <td className="py-1.5 pr-3">{ep.planner_group}</td>
+                        <td className="py-1.5 pr-3">
+                          <div className="flex gap-1 flex-wrap">
+                            {ep.execution_source_labels.map((lb) => (
+                              <span key={lb} className={`px-1 py-0.2 rounded border text-[9px] ${SOURCE_BADGE_STYLES[lb] || ''}`}>{lb}</span>
+                            ))}
+                          </div>
+                        </td>
+                        <td className="py-1.5 pr-3">{ep.mission_status}</td>
+                        <td className={`py-1.5 pr-3 ${ep.goal_achieved ? 'text-[#30D6A0]' : 'text-[#F05D5E]'}`}>
+                          {String(ep.goal_achieved)}
+                        </td>
+                        <td className="py-1.5 pr-3">{ep.failure_attribution.primary_category}</td>
+                        <td className="py-1.5 pr-3 text-slate-300">{ep.skills_executed.join(' -> ')}</td>
+                        <td className="py-1.5">{ep.wall_time_s.toFixed(2)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          )}
+
+          {activeSubTab === 'TRACES' && (
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-3">
+              <div className="lg:col-span-7 bg-[#101827] border border-slate-800 rounded-lg p-3 space-y-2">
+                <div className="flex flex-wrap gap-2 items-center justify-between">
+                  <h3 className="font-semibold text-slate-200">决策记录与失败案例过滤 ({filteredRecords.length})</h3>
+                  <div className="flex flex-wrap gap-1.5 font-mono text-[10.5px]">
+                    <select value={traceFilterGroup} onChange={(e) => setTraceFilterGroup(e.target.value)} className="px-2 py-0.5 rounded bg-[#080D16] border border-slate-700 text-slate-200">
+                      <option value="ALL">All Groups</option>
+                      <option value="DETERMINISTIC_BASELINE">DETERMINISTIC</option>
+                      <option value="LLM_AGENT_CV_ONLY">LLM_CV_ONLY</option>
+                      <option value="LLM_AGENT_CV_VLM">LLM_CV_VLM</option>
+                      <option value="SINGLE_MODEL_BASELINE">SINGLE_MODEL</option>
+                    </select>
+                    <select value={traceFilterDim} onChange={(e) => setTraceFilterDim(e.target.value)} className="px-2 py-0.5 rounded bg-[#080D16] border border-slate-700 text-slate-200">
+                      <option value="ALL">All Dimensions</option>
+                      {Object.keys(DIM_LABELS).map((d) => (
+                        <option key={d} value={d}>{d}</option>
+                      ))}
+                    </select>
+                    <select value={traceFilterVerdict} onChange={(e) => setTraceFilterVerdict(e.target.value)} className="px-2 py-0.5 rounded bg-[#080D16] border border-slate-700 text-slate-200">
+                      <option value="ALL">All Verdicts</option>
+                      <option value="FAIL">FAIL Only</option>
+                      <option value="PASS">PASS Only</option>
+                      <option value="INCOMPARABLE">INCOMPARABLE</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="max-h-96 overflow-y-auto space-y-1 font-mono text-[10.5px]">
+                  {filteredRecords.map((r) => (
+                    <button
+                      key={r.record_id}
+                      onClick={() => setSelectedRecordId(r.record_id)}
+                      className={`w-full text-left p-2 rounded border flex items-center justify-between gap-2 ${
+                        selectedRecord?.record_id === r.record_id
+                          ? 'bg-[#3DE8E5]/10 border-[#3DE8E5]/50'
+                          : 'bg-[#080D16] border-slate-800 hover:border-slate-700'
+                      }`}
+                    >
+                      <div className="truncate">
+                        <span className="text-slate-100">{r.benchmark_case_id}</span>{' '}
+                        <span className="text-slate-400">[{r.planner_group} / {r.guide_mode}]</span>{' '}
+                        <span className="text-[#3DE8E5]">-&gt; {r.normalized_action}</span>
+                      </div>
+                      <span className={getVerdictBadgeCls(r.oracle_result.verdict)}>
+                        {r.oracle_result.verdict}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="lg:col-span-5 bg-[#101827] border border-slate-800 rounded-lg p-3 space-y-2 font-mono text-[10.5px]">
+                <h3 className="font-sans font-semibold text-xs text-slate-200">Decision Trace 详情</h3>
+                {selectedRecord ? (
+                  <div className="space-y-2">
+                    <div className="flex flex-wrap gap-1">
+                      {selectedRecord.execution_source_labels.map((lb) => (
+                        <span key={lb} className={`px-1.5 py-0.5 rounded border text-[9.5px] ${SOURCE_BADGE_STYLES[lb] || ''}`}>{lb}</span>
+                      ))}
+                    </div>
+                    <div className="p-2 rounded bg-[#080D16] border border-slate-800 space-y-1 text-slate-300">
+                      <div>Case: <span className="text-slate-100">{selectedRecord.benchmark_case_id}</span> ({selectedRecord.source_type})</div>
+                      <div>Action: <span className="text-[#3DE8E5]">{selectedRecord.normalized_action}</span> params={JSON.stringify(selectedRecord.parameters)}</div>
+                      <div>Model: {selectedRecord.model_name} | Latency: {selectedRecord.latency_ms}ms | Call: {selectedRecord.model_call_status}</div>
+                      <div>Evidence Refs: {JSON.stringify(selectedRecord.evidence_references)}</div>
+                      <div>Safety Gate: {selectedRecord.safety_validation.safety_gate_status} ({selectedRecord.safety_validation.reason})</div>
+                      <div>Oracle Verdict: <span className={selectedRecord.oracle_result.verdict === 'PASS' ? 'text-[#30D6A0]' : 'text-[#F05D5E]'}>{selectedRecord.oracle_result.verdict}</span> | Attribution: {selectedRecord.failure_attribution.primary_category}</div>
+                    </div>
+                    <div className="p-2 rounded bg-[#080D16] border border-slate-800 text-slate-300 font-sans">
+                      <div className="text-slate-400 text-[10px] mb-0.5">Reason Summary & Oracle Notes</div>
+                      <div>{selectedRecord.reason_summary || '—'}</div>
+                      {selectedRecord.oracle_result.notes.length > 0 && (
+                        <div className="mt-1 text-[#FFBF69] font-mono text-[10px]">{selectedRecord.oracle_result.notes.join('; ')}</div>
+                      )}
+                    </div>
+                    {selectedRecord.prompt_sha256 && (
+                      <div className="text-[10px] text-slate-500 truncate">
+                        prompt_sha256: {selectedRecord.prompt_sha256}
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div className="text-slate-500">选择一条记录查看详细 Trace。</div>
+                )}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </main>
+  );
+};
+
+// ============================================================================
 // 9. 主控制台应用 (CubeRelay M3-D 单屏 3:1 紧凑控制中心)
 // ============================================================================
 
@@ -2488,17 +4312,19 @@ function getDefaultRuntimeMode(): RuntimeMode {
 }
 
 export default function App() {
-  const [activeNav, setActiveNav] = useState<'CONSOLE' | 'SETTINGS'>('CONSOLE');
+  const [activeNav, setActiveNav] = useState<'CONSOLE' | 'SETTINGS' | 'BENCHMARK'>('CONSOLE');
   const [mode, setMode] = useState<RuntimeMode>(() => getDefaultRuntimeMode());
   const [wsUrl, setWsUrl] = useState<string>(() => getDefaultWsUrl());
   const [wsConnected, setWsConnected] = useState<boolean>(false);
   const [seedInput, setSeedInput] = useState<number>(0);
-  const [selectedMission, setSelectedMission] = useState<MissionType>('INSPECT_CUBE');
+  const [selectedMission, setSelectedMission] = useState<MissionType>('RELAY_SOLVE_CUBE');
+  const [selectedScrambleSteps, setSelectedScrambleSteps] = useState<number | 'random'>(5);
+  const [techDrawerOpen, setTechDrawerOpen] = useState<boolean>(false);
 
   const [snapshot, setSnapshot] = useState<SimulationSnapshot>(() =>
     getDefaultRuntimeMode() === 'LIVE'
-      ? createDisconnectedLiveSnapshot(0, 'INSPECT_CUBE')
-      : createSampleSnapshot('INSPECT_CUBE', SAMPLE_TIMELINE[3])
+      ? createDisconnectedLiveSnapshot(0, 'RELAY_SOLVE_CUBE')
+      : createSampleSnapshot('RELAY_SOLVE_CUBE', SAMPLE_TIMELINE[3])
   );
   const [selectedEventId, setSelectedEventId] = useState<string>('ev-4');
   const [commandLog, setCommandLog] = useState<string[]>(['[INIT] CubeRelay M3-D 控制台已初始化']);
@@ -2515,11 +4341,45 @@ export default function App() {
   const [replayVideoUrl, setReplayVideoUrl] = useState<string | null>(null);
   const [replayTiming, setReplayTiming] = useState<ReplayTimingFile | null>(null);
   const wsRef = useRef<WebSocket | null>(null);
+  const [startModalOpen, setStartModalOpen] = useState<boolean>(false);
+  const [startModalPassword, setStartModalPassword] = useState<string>('');
+  const [startModalError, setStartModalError] = useState<string | null>(null);
+  const [startModalSubmitting, setStartModalSubmitting] = useState<boolean>(false);
+  const [exportModalOpen, setExportModalOpen] = useState<boolean>(false);
+  const [exportScope, setExportScope] = useState<'full_mission' | 'grasp_causal_chain' | 'events_only'>('full_mission');
+  const [exportIncludeRgbd, setExportIncludeRgbd] = useState<boolean>(true);
+  const [exportIncludeHighFreq, setExportIncludeHighFreq] = useState<boolean>(true);
+  const [exportIncludeAuditTruth, setExportIncludeAuditTruth] = useState<boolean>(false);
+  const [exportSelectedRunId, setExportSelectedRunId] = useState<string>('');
+  const [exportRuns, setExportRuns] = useState<HistoricalRunSummary[]>([]);
+  const [exportSubmitting, setExportSubmitting] = useState<boolean>(false);
+  const [exportStatusMsg, setExportStatusMsg] = useState<string | null>(null);
+  const [exportErrorMsg, setExportErrorMsg] = useState<string | null>(null);
+  const startPasswordInputRef = useRef<HTMLInputElement>(null);
 
   const appendLog = (msg: string) => {
     const ts = new Date().toTimeString().slice(0, 8);
     setCommandLog((prev) => [`[${ts}] ${msg}`, ...prev.slice(0, 29)]);
   };
+
+  useEffect(() => {
+    if (!startModalOpen) return;
+    const focusTimer = window.setTimeout(() => {
+      startPasswordInputRef.current?.focus();
+    }, 0);
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape' && !startModalSubmitting) {
+        setStartModalPassword('');
+        setStartModalError(null);
+        setStartModalOpen(false);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => {
+      window.clearTimeout(focusTimer);
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [startModalOpen, startModalSubmitting]);
 
   // SAMPLE 模式下，仅更新 SYNTHETIC SAMPLE 帧；LIVE 模式严禁调用合成样本函数
   useEffect(() => {
@@ -2543,6 +4403,8 @@ export default function App() {
 
   const handleSwitchMode = (nextMode: RuntimeMode) => {
     setMode(nextMode);
+    setStartModalPassword('');
+    setStartModalError(null);
     if (nextMode === 'SAMPLE') {
       const targetEv = SAMPLE_TIMELINE.find((e) => e.event_id === selectedEventId) || SAMPLE_TIMELINE[3];
       setSnapshot(createSampleSnapshot(selectedMission, targetEv));
@@ -2599,6 +4461,8 @@ export default function App() {
               if (next.selected_mission_type) {
                 setSelectedMission(next.selected_mission_type);
               }
+            } else if (data.type === 'COMMAND_RESULT' && data.ok === false) {
+              appendLog(`后端拒绝指令: ${data.error || 'UNKNOWN_ERROR'}`);
             }
           } catch {
             // 忽略非 JSON 心跳
@@ -2628,6 +4492,42 @@ export default function App() {
     };
   }, [mode, wsUrl]);
 
+  const getHttpBase = () =>
+    wsUrl
+      .replace(/^wss:/, 'https:')
+      .replace(/^ws:/, 'http:')
+      .replace(/\/ws\/session$/, '');
+
+  const postBackendCommand = async (
+    cmd: Record<string, unknown>
+  ): Promise<{ ok: boolean; status: number; body: Record<string, any> | null; detail?: string }> => {
+    try {
+      const resp = await fetch(`${getHttpBase()}/api/m3d/command`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(cmd),
+      });
+      const body = (await resp.json().catch(() => null)) as Record<string, any> | null;
+      if (!resp.ok) {
+        return {
+          ok: false,
+          status: resp.status,
+          body,
+          detail: typeof body?.detail === 'string' ? body.detail : `HTTP ${resp.status}`,
+        };
+      }
+      if (body) {
+        if (body.snapshot && body.snapshot.frame_source !== 'SYNTHETIC_SAMPLE') {
+          setSnapshot(body.snapshot as SimulationSnapshot);
+          setWsConnected(true);
+        }
+      }
+      return { ok: true, status: resp.status, body };
+    } catch {
+      return { ok: false, status: 0, body: null, detail: 'NETWORK_ERROR' };
+    }
+  };
+
   const sendBackendCommand = async (cmd: Record<string, unknown>, label: string) => {
     if (mode !== 'LIVE') {
       appendLog(`当前为 ${mode} 只读模式，指令 [${label}] 仅在 LIVE 连接后端时执行`);
@@ -2639,27 +4539,14 @@ export default function App() {
       return;
     }
     // HTTP 同源回退通道（仅当 LIVE 且页面由后端提供或显式配置 HTTP 时）
-    try {
-      const httpBase = wsUrl
-        .replace(/^wss:/, 'https:')
-        .replace(/^ws:/, 'http:')
-        .replace(/\/ws\/session$/, '');
-      const resp = await fetch(`${httpBase}/api/m3d/command`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(cmd),
-      });
-      if (resp.ok) {
-        const body = await resp.json();
-        if (body.snapshot && body.snapshot.frame_source !== 'SYNTHETIC_SAMPLE') {
-          setSnapshot(body.snapshot as SimulationSnapshot);
-          setWsConnected(true);
-        }
-        appendLog(`已通过 HTTP 下发指令: ${label}`);
-        return;
-      }
-    } catch {
-      // Fall through to disconnected log
+    const res = await postBackendCommand(cmd);
+    if (res.ok) {
+      appendLog(`已通过 HTTP 下发指令: ${label}`);
+      return;
+    }
+    if (res.status > 0) {
+      appendLog(`后端拒绝指令 [${label}]: ${res.detail || `HTTP ${res.status}`}`);
+      return;
     }
     appendLog(`指令未发送 [${label}]: MuJoCo 后端未连接`);
   };
@@ -2673,8 +4560,144 @@ export default function App() {
       return;
     }
     if (mode === 'LIVE') {
-      void sendBackendCommand({ type: 'SELECT_MISSION', mission_type: missionType }, `选择 Mission ${missionType}`);
+      const cmd: Record<string, unknown> = { type: 'SELECT_MISSION', mission_type: missionType };
+      if (missionType === 'RELAY_SOLVE_CUBE') {
+        cmd.scramble_steps = selectedScrambleSteps;
+      }
+      void sendBackendCommand(cmd, `选择 Mission ${missionType}`);
     }
+  };
+
+  const handleSelectScrambleSteps = (steps: number | 'random') => {
+    setSelectedScrambleSteps(steps);
+    if (mode === 'LIVE') {
+      void sendBackendCommand({ type: 'SET_SCRAMBLE_STEPS', scramble_steps: steps }, `设置打乱步数 ${steps}`);
+    }
+  };
+
+  const handleRelayCommand = (cmd: Record<string, unknown>, label: string) => {
+    if (mode !== 'LIVE') {
+      appendLog(`当前为 ${mode} 模式，仅 LIVE 模式支持实时接力控制 [${label}]`);
+      return;
+    }
+    void sendBackendCommand(cmd, label);
+  };
+
+  const openStartMissionModal = () => {
+    if (mode === 'LIVE' && snapshot.running) {
+      appendLog('当前已有任务正在运行，请先点击「安全停止」后再启动新任务');
+      return;
+    }
+    setStartModalPassword('');
+    setStartModalError(null);
+    setStartModalSubmitting(false);
+    setStartModalOpen(true);
+  };
+
+  const closeStartMissionModal = () => {
+    if (startModalSubmitting) return;
+    setStartModalPassword('');
+    setStartModalError(null);
+    setStartModalOpen(false);
+  };
+
+  const handleLaunchMission = async (plannerMode: 'LLM_AGENT' | 'DETERMINISTIC_PLANNER') => {
+    if (mode !== 'LIVE') {
+      setStartModalError(`当前为 ${mode} 只读模式，仅 LIVE 模式支持模型校验与任务启动`);
+      appendLog(`当前为 ${mode} 只读模式，无法启动任务 ${selectedMission}`);
+      return;
+    }
+    if (plannerMode === 'LLM_AGENT' && !startModalPassword) {
+      setStartModalError('请输入启用密码以启用 Agent 模型和 VLM 模型');
+      startPasswordInputRef.current?.focus();
+      return;
+    }
+
+    const suppliedPassword = startModalPassword;
+    setStartModalSubmitting(true);
+    setStartModalError(null);
+
+    const modeCommand: Record<string, unknown> = {
+      type: 'SET_PLANNER_MODE',
+      planner_mode: plannerMode,
+    };
+    if (plannerMode === 'LLM_AGENT') {
+      modeCommand.enable_password = suppliedPassword;
+    }
+
+    const modeRes = await postBackendCommand(modeCommand);
+    setStartModalPassword('');
+
+    if (!modeRes.ok) {
+      setStartModalSubmitting(false);
+      if (modeRes.status === 403) {
+        setStartModalError(`密码校验失败，未能启用 Agent 与 VLM 模型 (${modeRes.detail || 'HTTP 403'})`);
+        appendLog(`后端拒绝启用 Agent/VLM 模型: ${modeRes.detail || 'HTTP 403'}`);
+        window.setTimeout(() => startPasswordInputRef.current?.focus(), 0);
+        return;
+      }
+      if (modeRes.status === 503) {
+        setStartModalError(`服务端未配置启用密码 (${modeRes.detail || 'HTTP 503'})`);
+        appendLog(`后端未配置模型启用密码: ${modeRes.detail || 'HTTP 503'}`);
+        return;
+      }
+      if (modeRes.status === 0) {
+        setStartModalError(`无法连接后端服务 (${getHttpBase()})，请确认仿真后端已运行`);
+        appendLog(`启动任务失败 [${selectedMission}]: MuJoCo 后端未连接`);
+        return;
+      }
+      setStartModalError(`切换规划器失败 (${modeRes.detail || `HTTP ${modeRes.status}`})`);
+      appendLog(`后端拒绝切换 Planner: ${modeRes.detail || `HTTP ${modeRes.status}`}`);
+      return;
+    }
+
+    if (modeRes.body?.snapshot?.running) {
+      setStartModalSubmitting(false);
+      setStartModalError('当前已有任务正在运行，请先点击「安全停止」');
+      appendLog(`任务启动被跳过 [${selectedMission}]: 当前已有任务运行中`);
+      return;
+    }
+
+    const startCmd: Record<string, unknown> = {
+      type: 'START_MISSION',
+      mission_type: selectedMission,
+      seed: seedInput,
+    };
+    if (selectedMission === 'RELAY_SOLVE_CUBE') {
+      startCmd.scramble_steps = selectedScrambleSteps;
+      startCmd.full_26_cubie = true;
+    }
+    const startRes = await postBackendCommand(startCmd);
+    setStartModalSubmitting(false);
+
+    if (!startRes.ok) {
+      const msg =
+        startRes.status === 0
+          ? `无法连接后端服务 (${getHttpBase()})，请确认仿真后端已运行`
+          : `启动任务被拒绝 (${startRes.detail || `HTTP ${startRes.status}`})`;
+      setStartModalError(msg);
+      appendLog(`后端拒绝指令 [启动任务 ${selectedMission}]: ${startRes.detail || `HTTP ${startRes.status}`}`);
+      return;
+    }
+
+    if (startRes.body?.ok === false || startRes.body?.ack?.accepted === false) {
+      const reason = String(startRes.body?.ack?.reason || 'MISSION_NOT_ACCEPTED');
+      setStartModalError(
+        reason === 'mission_already_running'
+          ? '当前已有任务正在运行，请先点击「安全停止」'
+          : `任务未启动: ${reason}`
+      );
+      appendLog(`任务未启动 [${selectedMission}]: ${reason}`);
+      return;
+    }
+
+    setStartModalError(null);
+    setStartModalOpen(false);
+    appendLog(
+      plannerMode === 'LLM_AGENT'
+        ? `已通过密码启用 Agent + VLM 模型并启动任务 ${selectedMission} (seed=${seedInput})`
+        : `已使用确定性 Baseline 启动任务 ${selectedMission} (seed=${seedInput})`
+    );
   };
 
   const toggleDebugFlag = (key: keyof typeof debugOverlays, label: string) => {
@@ -2748,6 +4771,91 @@ export default function App() {
     }
   };
 
+  const refreshExportRuns = async () => {
+    setExportErrorMsg(null);
+    if (mode === 'SAMPLE' || snapshot.frame_source === 'SYNTHETIC_SAMPLE') {
+      setExportRuns([]);
+      return;
+    }
+    try {
+      const resp = await fetch(`${getHttpBase()}/api/m3d/runs`);
+      if (!resp.ok) {
+        setExportErrorMsg(`获取历史实验列表失败: HTTP ${resp.status}`);
+        return;
+      }
+      const data = (await resp.json()) as { current_run_id?: string | null; runs?: HistoricalRunSummary[] };
+      const runs = Array.isArray(data.runs) ? data.runs : [];
+      setExportRuns(runs);
+      const preferred = data.current_run_id || snapshot.run_id || (runs[0]?.run_id ?? '');
+      if (preferred && !exportSelectedRunId) {
+        setExportSelectedRunId(preferred);
+      }
+    } catch {
+      setExportErrorMsg('无法连接后端获取历史实验运行列表（请确认 LIVE 服务已启动）');
+    }
+  };
+
+  const openExportModal = () => {
+    setExportModalOpen(true);
+    setExportErrorMsg(null);
+    if (snapshot.run_id) {
+      setExportSelectedRunId(snapshot.run_id);
+    }
+    if (mode !== 'SAMPLE') {
+      void refreshExportRuns();
+    }
+  };
+
+  const handleDownloadExperimentZip = async () => {
+    setExportStatusMsg(null);
+    setExportErrorMsg(null);
+    if (mode === 'SAMPLE' || snapshot.frame_source === 'SYNTHETIC_SAMPLE') {
+      setExportErrorMsg('SAMPLE_MODE_FORBIDDEN: SYNTHETIC_SAMPLE 仅用于离线演示，禁止作为真实物理实验导出');
+      return;
+    }
+    const targetRunId = (exportSelectedRunId || snapshot.run_id || '').trim() || null;
+    setExportSubmitting(true);
+    try {
+      const resp = await fetch(`${getHttpBase()}/api/m3d/export`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          run_id: targetRunId,
+          scope: exportScope,
+          include_rgbd: exportIncludeRgbd,
+          include_high_freq_trajectory: exportIncludeHighFreq,
+          include_audit_ground_truth: exportIncludeAuditTruth,
+        }),
+      });
+      if (!resp.ok) {
+        const errBody = (await resp.json().catch(() => null)) as Record<string, any> | null;
+        const detail = typeof errBody?.detail === 'string' ? errBody.detail : `HTTP ${resp.status}`;
+        setExportErrorMsg(`导出失败: ${detail}`);
+        appendLog(`实验包导出失败: ${detail}`);
+        return;
+      }
+      const blob = await resp.blob();
+      const disp = resp.headers.get('Content-Disposition') || '';
+      const match = /filename="([^"]+)"/.exec(disp);
+      const filename = match ? match[1] : `cuberelay_${targetRunId || 'export'}_${exportScope}.zip`;
+      const objectUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = objectUrl;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(objectUrl);
+      const kb = (blob.size / 1024).toFixed(1);
+      setExportStatusMsg(`已导出 ${filename} (${kb} KB)`);
+      appendLog(`已从后端导出完整实验包: ${filename} (${kb} KB)`);
+    } catch {
+      setExportErrorMsg('导出失败: 后端连接不可用或请求被中断');
+    } finally {
+      setExportSubmitting(false);
+    }
+  };
+
   return (
     <div className="h-screen w-screen overflow-hidden bg-[#080D16] text-slate-100 flex flex-col font-sans select-none">
       {/* 1. 顶部精简导航栏 (44px) */}
@@ -2767,6 +4875,7 @@ export default function App() {
             {[
               { id: 'CONSOLE', label: '任务控制台' },
               { id: 'SETTINGS', label: '能力注册表 & 设置' },
+              { id: 'BENCHMARK', label: 'Task Agent 评估' },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -2834,6 +4943,15 @@ export default function App() {
 
           <button
             type="button"
+            onClick={openExportModal}
+            className="inline-flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium bg-[#182338] hover:bg-slate-700 text-[#3DE8E5] border border-[#3DE8E5]/30 transition-colors"
+            title="Experiment / Trace Export (后端真实实验包 ZIP 导出)"
+          >
+            <Download className="w-3 h-3" /> 实验导出
+          </button>
+
+          <button
+            type="button"
             onClick={() => setActiveNav(activeNav === 'SETTINGS' ? 'CONSOLE' : 'SETTINGS')}
             className="p-1.5 rounded bg-[#182338] hover:bg-slate-700 text-slate-300 border border-slate-700/80"
             title="能力注册表与系统设置"
@@ -2855,75 +4973,108 @@ export default function App() {
         />
       )}
 
+      {activeNav === 'BENCHMARK' && <TaskAgentBenchmarkView httpBase={getHttpBase()} />}
+
       {activeNav === 'CONSOLE' && (
-        <main className="flex-1 min-h-0 p-2.5 flex flex-col gap-2.5">
-          {/* 中层主工作区: 严格 3:1 宽度比例同行并排 (75% : 25%) */}
+        <main className="flex-1 min-h-0 p-2.5 flex flex-col gap-2">
+          {/* 中层主工作区: 左侧高大仿真视口 (含折叠监控抽屉) vs 右侧人机接力主控台 */}
           <div
-            style={{ gridTemplateColumns: 'minmax(0, 3fr) minmax(300px, 1fr)' }}
+            style={{ gridTemplateColumns: 'minmax(0, 1.65fr) minmax(360px, 1fr)' }}
             className="flex-1 min-h-0 grid gap-2.5"
           >
-            <div className="min-w-0 min-h-0 h-full">
-              <SimulationViewport
-                mode={mode}
-                wsConnected={wsConnected}
-                wsUrl={wsUrl}
-                snapshot={snapshot}
-                debugOverlays={debugOverlays}
-                onCameraPresetChange={(preset) => {
-                  const found = CAMERA_PRESETS.find((c) => c.id === preset);
-                  setSnapshot((prev) => ({
-                    ...prev,
-                    active_camera: preset,
-                    camera_azimuth_deg: found?.az ?? prev.camera_azimuth_deg,
-                    camera_elevation_deg: found?.el ?? prev.camera_elevation_deg,
-                    camera_distance_m: found?.dist ?? prev.camera_distance_m,
-                  }));
-                  if (mode === 'LIVE') {
-                    void sendBackendCommand({ type: 'SET_CAMERA_PRESET', camera: preset }, `切换相机 ${preset}`);
+            <div className="min-w-0 min-h-0 h-full flex flex-col gap-2">
+              <div className="flex-1 min-h-0">
+                <SimulationViewport
+                  mode={mode}
+                  wsConnected={wsConnected}
+                  wsUrl={wsUrl}
+                  snapshot={snapshot}
+                  debugOverlays={debugOverlays}
+                  onCameraPresetChange={(preset) => {
+                    const found = CAMERA_PRESETS.find((c) => c.id === preset);
+                    setSnapshot((prev) => ({
+                      ...prev,
+                      active_camera: preset,
+                      camera_azimuth_deg: found?.az ?? prev.camera_azimuth_deg,
+                      camera_elevation_deg: found?.el ?? prev.camera_elevation_deg,
+                      camera_distance_m: found?.dist ?? prev.camera_distance_m,
+                    }));
+                    if (mode === 'LIVE') {
+                      void sendBackendCommand({ type: 'SET_CAMERA_PRESET', camera: preset }, `切换相机 ${preset}`);
+                    }
+                  }}
+                  onCameraOrbitCommand={(dAz, dEl) => {
+                    void sendBackendCommand(
+                      { type: 'CAMERA_ORBIT', delta_azimuth: dAz, delta_elevation: dEl },
+                      '旋转相机视角'
+                    );
+                  }}
+                  onCameraZoomCommand={(dDist) => {
+                    void sendBackendCommand({ type: 'CAMERA_ZOOM', delta_distance: dDist }, '缩放相机视角');
+                  }}
+                  previewScreenshotUrl={previewScreenshotUrl}
+                  onUploadPreviewScreenshot={(url) => {
+                    setPreviewScreenshotUrl(url);
+                    appendLog('已在 PREVIEW 模式载入外部历史截图');
+                  }}
+                  replayVideoRef={replayVideoRef}
+                  replayVideoUrl={replayVideoUrl}
+                  onReplayTimeUpdate={handleReplayTimeUpdate}
+                  onLoadReplayFiles={handleLoadReplayFiles}
+                  onUrgentInterrupt={() =>
+                    handleRelayCommand({ type: 'URGENT_INTERRUPT', reason: '横幅紧急刹车/接管' }, '紧急刹车中断')
                   }
-                }}
-                onCameraOrbitCommand={(dAz, dEl) => {
-                  void sendBackendCommand(
-                    { type: 'CAMERA_ORBIT', delta_azimuth: dAz, delta_elevation: dEl },
-                    '旋转相机视角'
-                  );
-                }}
-                onCameraZoomCommand={(dDist) => {
-                  void sendBackendCommand({ type: 'CAMERA_ZOOM', delta_distance: dDist }, '缩放相机视角');
-                }}
-                previewScreenshotUrl={previewScreenshotUrl}
-                onUploadPreviewScreenshot={(url) => {
-                  setPreviewScreenshotUrl(url);
-                  appendLog('已在 PREVIEW 模式载入外部历史截图');
-                }}
-                replayVideoRef={replayVideoRef}
-                replayVideoUrl={replayVideoUrl}
-                onReplayTimeUpdate={handleReplayTimeUpdate}
-                onLoadReplayFiles={handleLoadReplayFiles}
-              />
+                />
+              </div>
+
+              {/* 左侧底部折叠收起的监控抽屉: 机器人相机 / Cube State / 遥测监控 */}
+              <div className="shrink-0 bg-[#101827] border border-slate-800/90 rounded-lg px-2.5 py-1.5 space-y-2">
+                <button
+                  type="button"
+                  onClick={() => setTechDrawerOpen((v) => !v)}
+                  className="w-full flex items-center justify-between gap-2 text-[10.5px] font-medium text-slate-300 hover:text-white transition-colors"
+                >
+                  <span className="flex items-center gap-2 min-w-0 truncate">
+                    <span className="font-semibold text-[#3DE8E5]">
+                      {techDrawerOpen ? '▾' : '▸'} 机器人相机 · Cube State · 遥测监控
+                    </span>
+                    <span className="font-mono text-[10px] text-slate-400 truncate">
+                      ({snapshot.observed_facelets.filter((f) => f.color !== 'UNKNOWN').length}/54 格 · 夹爪{' '}
+                      {snapshot.telemetry.gripperState || 'UNKNOWN'})
+                    </span>
+                  </span>
+                  <span className="px-1.5 py-0.5 rounded bg-[#080D16] border border-slate-800 text-[9.5px] font-mono text-slate-400 shrink-0">
+                    {techDrawerOpen ? '收起监控 ▴' : '展开监控 ▾'}
+                  </span>
+                </button>
+                {techDrawerOpen && (
+                  <div className="h-[210px] grid grid-cols-1 md:grid-cols-3 gap-2.5">
+                    <CompactRobotCameraCard
+                      rgbUrl={snapshot.wrist_rgb_url}
+                      depthUrl={snapshot.wrist_depth_url}
+                      depthRangeM={snapshot.depth_range_m}
+                      detections={snapshot.detections}
+                    />
+                    <CompactCubeStateCard
+                      observed={snapshot.observed_facelets}
+                      predicted={snapshot.predicted_facelets}
+                      validationStatus={snapshot.cube_validation_status}
+                    />
+                    <CompactTelemetryCard telemetry={snapshot.telemetry} />
+                  </div>
+                )}
+              </div>
             </div>
 
             <RightOrchestrationPanel
+              mode={mode}
               snapshot={snapshot}
               selectedMission={selectedMission}
+              selectedScrambleSteps={selectedScrambleSteps}
               onSelectMission={handleSelectMission}
+              onSelectScrambleSteps={handleSelectScrambleSteps}
+              onRelayCommand={handleRelayCommand}
             />
-          </div>
-
-          {/* 下层三等分仪表栏 (h-[222px]) */}
-          <div className="h-[222px] shrink-0 grid grid-cols-1 md:grid-cols-3 gap-2.5">
-            <CompactRobotCameraCard
-              rgbUrl={snapshot.wrist_rgb_url}
-              depthUrl={snapshot.wrist_depth_url}
-              depthRangeM={snapshot.depth_range_m}
-              detections={snapshot.detections}
-            />
-            <CompactCubeStateCard
-              observed={snapshot.observed_facelets}
-              predicted={snapshot.predicted_facelets}
-              validationStatus={snapshot.cube_validation_status}
-            />
-            <CompactTelemetryCard telemetry={snapshot.telemetry} />
           </div>
 
           {/* 底部统一时间线与任务控制条 (40px) */}
@@ -2981,14 +5132,16 @@ export default function App() {
 
               <button
                 type="button"
-                onClick={() =>
-                  void sendBackendCommand(
-                    { type: 'START_MISSION', mission_type: selectedMission, seed: seedInput },
-                    `启动任务 ${selectedMission} (seed=${seedInput})`
-                  )
+                onClick={openStartMissionModal}
+                disabled={mode === 'LIVE' && snapshot.running}
+                title={
+                  mode !== 'LIVE'
+                    ? '请切换至 LIVE 实时仿真模式连接后端后启动'
+                    : snapshot.running
+                    ? '当前任务正在运行中，请先点击「安全停止」'
+                    : `启动前输入密码启用 Agent 与 VLM 模型: ${selectedMission}`
                 }
-                title={mode === 'LIVE' ? `启动 Mission: ${selectedMission}` : '请切换至 LIVE 实时仿真模式连接后端后启动'}
-                className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-semibold bg-[#30D6A0]/20 hover:bg-[#30D6A0]/30 text-[#30D6A0] border border-[#30D6A0]/50 transition-colors"
+                className="inline-flex items-center gap-1 px-2.5 py-1 rounded text-[11px] font-semibold bg-[#30D6A0]/20 hover:bg-[#30D6A0]/30 text-[#30D6A0] border border-[#30D6A0]/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Play className="w-3 h-3" /> 开始任务 ({MISSION_OPTIONS.find((m) => m.type === selectedMission)?.label})
               </button>
@@ -3005,7 +5158,14 @@ export default function App() {
                 type="button"
                 onClick={() =>
                   void sendBackendCommand(
-                    { type: 'RESET_SCENE', seed: seedInput, mission_type: selectedMission },
+                    {
+                      type: 'RESET_SCENE',
+                      seed: seedInput,
+                      mission_type: selectedMission,
+                      ...(selectedMission === 'RELAY_SOLVE_CUBE'
+                        ? { scramble_steps: selectedScrambleSteps, full_26_cubie: true }
+                        : {}),
+                    },
                     `重置场景 (seed=${seedInput}, mission=${selectedMission})`
                   )
                 }
@@ -3015,7 +5175,337 @@ export default function App() {
               </button>
             </div>
           </footer>
+
+          {startModalOpen && (
+            <div
+              className="fixed inset-0 z-40 bg-black/50 flex items-end justify-end p-3 pb-14"
+              onClick={closeStartMissionModal}
+            >
+              <div
+                role="dialog"
+                aria-modal="true"
+                aria-labelledby="start-mission-modal-title"
+                onClick={(e) => e.stopPropagation()}
+                className="w-full max-w-sm bg-[#101827] border border-[#3DE8E5]/40 rounded-lg p-3.5 space-y-2.5 shadow-2xl"
+              >
+                <div className="flex items-center justify-between gap-2 border-b border-slate-800 pb-2">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <Lock className="w-3.5 h-3.5 text-[#3DE8E5] shrink-0" />
+                    <h3 id="start-mission-modal-title" className="text-xs font-semibold text-slate-100 truncate">
+                      启动前密码启用 Agent &amp; VLM 模型
+                    </h3>
+                  </div>
+                  <button
+                    type="button"
+                    aria-label="关闭弹窗"
+                    disabled={startModalSubmitting}
+                    onClick={closeStartMissionModal}
+                    className="p-1 rounded text-slate-400 hover:text-slate-200 hover:bg-[#182338] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+
+                <div className="bg-[#080D16] border border-slate-800 rounded p-2 space-y-1 text-[10.5px]">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-slate-400">待启动任务</span>
+                    <span className="font-mono text-[#3DE8E5]">
+                      {MISSION_OPTIONS.find((m) => m.type === selectedMission)?.label} · Seed {seedInput}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-1.5 pt-1 border-t border-slate-800/80">
+                    <div className="rounded border border-[#3DE8E5]/30 bg-[#3DE8E5]/5 px-1.5 py-1">
+                      <div className="text-[9px] font-mono text-[#3DE8E5]">VLM 模型 · 感知</div>
+                      <div className="text-[10px] text-slate-200 truncate">
+                        {snapshot.agent_state?.perception_model_name || 'Visual Perception'}
+                      </div>
+                    </div>
+                    <div className="rounded border border-[#548CFF]/30 bg-[#548CFF]/5 px-1.5 py-1">
+                      <div className="text-[9px] font-mono text-[#548CFF]">Agent 模型 · 规划</div>
+                      <div className="text-[10px] text-slate-200 truncate">
+                        {snapshot.agent_state?.agent_model_name || 'Action Planner'}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {mode !== 'LIVE' && (
+                  <div className="bg-[#FFBF69]/10 border border-[#FFBF69]/40 rounded px-2 py-1.5 text-[10.5px] text-[#FFBF69] leading-snug flex items-center justify-between gap-2">
+                    <span>当前为 {mode} 只读模式，需切换至 LIVE 模式后启动。</span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        handleSwitchMode('LIVE');
+                        setStartModalError(null);
+                      }}
+                      className="px-2 py-0.5 rounded text-[10px] font-semibold bg-[#30D6A0]/20 text-[#30D6A0] border border-[#30D6A0]/40 shrink-0"
+                    >
+                      切换 LIVE
+                    </button>
+                  </div>
+                )}
+
+                <form
+                  className="space-y-2"
+                  onSubmit={(e) => {
+                    e.preventDefault();
+                    void handleLaunchMission('LLM_AGENT');
+                  }}
+                >
+                  <div className="space-y-1">
+                    <label htmlFor="start-model-enable-password" className="block text-[10.5px] text-slate-300">
+                      模型启用密码（每次启动前校验并启用 Agent 与 VLM 模型）
+                    </label>
+                    <input
+                      id="start-model-enable-password"
+                      ref={startPasswordInputRef}
+                      type="password"
+                      value={startModalPassword}
+                      autoComplete="current-password"
+                      aria-label="Agent 与 VLM 模型启用密码"
+                      placeholder="输入密码启用 Agent 模型和 VLM 模型"
+                      disabled={startModalSubmitting}
+                      onChange={(e) => {
+                        setStartModalPassword(e.target.value);
+                        if (startModalError) setStartModalError(null);
+                      }}
+                      className="w-full rounded border border-slate-700 bg-[#080D16] px-2.5 py-1.5 text-[11px] text-slate-100 outline-none focus:border-[#30D6A0] placeholder:text-slate-600"
+                    />
+                    <div className="text-[9.5px] leading-tight text-slate-500">
+                      密码仅用于本次后端校验，不会写入任务 Trace 或页面快照。
+                    </div>
+                  </div>
+
+                  {startModalError && (
+                    <div className="bg-[#FF667B]/10 border border-[#FF667B]/40 rounded px-2 py-1.5 text-[10.5px] text-[#FF667B] leading-snug">
+                      {startModalError}
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between gap-2 pt-1 border-t border-slate-800">
+                    <button
+                      type="button"
+                      disabled={startModalSubmitting || mode !== 'LIVE'}
+                      onClick={() => void handleLaunchMission('DETERMINISTIC_PLANNER')}
+                      className="shrink-0 px-2 py-1.5 rounded text-[10.5px] font-medium bg-[#182338] hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      确定性 Baseline 启动
+                    </button>
+                    <div className="flex items-center gap-1.5 shrink-0">
+                      <button
+                        type="button"
+                        disabled={startModalSubmitting}
+                        onClick={closeStartMissionModal}
+                        className="shrink-0 px-2.5 py-1.5 rounded text-[11px] font-medium bg-[#182338] hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        取消
+                      </button>
+                      <button
+                        type="submit"
+                        disabled={startModalSubmitting || !startModalPassword || mode !== 'LIVE'}
+                        className="shrink-0 inline-flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded text-[11px] font-semibold bg-[#30D6A0]/20 hover:bg-[#30D6A0]/30 text-[#30D6A0] border border-[#30D6A0]/50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                      >
+                        {startModalSubmitting ? (
+                          <>
+                            <RefreshCw className="w-3 h-3 animate-spin" /> 校验中...
+                          </>
+                        ) : (
+                          <>
+                            <Play className="w-3 h-3" /> 启用并开始任务
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                </form>
+              </div>
+            </div>
+          )}
         </main>
+      )}
+
+      {exportModalOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50 flex items-center justify-center p-3"
+          onClick={() => {
+            if (!exportSubmitting) setExportModalOpen(false);
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="experiment-export-modal-title"
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md bg-[#101827] border border-[#3DE8E5]/40 rounded-lg p-3.5 space-y-2.5 shadow-2xl"
+          >
+            <div className="flex items-center justify-between gap-2 border-b border-slate-800 pb-2">
+              <div className="flex items-center gap-1.5 min-w-0">
+                <Download className="w-3.5 h-3.5 text-[#3DE8E5] shrink-0" />
+                <h3 id="experiment-export-modal-title" className="text-xs font-semibold text-slate-100 truncate">
+                  Experiment / Trace Export · 因果审计实验包
+                </h3>
+              </div>
+              <button
+                type="button"
+                aria-label="关闭导出弹窗"
+                disabled={exportSubmitting}
+                onClick={() => setExportModalOpen(false)}
+                className="p-1 rounded text-slate-400 hover:text-slate-200 hover:bg-[#182338] transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+
+            {mode === 'SAMPLE' || snapshot.frame_source === 'SYNTHETIC_SAMPLE' ? (
+              <div className="bg-[#FF667B]/10 border border-[#FF667B]/40 rounded p-2 text-[10.5px] text-[#FF667B] leading-snug">
+                当前为 SYNTHETIC_SAMPLE 合成演示模式：SAMPLE 数据严禁作为真实物理实验数据包导出，请切换至 LIVE 实时仿真。
+              </div>
+            ) : (
+              <div className="bg-[#080D16] border border-slate-800 rounded p-2 space-y-1 text-[10.5px]">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-slate-400">当前 run_id</span>
+                  <span className="font-mono text-[#3DE8E5] truncate">
+                    {snapshot.run_id || '未创建运行记录'}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between gap-2">
+                  <span className="text-slate-400">数据采集状态</span>
+                  <span className="font-mono text-[#30D6A0]">
+                    {snapshot.experiment_recording?.status || 'IDLE'}
+                  </span>
+                </div>
+                <div className="grid grid-cols-3 gap-1 pt-1 border-t border-slate-800/80 font-mono text-[9.5px] text-slate-300">
+                  <span>Frames: {snapshot.experiment_recording?.counts?.frames ?? 0}</span>
+                  <span>Poses: {snapshot.experiment_recording?.counts?.pose_estimates ?? 0}</span>
+                  <span>Targets: {snapshot.experiment_recording?.counts?.grasp_targets ?? 0}</span>
+                  <span>States: {snapshot.experiment_recording?.counts?.robot_states ?? 0}</span>
+                  <span>Contacts: {snapshot.experiment_recording?.counts?.contact_samples ?? 0}</span>
+                  <span>Verifs: {snapshot.experiment_recording?.counts?.contact_verifications ?? 0}</span>
+                </div>
+              </div>
+            )}
+
+            <div className="space-y-2 text-[10.5px]">
+              <div className="space-y-1">
+                <div className="flex items-center justify-between">
+                  <label htmlFor="export-run-select" className="text-slate-300">
+                    历史实验运行列表 (按 run_id 导出)
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => void refreshExportRuns()}
+                    disabled={mode === 'SAMPLE' || exportSubmitting}
+                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[9.5px] bg-[#182338] text-slate-300 border border-slate-700 hover:text-white disabled:opacity-40"
+                  >
+                    <RefreshCw className="w-2.5 h-2.5" /> 刷新列表
+                  </button>
+                </div>
+                <select
+                  id="export-run-select"
+                  value={exportSelectedRunId}
+                  disabled={mode === 'SAMPLE' || exportSubmitting}
+                  onChange={(e) => setExportSelectedRunId(e.target.value)}
+                  className="w-full rounded border border-slate-700 bg-[#080D16] px-2 py-1 text-[10.5px] font-mono text-slate-100 outline-none focus:border-[#30D6A0]"
+                >
+                  <option value="">
+                    {snapshot.run_id ? `当前运行 (${snapshot.run_id})` : '当前最新运行'}
+                  </option>
+                  {exportRuns.map((run) => (
+                    <option key={run.run_id} value={run.run_id}>
+                      {run.run_id} · {run.mission_type || 'MISSION'} · seed={run.seed ?? 0} · {run.recording_status || 'READY'}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="space-y-1">
+                <label htmlFor="export-scope-select" className="block text-slate-300">
+                  导出范围
+                </label>
+                <select
+                  id="export-scope-select"
+                  value={exportScope}
+                  disabled={mode === 'SAMPLE' || exportSubmitting}
+                  onChange={(e) => setExportScope(e.target.value as typeof exportScope)}
+                  className="w-full rounded border border-slate-700 bg-[#080D16] px-2 py-1 text-[10.5px] font-mono text-slate-100 outline-none focus:border-[#30D6A0]"
+                >
+                  <option value="full_mission">full_mission（完整 Mission + 视觉 + 轨迹 + 接触验证）</option>
+                  <option value="grasp_causal_chain">grasp_causal_chain（抓取视觉因果链专项包）</option>
+                  <option value="events_only">events_only（仅事件流 / Snapshot / 校验报告）</option>
+                </select>
+              </div>
+
+              <div className="space-y-1 bg-[#080D16] border border-slate-800 rounded p-2">
+                <label className="flex items-center gap-2 text-slate-300">
+                  <input
+                    type="checkbox"
+                    checked={exportIncludeRgbd}
+                    disabled={mode === 'SAMPLE' || exportSubmitting}
+                    onChange={(e) => setExportIncludeRgbd(e.target.checked)}
+                  />
+                  <span>包含原始 RGB (.png) 与米制 Depth (.npy) + 标定内/外参</span>
+                </label>
+                <label className="flex items-center gap-2 text-slate-300">
+                  <input
+                    type="checkbox"
+                    checked={exportIncludeHighFreq}
+                    disabled={mode === 'SAMPLE' || exportSubmitting}
+                    onChange={(e) => setExportIncludeHighFreq(e.target.checked)}
+                  />
+                  <span>包含高频机器人轨迹与接触时序 (robot_states / contact_samples)</span>
+                </label>
+                <label className="flex items-center gap-2 text-slate-300">
+                  <input
+                    type="checkbox"
+                    checked={exportIncludeAuditTruth}
+                    disabled={mode === 'SAMPLE' || exportSubmitting}
+                    onChange={(e) => setExportIncludeAuditTruth(e.target.checked)}
+                  />
+                  <span>包含隔离审计真值 (audit_only_poses.csv，仅离线审计用)</span>
+                </label>
+              </div>
+            </div>
+
+            {exportStatusMsg && (
+              <div className="bg-[#30D6A0]/15 border border-[#30D6A0]/40 rounded px-2 py-1.5 text-[10.5px] text-[#30D6A0] leading-snug">
+                {exportStatusMsg}
+              </div>
+            )}
+
+            {exportErrorMsg && (
+              <div className="bg-[#FF667B]/10 border border-[#FF667B]/40 rounded px-2 py-1.5 text-[10.5px] text-[#FF667B] leading-snug">
+                {exportErrorMsg}
+              </div>
+            )}
+
+            <div className="flex items-center justify-end gap-2 pt-1 border-t border-slate-800">
+              <button
+                type="button"
+                disabled={exportSubmitting}
+                onClick={() => setExportModalOpen(false)}
+                className="px-2.5 py-1.5 rounded text-[11px] font-medium bg-[#182338] hover:bg-slate-700 text-slate-300 border border-slate-700 transition-colors disabled:opacity-40"
+              >
+                关闭
+              </button>
+              <button
+                type="button"
+                disabled={exportSubmitting || mode === 'SAMPLE' || snapshot.frame_source === 'SYNTHETIC_SAMPLE'}
+                onClick={() => void handleDownloadExperimentZip()}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[11px] font-semibold bg-[#3DE8E5]/20 hover:bg-[#3DE8E5]/30 text-[#3DE8E5] border border-[#3DE8E5]/40 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                {exportSubmitting ? (
+                  <>
+                    <RefreshCw className="w-3 h-3 animate-spin" /> 打包下载中...
+                  </>
+                ) : (
+                  <>
+                    <Download className="w-3 h-3" /> 导出完整 ZIP 实验包
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
