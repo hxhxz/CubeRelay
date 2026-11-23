@@ -2,7 +2,11 @@ FROM mcr.microsoft.com/playwright/python:v1.55.0-noble
 
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    MUJOCO_GL=egl
+    MUJOCO_GL=egl \
+    HTTP_PROXY= \
+    HTTPS_PROXY= \
+    http_proxy= \
+    https_proxy=
 
 WORKDIR /app
 
@@ -10,8 +14,7 @@ RUN apt-get update \
     && apt-get install -y --no-install-recommends build-essential libegl1 libgl1 \
     && rm -rf /var/lib/apt/lists/*
 
-ENV PIP_INDEX_URL=http://mirrors.cloud.aliyuncs.com/pypi/simple/ \
-    PIP_TRUSTED_HOST=mirrors.cloud.aliyuncs.com
+ENV PIP_INDEX_URL=https://mirrors.aliyun.com/pypi/simple/
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends python3.12-dev \

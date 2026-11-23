@@ -58,6 +58,7 @@ class RGBDFrame:
     calibration: CameraCalibration
     camera_name: str
     timestamp_seconds: float
+    frame_id: str | None = None
 
 
 @dataclass(frozen=True, slots=True)

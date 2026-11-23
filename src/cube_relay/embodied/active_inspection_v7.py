@@ -14,7 +14,7 @@ import numpy as np
 
 from .failure_aware_v6 import FailureAwareRulePlanner, FailureAwareSkillAgent
 from .perception_v2 import StickerStateFusion
-from .vlm import HeuristicSceneVLM
+from .vlm import ChromaCubePresenceDetector
 
 
 @dataclass(frozen=True, slots=True)
@@ -276,8 +276,10 @@ class ContinuousActiveInspector:
         first_failure: str | None = None
         regrasp_first = regrasp_final = 0
         started_sim, started_wall = self._sim_time(), time.perf_counter()
+        # Retained `FailureAwareSkillAgent` symbol compatibility for legacy v7 inspection tests;
+        # explicitly paired with deterministic `ChromaCubePresenceDetector` (`HEURISTIC_VISION`).
         grasp = FailureAwareSkillAgent(
-            self.backend, HeuristicSceneVLM(), FailureAwareRulePlanner()
+            self.backend, ChromaCubePresenceDetector(), FailureAwareRulePlanner()
         ).run(seed, 15, reset_scene=False)
         self._record(
             "initial_grasp", grasp.final_success,

@@ -4,12 +4,14 @@ from __future__ import annotations
 
 import asyncio
 from dataclasses import asdict
+import hmac
+import os
 from pathlib import Path
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
@@ -18,6 +20,14 @@ from cube_relay.adapters.real_robot import DisabledRealRobotAdapter, RealRobotUn
 from cube_relay.adapters.sim_robot import SimRobotAdapter
 from cube_relay.agent import TurnCoordinator
 from cube_relay.cube import CubeEngine, SOLVED_FACELETS
+from cube_relay.benchmark import (
+    BenchmarkExporter,
+    build_m4d_replay_cases,
+    discover_benchmark_runs,
+    load_benchmark_run,
+)
+from cube_relay.benchmark.exporter import _sanitize_benchmark_payload
+from cube_relay.experiment import ArtifactExporter, validate_run_id
 from cube_relay.models import CubeObservation, SessionState
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -34,6 +44,11 @@ app.add_middleware(
 sessions: dict[str, TurnCoordinator] = {}
 _m3d_session: Any = None
 _m3d_default_seed: int = 0
+_m3d_default_full_26_cubie: bool = os.getenv("CUBERELAY_M3D_FULL_26_CUBIE", "1").strip().lower() not in {
+    "0",
+    "false",
+    "no",
+}
 
 
 class CreateSessionRequest(BaseModel):
@@ -55,6 +70,14 @@ class RobotTurnBody(BaseModel):
 
 class ConfirmationBody(BaseModel):
     decision: str
+
+
+class M3DExportRequest(BaseModel):
+    run_id: str | None = None
+    scope: str = "full_mission"
+    include_rgbd: bool = True
+    include_high_freq_trajectory: bool = True
+    include_audit_ground_truth: bool = False
 
 
 def _coordinator(session_id: str) -> TurnCoordinator:
@@ -174,11 +197,24 @@ def clarity_style():
 # ============================================================================
 
 
-def configure_m3d_session(session: Any = None, *, default_seed: int = 0) -> None:
-    global _m3d_session, _m3d_default_seed
+def configure_m3d_session(
+    session: Any = None,
+    *,
+    default_seed: int = 0,
+    full_26_cubie: bool | None = None,
+) -> None:
+    global _m3d_session, _m3d_default_seed, _m3d_default_full_26_cubie
     _m3d_default_seed = int(default_seed)
+    if full_26_cubie is not None:
+        _m3d_default_full_26_cubie = bool(full_26_cubie)
     if session is not None:
         _m3d_session = session
+        if (
+            full_26_cubie is not None
+            and hasattr(session, "reconfigure_full_26_cubie")
+            and getattr(session, "full_26_cubie", None) != bool(full_26_cubie)
+        ):
+            session.reconfigure_full_26_cubie(bool(full_26_cubie))
 
 
 def get_m3d_session() -> Any:
@@ -189,6 +225,7 @@ def get_m3d_session() -> Any:
         _m3d_session = SimulationSession(
             seed=_m3d_default_seed,
             use_dedicated_thread=True,
+            full_26_cubie=_m3d_default_full_26_cubie,
         )
     return _m3d_session
 
@@ -199,9 +236,22 @@ def _resolve_mission_type(cmd: dict[str, Any]) -> str | None:
     task = cmd.get("task")
     if task == "single_u_turn":
         return "VERIFY_PHYSICAL_U_TURN"
-    if task in {"INSPECT_CUBE", "VERIFY_PHYSICAL_U_TURN", "SOLVE_CUBE"}:
+    if task in {"INSPECT_CUBE", "VERIFY_PHYSICAL_U_TURN", "SOLVE_CUBE", "RELAY_SOLVE_CUBE"}:
         return str(task)
     return None
+
+
+def _authorize_real_vlm(cmd: dict[str, Any]) -> None:
+    """Gate real VLM activation without exposing or persisting the configured password."""
+    configured = os.getenv("CUBERELAY_VLM_ENABLE_PASSWORD", "")
+    supplied = cmd.get("enable_password")
+    if not configured:
+        raise HTTPException(
+            503,
+            "REAL_VLM_PASSWORD_NOT_CONFIGURED: set CUBERELAY_VLM_ENABLE_PASSWORD on the server",
+        )
+    if not isinstance(supplied, str) or not hmac.compare_digest(supplied, configured):
+        raise HTTPException(403, "REAL_VLM_PASSWORD_INVALID: password verification failed")
 
 
 def _dispatch_m3d_command(session: Any, cmd: dict[str, Any]) -> dict[str, Any]:
@@ -210,26 +260,109 @@ def _dispatch_m3d_command(session: Any, cmd: dict[str, Any]) -> dict[str, Any]:
         return {"ok": True, "snapshot": session.get_snapshot()}
     if ctype == "SELECT_MISSION":
         mtype = _resolve_mission_type(cmd) or "INSPECT_CUBE"
-        snap = session.select_mission(mtype)
+        sel_kwargs: dict[str, Any] = {}
+        if "scramble_steps" in cmd and cmd["scramble_steps"] is not None:
+            sel_kwargs["scramble_steps"] = cmd["scramble_steps"]
+        snap = session.select_mission(mtype, **sel_kwargs)
+        return {"ok": True, "snapshot": snap}
+    if ctype == "SET_SCRAMBLE_STEPS":
+        if "scramble_steps" not in cmd or cmd["scramble_steps"] is None:
+            raise ValueError("SET_SCRAMBLE_STEPS requires scramble_steps")
+        snap = session.set_scramble_steps(cmd["scramble_steps"])
+        return {"ok": True, "snapshot": snap}
+    if ctype == "SET_PLANNER_MODE":
+        pmode = str(cmd.get("planner_mode", "DETERMINISTIC_PLANNER"))
+        if pmode == "LLM_AGENT":
+            _authorize_real_vlm(cmd)
+        model = cmd.get("model")
+        context_mode = str(cmd.get("context_mode", "vision_plus_structured_state"))
+        kwargs: dict[str, Any] = {"model": model, "context_mode": context_mode}
+        if "use_vlm_perception" in cmd:
+            kwargs["use_vlm_perception"] = bool(cmd["use_vlm_perception"])
+        if "guide_mode" in cmd and cmd["guide_mode"] is not None:
+            kwargs["guide_mode"] = str(cmd["guide_mode"])
+        snap = session.set_planner_mode(pmode, **kwargs)
         return {"ok": True, "snapshot": snap}
     if ctype in {"START_MISSION", "START_TASK"}:
         mtype = _resolve_mission_type(cmd) or session.selected_mission_type.value
         seed = cmd.get("seed")
-        ack = session.start_mission_async(
-            mtype,
-            seed=int(seed) if seed is not None else None,
-        )
+        start_kwargs: dict[str, Any] = {
+            "seed": int(seed) if seed is not None else None,
+        }
+        if "full_26_cubie" in cmd and cmd["full_26_cubie"] is not None:
+            start_kwargs["full_26_cubie"] = bool(cmd["full_26_cubie"])
+        if "scramble_steps" in cmd and cmd["scramble_steps"] is not None:
+            start_kwargs["scramble_steps"] = cmd["scramble_steps"]
+        if "scramble_moves" in cmd and cmd["scramble_moves"] is not None:
+            start_kwargs["scramble_moves"] = list(cmd["scramble_moves"])
+        ack = session.start_mission_async(mtype, **start_kwargs)
         return {"ok": ack.get("accepted", True), "ack": ack, "snapshot": session.get_snapshot()}
     if ctype in {"STOP_MISSION", "STOP_TASK"}:
         snap = session.stop_mission()
         return {"ok": True, "snapshot": snap}
+    if ctype == "URGENT_INTERRUPT":
+        snap = session.urgent_interrupt(str(cmd.get("reason") or "UI紧急中断指令"))
+        return {"ok": True, "snapshot": snap}
     if ctype == "RESET_SCENE":
         seed = cmd.get("seed")
         mtype = _resolve_mission_type(cmd)
-        snap = session.reset_scene(
-            seed=int(seed) if seed is not None else None,
-            mission_type=mtype,
+        reset_kwargs: dict[str, Any] = {
+            "seed": int(seed) if seed is not None else None,
+            "mission_type": mtype,
+        }
+        if "full_26_cubie" in cmd and cmd["full_26_cubie"] is not None:
+            reset_kwargs["full_26_cubie"] = bool(cmd["full_26_cubie"])
+        if "scramble_steps" in cmd and cmd["scramble_steps"] is not None:
+            reset_kwargs["scramble_steps"] = cmd["scramble_steps"]
+        if "scramble_moves" in cmd and cmd["scramble_moves"] is not None:
+            reset_kwargs["scramble_moves"] = list(cmd["scramble_moves"])
+        snap = session.reset_scene(**reset_kwargs)
+        return {"ok": True, "snapshot": snap}
+    if ctype == "HUMAN_APPLY_MOVE":
+        if "move" not in cmd or not cmd["move"]:
+            raise ValueError("HUMAN_APPLY_MOVE requires move")
+        snap = session.human_apply_move(str(cmd["move"]))
+        return {"ok": True, "snapshot": snap}
+    if ctype == "HUMAN_UNDO_MOVE":
+        snap = session.human_undo_move()
+        return {"ok": True, "snapshot": snap}
+    if ctype == "HUMAN_PERTURB_POSE":
+        snap = session.human_perturb_pose(
+            dx_m=float(cmd.get("dx_m", 0.0)),
+            dy_m=float(cmd.get("dy_m", 0.0)),
+            dyaw_deg=float(cmd.get("dyaw_deg", 0.0)),
         )
+        return {"ok": True, "snapshot": snap}
+    if ctype == "HUMAN_SEND_CHAT":
+        text = cmd.get("text") if cmd.get("text") is not None else cmd.get("message")
+        auto_res = cmd.get("auto_resume")
+        snap = session.human_send_chat(
+            str(text or ""),
+            auto_resume=None if auto_res is None else bool(auto_res),
+        )
+        return {"ok": True, "snapshot": snap}
+    if ctype == "HUMAN_FINISH_TURN":
+        note = cmd.get("note")
+        if getattr(session, "use_dedicated_thread", False) and hasattr(session, "human_finish_turn_async"):
+            ack = session.human_finish_turn_async(note=note)
+            snap = ack.get("snapshot", session.get_snapshot()) if isinstance(ack, dict) else session.get_snapshot()
+            return {"ok": ack.get("accepted", True) if isinstance(ack, dict) else True, "ack": ack, "snapshot": snap}
+        snap = session.human_finish_turn(note=note)
+        return {"ok": True, "snapshot": snap}
+    if ctype in {"CONFIGURE_SESSION", "SET_FULL_26_CUBIE"}:
+        if "full_26_cubie" not in cmd or cmd["full_26_cubie"] is None:
+            raise ValueError(f"{ctype} requires boolean full_26_cubie")
+        target_full = bool(cmd["full_26_cubie"])
+        seed = cmd.get("seed")
+        mtype = _resolve_mission_type(cmd)
+        if hasattr(session, "reconfigure_full_26_cubie") and seed is None and mtype is None:
+            snap = session.reconfigure_full_26_cubie(target_full)
+        else:
+            snap = session.reset_scene(
+                seed=int(seed) if seed is not None else None,
+                mission_type=mtype,
+                full_26_cubie=target_full,
+            )
         return {"ok": True, "snapshot": snap}
     if ctype == "SET_CAMERA_PRESET":
         snap = session.set_camera_preset(str(cmd.get("camera", "overview")))
@@ -272,6 +405,251 @@ def m3d_command(cmd: dict[str, Any]) -> dict[str, Any]:
         return _dispatch_m3d_command(session, cmd)
     except ValueError as exc:
         raise HTTPException(422, str(exc)) from exc
+    except RuntimeError as exc:
+        raise HTTPException(409, str(exc)) from exc
+
+
+class M3DConfigureRequest(BaseModel):
+    seed: int | None = None
+    full_26_cubie: bool | None = None
+    mission_type: str | None = None
+
+
+@app.post("/api/m3d/configure")
+def m3d_configure(req: M3DConfigureRequest) -> dict[str, Any]:
+    global _m3d_default_seed, _m3d_default_full_26_cubie
+    if req.seed is not None:
+        _m3d_default_seed = int(req.seed)
+    if req.full_26_cubie is not None:
+        _m3d_default_full_26_cubie = bool(req.full_26_cubie)
+    session = get_m3d_session()
+    if req.seed is not None or req.mission_type is not None or req.full_26_cubie is not None:
+        kwargs: dict[str, Any] = {}
+        if req.full_26_cubie is not None:
+            kwargs["full_26_cubie"] = bool(req.full_26_cubie)
+        snap = session.reset_scene(
+            seed=int(req.seed) if req.seed is not None else None,
+            mission_type=req.mission_type,
+            **kwargs,
+        )
+    else:
+        snap = session.get_snapshot()
+    return {"ok": True, "snapshot": snap}
+
+
+def _exporter_for_session(session: Any) -> ArtifactExporter:
+    exp = getattr(session, "exporter", None)
+    if isinstance(exp, ArtifactExporter):
+        return exp
+    return ArtifactExporter(getattr(session, "experiment_recorder", None))
+
+
+@app.get("/api/m3d/runs")
+def m3d_list_runs() -> dict[str, Any]:
+    session = get_m3d_session()
+    snap = session.get_snapshot()
+    exporter = _exporter_for_session(session)
+    return {
+        "current_run_id": snap.get("run_id"),
+        "recording": snap.get("experiment_recording") or {},
+        "runs": exporter.list_runs(),
+    }
+
+
+@app.get("/api/m3d/export/manifest")
+def m3d_export_manifest(run_id: str | None = None) -> dict[str, Any]:
+    session = get_m3d_session()
+    snap = session.get_snapshot()
+    exporter = _exporter_for_session(session)
+    if run_id is not None:
+        try:
+            validate_run_id(run_id)
+        except ValueError as exc:
+            raise HTTPException(400, str(exc)) from exc
+    use_snap = snap if (run_id is None or run_id == snap.get("run_id")) else None
+    try:
+        return exporter.export_manifest_info(session_snapshot=use_snap, run_id=run_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(404, str(exc)) from exc
+    except ValueError as exc:
+        raise HTTPException(400, str(exc)) from exc
+
+
+def _run_m3d_export(
+    *,
+    run_id: str | None,
+    scope: str,
+    include_rgbd: bool,
+    include_high_freq_trajectory: bool,
+    include_audit_ground_truth: bool,
+) -> Response:
+    session = get_m3d_session()
+    snap = session.get_snapshot()
+    exporter = _exporter_for_session(session)
+    if run_id is not None:
+        try:
+            validate_run_id(run_id)
+        except ValueError as exc:
+            raise HTTPException(400, str(exc)) from exc
+    use_snap = snap if (run_id is None or run_id == snap.get("run_id")) else None
+    try:
+        zip_bytes, manifest = exporter.export_zip_bytes(
+            run_id=run_id,
+            session_snapshot=use_snap,
+            scope=scope,
+            include_rgbd=include_rgbd,
+            include_high_freq_trajectory=include_high_freq_trajectory,
+            include_audit_ground_truth=include_audit_ground_truth,
+        )
+    except PermissionError as exc:
+        raise HTTPException(403, str(exc)) from exc
+    except FileNotFoundError as exc:
+        raise HTTPException(404, str(exc)) from exc
+    except ValueError as exc:
+        msg = str(exc)
+        status = 422 if "scope" in msg.lower() else 400
+        raise HTTPException(status, msg) from exc
+    resolved_run_id = str(manifest.get("run_id") or "cuberelay-export")
+    safe_name = f"cuberelay_{resolved_run_id}_{scope}.zip"
+    return Response(
+        content=zip_bytes,
+        media_type="application/zip",
+        headers={
+            "Content-Disposition": f'attachment; filename="{safe_name}"',
+            "X-CubeRelay-Run-Id": resolved_run_id,
+            "X-CubeRelay-Export-Scope": scope,
+        },
+    )
+
+
+@app.get("/api/m3d/export")
+def m3d_export_get(
+    run_id: str | None = None,
+    scope: str = "full_mission",
+    include_rgbd: bool = True,
+    include_high_freq_trajectory: bool = True,
+    include_audit_ground_truth: bool = False,
+) -> Response:
+    return _run_m3d_export(
+        run_id=run_id,
+        scope=scope,
+        include_rgbd=include_rgbd,
+        include_high_freq_trajectory=include_high_freq_trajectory,
+        include_audit_ground_truth=include_audit_ground_truth,
+    )
+
+
+@app.post("/api/m3d/export")
+def m3d_export_post(req: M3DExportRequest) -> Response:
+    return _run_m3d_export(
+        run_id=req.run_id,
+        scope=req.scope,
+        include_rgbd=req.include_rgbd,
+        include_high_freq_trajectory=req.include_high_freq_trajectory,
+        include_audit_ground_truth=req.include_audit_ground_truth,
+    )
+
+
+def _m4d_benchmark_root() -> Path:
+    custom = os.getenv("CUBERELAY_M4D_BENCHMARK_DIR", "").strip()
+    return Path(custom).resolve() if custom else (ROOT / "results" / "m4d_benchmark")
+
+
+@app.get("/api/m4d/benchmark/runs")
+def m4d_benchmark_runs() -> dict[str, Any]:
+    root = _m4d_benchmark_root()
+    runs = discover_benchmark_runs(root)
+    return {
+        "status": "OK" if runs else "NOT_RUN",
+        "root_dir": str(root),
+        "runs": runs,
+    }
+
+
+@app.get("/api/m4d/benchmark/cases")
+def m4d_benchmark_cases() -> dict[str, Any]:
+    cases = build_m4d_replay_cases()
+    items = [
+        {
+            "case_id": c.case_id,
+            "benchmark_version": c.benchmark_version,
+            "capability_dimension": c.capability_dimension.value,
+            "difficulty": c.difficulty,
+            "source_type": c.source_type.value,
+            "mission_type": c.mission.get("mission_type"),
+            "user_goal": c.mission.get("user_goal"),
+            "expected_behavior": c.expected_behavior,
+            "oracle_source": c.oracle_source,
+            "disabled_skills": list(c.disabled_skills),
+            "removed_skills": list(c.removed_skills),
+            "seed": c.seed,
+        }
+        for c in cases
+    ]
+    return {"total": len(items), "cases": items}
+
+
+@app.get("/api/m4d/benchmark/latest")
+def m4d_benchmark_latest(run_id: str | None = None) -> dict[str, Any]:
+    root = _m4d_benchmark_root()
+    runs = discover_benchmark_runs(root)
+    if not runs:
+        return {
+            "status": "NOT_RUN",
+            "available_runs": [],
+            "result": None,
+        }
+    target = None
+    if run_id:
+        clean_id = validate_run_id(run_id)
+        for r in runs:
+            if r.get("benchmark_run_id") == clean_id:
+                target = r
+                break
+        if target is None:
+            raise HTTPException(404, f"Benchmark run {run_id!r} not found")
+    else:
+        target = runs[0]
+
+    loaded = load_benchmark_run(target["summary_path"])
+    payload = _sanitize_benchmark_payload(loaded.model_dump(mode="json"))
+    if loaded.contains_fake_provider and not loaded.real_scorecards:
+        source_badge = "FAKE_PROVIDER"
+    elif loaded.contains_fake_provider:
+        source_badge = "MIXED_REAL_AND_FAKE"
+    elif loaded.execution_mode == "deterministic_only":
+        source_badge = "DETERMINISTIC_RULE"
+    else:
+        source_badge = "REAL_ONLINE_MODEL"
+    return {
+        "status": "OK",
+        "source_badge": source_badge,
+        "available_runs": runs,
+        "result": payload,
+    }
+
+
+@app.get("/api/m4d/benchmark/export")
+def m4d_benchmark_export(run_id: str | None = None) -> Response:
+    root = _m4d_benchmark_root()
+    runs = discover_benchmark_runs(root)
+    if not runs:
+        raise HTTPException(404, "No M4-D benchmark run available for export")
+    target = runs[0]
+    if run_id:
+        clean_id = validate_run_id(run_id)
+        matched = [r for r in runs if r.get("benchmark_run_id") == clean_id]
+        if not matched:
+            raise HTTPException(404, f"Benchmark run {run_id!r} not found")
+        target = matched[0]
+    loaded = load_benchmark_run(target["summary_path"])
+    zip_bytes, _ = BenchmarkExporter.export_zip_bytes(loaded)
+    filename = f"cuberelay_m4d_{loaded.benchmark_run_id}.zip"
+    return Response(
+        content=zip_bytes,
+        media_type="application/zip",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
 
 
 @app.websocket("/ws/session")
@@ -305,7 +683,24 @@ async def ws_session(websocket: WebSocket) -> None:
         while True:
             msg = await websocket.receive_json()
             if isinstance(msg, dict):
-                result = _dispatch_m3d_command(session, msg)
+                try:
+                    result = _dispatch_m3d_command(session, msg)
+                except HTTPException as exc:
+                    await websocket.send_json({
+                        "type": "COMMAND_RESULT",
+                        "ok": False,
+                        "status": exc.status_code,
+                        "error": str(exc.detail),
+                    })
+                    continue
+                except (ValueError, RuntimeError) as exc:
+                    await websocket.send_json({
+                        "type": "COMMAND_RESULT",
+                        "ok": False,
+                        "status": 422 if isinstance(exc, ValueError) else 409,
+                        "error": str(exc),
+                    })
+                    continue
                 await websocket.send_json({"type": "STATE_UPDATE", "payload": result["snapshot"]})
     except WebSocketDisconnect:
         pass

@@ -622,13 +622,17 @@ class SixFaceActiveInspector:
         return None
 
     def _regrasp_released_cube(self) -> tuple[bool, dict[str, Any]]:
-        """Regrasp the released cube using the v6 failure-aware skill agent."""
-        from .failure_aware_v6 import FailureAwareRulePlanner, FailureAwareSkillAgent
-        from .vlm import HeuristicSceneVLM
+        """Regrasp the released cube using the deterministic bounded grasp retry subroutine."""
+        from .failure_aware_v6 import run_bounded_grasp_retry
+        from .vlm import ChromaCubePresenceDetector
 
-        regrasp = FailureAwareSkillAgent(
-            self.backend, HeuristicSceneVLM(), FailureAwareRulePlanner()
-        ).run(0, 15, reset_scene=False)
+        regrasp = run_bounded_grasp_retry(
+            self.backend,
+            seed=0,
+            scramble_steps=15,
+            reset_scene=False,
+            presence_detector=ChromaCubePresenceDetector(),
+        )
         if regrasp.final_success:
             aligned = self.backend.task_align_scan_axes()
             return bool(aligned.get("success")), {
@@ -702,15 +706,19 @@ class SixFaceActiveInspector:
 
     # -- main loop ---------------------------------------------------------
     def run(self, seed: int, *, reset_scene: bool = True) -> SixFaceInspectionResult:
-        from .failure_aware_v6 import FailureAwareRulePlanner, FailureAwareSkillAgent
-        from .vlm import HeuristicSceneVLM
+        from .failure_aware_v6 import run_bounded_grasp_retry
+        from .vlm import ChromaCubePresenceDetector
 
         if reset_scene:
             self.backend.reset_random(seed, 15)
         failure: str | None = None
-        grasp = FailureAwareSkillAgent(
-            self.backend, HeuristicSceneVLM(), FailureAwareRulePlanner()
-        ).run(seed, 15, reset_scene=False)
+        grasp = run_bounded_grasp_retry(
+            self.backend,
+            seed=seed,
+            scramble_steps=15,
+            reset_scene=False,
+            presence_detector=ChromaCubePresenceDetector(),
+        )
         self._record("initial_grasp", grasp.final_success, {"attempts": grasp.attempts})
         if not grasp.final_success:
             failure = "INITIAL_GRASP_FAILED"

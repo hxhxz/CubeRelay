@@ -1,7 +1,14 @@
+import importlib.util
 import math
+import os
 from types import SimpleNamespace
 
 import pytest
+
+_SKIP_MUJOCO_GL = (
+    os.environ.get("CUBERELAY_SKIP_GL_TESTS", "0") == "1"
+    or importlib.util.find_spec("mujoco") is None
+)
 
 from cube_relay.cube import CubeEngine, SOLVED_FACELETS, LEGAL_MOVES
 from cube_relay.embodied.visual_turn_loop import plan_visual_state, compare_observations
@@ -31,6 +38,7 @@ def test_missing_conflict_and_mismatch_are_not_success():
     assert compare_observations(SOLVED_FACELETS, obs + wrong)["status"] == "UNVERIFIED_CONFLICT"
 
 
+@pytest.mark.skipif(_SKIP_MUJOCO_GL, reason="MuJoCo GL tests skipped or mujoco not installed")
 @pytest.mark.parametrize("move", LEGAL_MOVES)
 def test_all_hinge_directions_and_feedback(move):
     from cube_relay.embodied.mujoco_executor import MuJoCoTurnExecutor
@@ -56,6 +64,7 @@ def test_failed_feedback_cannot_commit_appearance():
     assert backend._appearance_state == SOLVED_FACELETS
 
 
+@pytest.mark.skipif(_SKIP_MUJOCO_GL, reason="MuJoCo GL tests skipped or mujoco not installed")
 def test_strict_scene_audit_blocks_legacy_fixture_penetration(tmp_path):
     from cube_relay.embodied.mujoco_executor import MuJoCoTurnExecutor
     from pathlib import Path
@@ -70,6 +79,7 @@ def test_strict_scene_audit_blocks_legacy_fixture_penetration(tmp_path):
     assert len(executor.last_trace) == 1
 
 
+@pytest.mark.skipif(_SKIP_MUJOCO_GL, reason="MuJoCo GL tests skipped or mujoco not installed")
 def test_repaired_fixture_passes_strict_scene_check():
     from cube_relay.embodied.mujoco_executor import MuJoCoTurnExecutor
     executor = MuJoCoTurnExecutor()
