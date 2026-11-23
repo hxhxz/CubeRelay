@@ -10,6 +10,8 @@ from .events import (
     now_wall_time,
 )
 from .models import (
+    AgentObservation,
+    AgentActionDecision,
     AgentObservabilityState,
     MissionState,
     MissionStatus,
@@ -19,9 +21,20 @@ from .models import (
     PlanStep,
     PlanStepStatus,
     PlannerMode,
+    RelayPhase,
     SkillExecutionState,
+    SemanticSceneObservation,
+    VLMDecisionOutput,
 )
-from .planner import MISSION_SPECS, DecisionPolicy, DeterministicMissionPlanner, SelectedAction
+from .planner import (
+    MISSION_SPECS,
+    DecisionPolicy,
+    DeterministicMissionPlanner,
+    GeminiMissionPlanner,
+    LLMAgentDecisionPolicy,
+    SelectedAction,
+    VLMInspectionLimits,
+)
 from .session import SimulationSession
 from .skill_registry import (
     CapabilityRegistrySnapshot,
@@ -29,8 +42,23 @@ from .skill_registry import (
     SkillDescriptor,
     SkillRegistry,
 )
+from .vlm_client import FakeGeminiVLMClient, VLMCallResult, _EnvLoadedGeminiClient
+from .dual_model import (
+    AgentPlanningProvider,
+    DualModelDecisionClient,
+    FakeStructuredModelClient,
+    OpenAICompatibleStructuredClient,
+    VLMPerceptionProvider,
+)
+from .relay_cognition import (
+    HRIDialogueInterpreter,
+    HumanUtteranceSemantics,
+    REFLEX_ESTOP_EXACT_TOKENS,
+)
 
 __all__ = [
+    "AgentObservation",
+    "AgentActionDecision",
     "AgentObservabilityState",
     "CapabilityRegistrySnapshot",
     "DecisionEvent",
@@ -41,6 +69,18 @@ __all__ = [
     "TraceEventType",
     "DecisionPolicy",
     "DeterministicMissionPlanner",
+    "FakeGeminiVLMClient",
+    "GeminiMissionPlanner",
+    "LLMAgentDecisionPolicy",
+    "SemanticSceneObservation",
+    "AgentPlanningProvider",
+    "DualModelDecisionClient",
+    "FakeStructuredModelClient",
+    "OpenAICompatibleStructuredClient",
+    "VLMPerceptionProvider",
+    "HRIDialogueInterpreter",
+    "HumanUtteranceSemantics",
+    "REFLEX_ESTOP_EXACT_TOKENS",
     "MISSION_SPECS",
     "MissionState",
     "MissionStatus",
@@ -51,10 +91,15 @@ __all__ = [
     "PlanStep",
     "PlanStepStatus",
     "PlannerMode",
+    "RelayPhase",
     "SelectedAction",
     "SimulationSession",
     "SkillDescriptor",
     "SkillExecutionState",
     "SkillRegistry",
+    "VLMCallResult",
+    "VLMDecisionOutput",
+    "VLMInspectionLimits",
+    "_EnvLoadedGeminiClient",
     "now_wall_time",
 ]

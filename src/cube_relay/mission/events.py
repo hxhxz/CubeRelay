@@ -23,6 +23,23 @@ class DecisionEventType(str, Enum):
     CAPABILITY_BLOCKED = "CAPABILITY_BLOCKED"
     MISSION_COMPLETED = "MISSION_COMPLETED"
     MISSION_FAILED = "MISSION_FAILED"
+    OBSERVATION_CAPTURED = "OBSERVATION_CAPTURED"
+    VLM_INFERENCE_STARTED = "VLM_INFERENCE_STARTED"
+    VLM_INFERENCE_COMPLETED = "VLM_INFERENCE_COMPLETED"
+    PERCEPTION_UPDATED = "PERCEPTION_UPDATED"
+    AGENT_DECISION_STARTED = "AGENT_DECISION_STARTED"
+    AGENT_DECISION_COMPLETED = "AGENT_DECISION_COMPLETED"
+    SKILL_VALIDATED = "SKILL_VALIDATED"
+    SKILL_REJECTED = "SKILL_REJECTED"
+    REOBSERVATION_COMPLETED = "REOBSERVATION_COMPLETED"
+    REPLAN_TRIGGERED = "REPLAN_TRIGGERED"
+    HANDOVER_COMPLETED = "HANDOVER_COMPLETED"
+    HUMAN_TURN_FINISHED = "HUMAN_TURN_FINISHED"
+    CLARIFICATION_REQUESTED = "CLARIFICATION_REQUESTED"
+    HUMAN_CHAT_RECEIVED = "HUMAN_CHAT_RECEIVED"
+    PREEMPTION_TRIGGERED = "PREEMPTION_TRIGGERED"
+    STALE_RESPONSE_DISCARDED = "STALE_RESPONSE_DISCARDED"
+    RAPID_GLANCE_DEDUCED = "RAPID_GLANCE_DEDUCED"
 
 
 class TraceEventType(str, Enum):
@@ -151,6 +168,30 @@ class DecisionEvent(BaseModel):
     output_reference: str | None = None
     status: str
     failure_reason: str | None = None
+    # M4-A VLM decision audit extensions
+    planner_mode: str | None = None
+    model_provider: str | None = None
+    model_name: str | None = None
+    observation_id: str | None = None
+    input_frame_ids: list[str] = Field(default_factory=list)
+    action_candidates: list[str] = Field(default_factory=list)
+    parameters: dict[str, Any] = Field(default_factory=dict)
+    expected_information_gain: str | None = None
+    confidence: float | None = None
+    validation_result: str | None = None
+    skill_execution_id: str | None = None
+    feedback_observation_id: str | None = None
+    model_latency_ms: float | None = None
+    token_usage: dict[str, Any] | None = None
+    # M4-E perception-to-execution correlation fields
+    decision_id: str | None = None
+    evidence_bundle_id: str | None = None
+    request_id: str | None = None
+    prompt_sha256: str | None = None
+    perception_provenance: dict[str, Any] = Field(default_factory=dict)
+    evidence_conflicts: list[str] = Field(default_factory=list)
+    evidence_validity: dict[str, Any] = Field(default_factory=dict)
+    semantic_provided_to_agent: bool | None = None
 
 
 def now_wall_time() -> str:
@@ -186,6 +227,28 @@ class DecisionEventLog:
         output_reference: str | None = None,
         failure_reason: str | None = None,
         wall_time: str | None = None,
+        planner_mode: str | None = None,
+        model_provider: str | None = None,
+        model_name: str | None = None,
+        observation_id: str | None = None,
+        input_frame_ids: list[str] | None = None,
+        action_candidates: list[str] | None = None,
+        parameters: dict[str, Any] | None = None,
+        expected_information_gain: str | None = None,
+        confidence: float | None = None,
+        validation_result: str | None = None,
+        skill_execution_id: str | None = None,
+        feedback_observation_id: str | None = None,
+        model_latency_ms: float | None = None,
+        token_usage: dict[str, Any] | None = None,
+        decision_id: str | None = None,
+        evidence_bundle_id: str | None = None,
+        request_id: str | None = None,
+        prompt_sha256: str | None = None,
+        perception_provenance: dict[str, Any] | None = None,
+        evidence_conflicts: list[str] | None = None,
+        evidence_validity: dict[str, Any] | None = None,
+        semantic_provided_to_agent: bool | None = None,
     ) -> DecisionEvent:
         seq = len(self._events) + 1
         effective_sim_time = sim_time
@@ -213,6 +276,28 @@ class DecisionEventLog:
             output_reference=output_reference,
             status=status,
             failure_reason=failure_reason,
+            planner_mode=planner_mode,
+            model_provider=model_provider,
+            model_name=model_name,
+            observation_id=observation_id,
+            input_frame_ids=list(input_frame_ids) if input_frame_ids else [],
+            action_candidates=list(action_candidates) if action_candidates else [],
+            parameters=dict(parameters) if parameters else {},
+            expected_information_gain=expected_information_gain,
+            confidence=confidence,
+            validation_result=validation_result,
+            skill_execution_id=skill_execution_id,
+            feedback_observation_id=feedback_observation_id,
+            model_latency_ms=model_latency_ms,
+            token_usage=dict(token_usage) if token_usage else None,
+            decision_id=decision_id,
+            evidence_bundle_id=evidence_bundle_id,
+            request_id=request_id,
+            prompt_sha256=prompt_sha256,
+            perception_provenance=dict(perception_provenance) if perception_provenance else {},
+            evidence_conflicts=list(evidence_conflicts) if evidence_conflicts else [],
+            evidence_validity=dict(evidence_validity) if evidence_validity else {},
+            semantic_provided_to_agent=semantic_provided_to_agent,
         )
         self._events.append(event)
         return event

@@ -31,12 +31,18 @@ ROOT = Path(__file__).resolve().parents[1]
 
 
 def _can_init_mujoco_gl() -> bool:
-    """Fast check for environments with sandboxed macOS CGL disabled."""
-    return os.environ.get("CUBERELAY_SKIP_GL_TESTS", "0") != "1"
+    """Fast check for environments with sandboxed macOS CGL disabled or without mujoco."""
+    if os.environ.get("CUBERELAY_SKIP_GL_TESTS", "0") == "1":
+        return False
+    import importlib.util
+
+    return importlib.util.find_spec("mujoco") is not None
 
 
 @pytest.fixture(scope="module")
 def live_session() -> Iterator[SimulationSession]:
+    if not _can_init_mujoco_gl():
+        pytest.skip("MuJoCo GL tests skipped or mujoco not installed")
     session = SimulationSession(seed=0, width=320, height=240, use_dedicated_thread=True)
     try:
         yield session
@@ -367,6 +373,24 @@ def test_frontend_source_sample_isolation_and_css_coverage() -> None:
     assert "type: 'START_MISSION'" in tsx
     assert "type: 'START_TASK', task: 'single_u_turn'" not in tsx
 
+    # Inline planner switcher & password box removed from right panel; bottom-right pre-launch modal added
+    assert "启用真实 VLM" not in tsx
+    assert "输入真实 VLM 启用密码" not in tsx
+    assert "vlmEnablePassword" not in tsx
+    assert "openStartMissionModal" in tsx
+    assert "handleLaunchMission" in tsx
+    assert "items-end justify-end" in tsx
+    assert "Agent 与 VLM 模型启用密码" in tsx
+    assert "type: 'SET_PLANNER_MODE'" in tsx
+    assert "enable_password = suppliedPassword" in tsx
+
+    bundle_text = bundle.read_text(encoding="utf-8")
+    bundle_decoded = re.sub(r"\\u([0-9a-fA-F]{4})", lambda m: chr(int(m.group(1), 16)), bundle_text)
+    assert "启用真实 VLM" not in bundle_decoded
+    assert "输入真实 VLM 启用密码" not in bundle_decoded
+    assert "start-model-enable-password" in bundle_text
+    assert "Agent 与 VLM 模型启用密码" in bundle_decoded
+
     # Strict SAMPLE vs LIVE isolation
     assert "drawSyntheticSampleFrame" in tsx or "renderSynthetic" in tsx or "SYNTHETIC_SAMPLE" in tsx
     assert "if (next.frame_source === 'SYNTHETIC_SAMPLE')" in tsx
@@ -397,3 +421,77 @@ def test_frontend_source_sample_isolation_and_css_coverage() -> None:
     css_unescaped = css.replace("\\", "")
     missing = [t for t in sorted(tokens) if t not in enum_skip and f".{t}" not in css_unescaped]
     assert missing == [], f"CSS tokens missing in web/console/cuberelay_v4.css: {missing}"
+
+
+def test_prelaunch_password_gate_and_console_assets(monkeypatch: pytest.MonkeyPatch) -> None:
+    class _StubSession:
+        def __init__(self) -> None:
+            self.planner_mode = "DETERMINISTIC_PLANNER"
+            self.selected_mission_type = MissionType.INSPECT_CUBE
+            self.started: list[tuple[str, int | None]] = []
+
+        def get_snapshot(self) -> dict[str, object]:
+            return {
+                "running": False,
+                "frame_source": "REAL_MUJOCO_RENDERER",
+                "selected_mission_type": self.selected_mission_type.value,
+                "agent_state": {"planner_mode": self.planner_mode},
+            }
+
+        def set_planner_mode(
+            self,
+            planner_mode: str,
+            *,
+            model: str | None = None,
+            context_mode: str = "vision_plus_structured_state",
+        ) -> dict[str, object]:
+            del model, context_mode
+            self.planner_mode = planner_mode
+            return self.get_snapshot()
+
+        def start_mission_async(self, mission_type: str, *, seed: int | None = None) -> dict[str, object]:
+            self.started.append((mission_type, seed))
+            return {"accepted": True, "mission_type": mission_type, "seed": seed}
+
+    prev_session = api_main._m3d_session
+    stub = _StubSession()
+    api_main.configure_m3d_session(stub, default_seed=0)
+    monkeypatch.setenv("CUBERELAY_VLM_ENABLE_PASSWORD", "dual-model-secret")
+    client = TestClient(api_main.app)
+    try:
+        console_res = client.get("/console")
+        assert console_res.status_code == 200
+        assert "/console-assets/bundle.js" in console_res.text
+        assert "/console-assets/cuberelay_v4.css" in console_res.text
+
+        bundle_res = client.get("/console-assets/bundle.js")
+        assert bundle_res.status_code == 200
+        bundle_decoded = re.sub(r"\\u([0-9a-fA-F]{4})", lambda m: chr(int(m.group(1), 16)), bundle_res.text)
+        assert "start-model-enable-password" in bundle_res.text
+        assert "Agent 与 VLM 模型启用密码" in bundle_decoded
+        assert "启用真实 VLM" not in bundle_decoded
+
+        bad = client.post(
+            "/api/m3d/command",
+            json={"type": "SET_PLANNER_MODE", "planner_mode": "LLM_AGENT", "enable_password": "wrong"},
+        )
+        assert bad.status_code == 403
+        assert stub.planner_mode == "DETERMINISTIC_PLANNER"
+        assert stub.started == []
+
+        ok_mode = client.post(
+            "/api/m3d/command",
+            json={"type": "SET_PLANNER_MODE", "planner_mode": "LLM_AGENT", "enable_password": "dual-model-secret"},
+        )
+        assert ok_mode.status_code == 200
+        assert ok_mode.json()["snapshot"]["agent_state"]["planner_mode"] == "LLM_AGENT"
+
+        ok_start = client.post(
+            "/api/m3d/command",
+            json={"type": "START_MISSION", "mission_type": "INSPECT_CUBE", "seed": 2},
+        )
+        assert ok_start.status_code == 200
+        assert ok_start.json()["ok"] is True
+        assert stub.started == [("INSPECT_CUBE", 2)]
+    finally:
+        api_main._m3d_session = prev_session

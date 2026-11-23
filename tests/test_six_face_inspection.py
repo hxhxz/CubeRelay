@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+import importlib.util
+import os
+
 import numpy as np
+import pytest
 
 from cube_relay.embodied.canonical_facelets import FACE_FRAMES, cube_rotations_24
 from cube_relay.embodied.mujoco_v2 import MuJoCoEmbodiedBackend
@@ -14,6 +18,11 @@ from cube_relay.embodied.six_face_inspection import (
     held_visible_faces,
 )
 from cube_relay.embodied.task_agent_v7 import EmbodiedTaskAgent, RuleTaskPlanner
+
+_SKIP_MUJOCO_GL = (
+    os.environ.get("CUBERELAY_SKIP_GL_TESTS", "0") == "1"
+    or importlib.util.find_spec("mujoco") is None
+)
 
 
 def test_two_orthogonal_center_colors_uniquely_determine_all_24_orientations() -> None:
@@ -49,6 +58,7 @@ def test_information_gain_planner_selects_pitch_to_expose_missing_bottom_face() 
     assert "D" in options[0].visible_faces
 
 
+@pytest.mark.skipif(_SKIP_MUJOCO_GL, reason="MuJoCo GL tests skipped or mujoco not installed")
 def test_six_face_active_inspector_reconstructs_exact_54_facelets_without_truth() -> None:
     backend = MuJoCoEmbodiedBackend(width=320, height=240)
     try:
@@ -64,6 +74,7 @@ def test_six_face_active_inspector_reconstructs_exact_54_facelets_without_truth(
         backend.renderer.close()
 
 
+@pytest.mark.skipif(_SKIP_MUJOCO_GL, reason="MuJoCo GL tests skipped or mujoco not installed")
 def test_embodied_task_agent_completes_54_sticker_reconstruction_on_random_scene() -> None:
     backend = MuJoCoEmbodiedBackend(width=320, height=240)
     try:

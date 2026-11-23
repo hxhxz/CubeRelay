@@ -1,8 +1,11 @@
-"""Failure-Aware Skill Planning v6.
+"""Failure-Aware Skill Planning v6 & Deterministic Grasp Retry Subroutine.
 
-The deterministic geometry planner owns the bounded grasp-option set. High-level
-planners may select one option, request another observation, or abort. They never
-emit joint controls or weaken Skill safety checks.
+The deterministic geometry planner owns the bounded grasp-option set.
+- `run_bounded_grasp_retry`: ACTIVE_LOW_LEVEL_DEPENDENCY deterministic physical grasp
+  retry subroutine used inside low-level grasp/regrasp Skills (paired with
+  `ChromaCubePresenceDetector`, `source_type="HEURISTIC_VISION"`, `is_real_vlm=False`).
+- `FailureAwareSkillAgent`, `OpenAICompatibleFailureAwareVLM`, `RealVLMFailureAwarePlanner`,
+  and `FixedBudgetPlanner`: LEGACY_EXPERIMENT v6 classes preserved for historical tests/scripts.
 """
 
 from __future__ import annotations
@@ -33,7 +36,7 @@ from .skill_agent import (
     VerifyPoseInput,
 )
 from .v2_types import CubeDetection, GraspCandidate, SceneSemantics
-from .vlm import SceneVLM
+from .vlm import ChromaCubePresenceDetector, SceneVLM
 
 
 def _angle_distance(first: float, second: float, period: float = 2 * math.pi) -> float:
@@ -294,11 +297,25 @@ class FailureAwareRulePlanner:
         self.decision_cost["planner_calls"] += 1
         if observation.attempt == 1:
             baseline = next(
-                option for option in observation.options
-                if option.candidate_index == 1
-                and option.tangent_offset_m == .01
-                and option.closure_offset_m == -.015
+                (
+                    option for option in observation.options
+                    if option.candidate_index == 1
+                    and option.tangent_offset_m == .01
+                    and option.closure_offset_m == -.015
+                    and option.safety_checked
+                ),
+                None,
             )
+            if baseline is None:
+                safe_opts = [option for option in observation.options if option.safety_checked]
+                if safe_opts:
+                    baseline = max(safe_opts, key=lambda option: option.geometry_score)
+                    self.decision_cost["decision_ms"] += (time.perf_counter() - started) * 1000
+                    return FailureAwareDecision(
+                        action="select", option_id=baseline.option_id,
+                        reason="fallback to highest-scoring obstacle-safe option when candidate 1 is unsafe",
+                    )
+                baseline = observation.options[0]
             self.decision_cost["decision_ms"] += (time.perf_counter() - started) * 1000
             return FailureAwareDecision(
                 action="select", option_id=baseline.option_id,
@@ -348,7 +365,10 @@ class RealVLMCallTrace(BaseModel):
 
 
 class OpenAICompatibleFailureAwareVLM:
-    """Real cloud/vLLM vision planner with auditable calls and strict output."""
+    """LEGACY_EXPERIMENT v6 HTTP VLM planner adapter (not used by LIVE mainline)."""
+
+    architecture_role = "LEGACY_EXPERIMENT"
+    source_type = "LEGACY_EXPERIMENT_VLM"
 
     def __init__(
         self,
@@ -472,8 +492,11 @@ class OpenAICompatibleFailureAwareVLM:
 
 
 class RealVLMFailureAwarePlanner:
+    """LEGACY_EXPERIMENT v6 failure-aware planner wrapper."""
+
     name = "real_vlm_3"
     max_attempts = 3
+    architecture_role = "LEGACY_EXPERIMENT"
 
     def __init__(self, provider: OpenAICompatibleFailureAwareVLM) -> None:
         self.provider = provider
@@ -540,7 +563,12 @@ class FailureAwareEpisodeResult(BaseModel):
     vlm_call_traces: tuple[RealVLMCallTrace, ...] = ()
 
 
-class FailureAwareSkillAgent:
+class _BoundedGraspRetryExecutor:
+    """Internal low-level bounded physical grasp retry loop (no task-level Agent role)."""
+
+    source_type: str = "HEURISTIC_VISION"
+    is_real_vlm: bool = False
+
     def __init__(
         self,
         backend: Any,
@@ -555,7 +583,7 @@ class FailureAwareSkillAgent:
         self.geometry_planner = geometry_planner or DeterministicFailureAwareGeometryPlanner()
         self.memory = GraspAttemptMemory()
 
-    def run(
+    def execute_retry(
         self, seed: int, scramble_steps: int = 15, *, reset_scene: bool = True
     ) -> FailureAwareEpisodeResult:
         if reset_scene:
@@ -633,6 +661,7 @@ class FailureAwareSkillAgent:
             if option is None or not option.safety_checked:
                 failures.append("PLANNER_SELECTED_INVALID_OPTION")
                 break
+            self.runtime.selected_option_id = option.option_id
             approached = self.runtime.approach_grasp(ApproachGraspInput(
                 detection=observed.detection,
                 candidate_index=option.candidate_index,
@@ -722,3 +751,38 @@ class FailureAwareSkillAgent:
             contact_trace=tuple(traces),
             vlm_call_traces=vlm_traces,
         )
+
+
+def run_bounded_grasp_retry(
+    backend: Any,
+    *,
+    seed: int = 0,
+    scramble_steps: int = 15,
+    reset_scene: bool = False,
+    presence_detector: SceneVLM | None = None,
+    planner: FailureAwarePlanner | None = None,
+    geometry_planner: DeterministicFailureAwareGeometryPlanner | None = None,
+) -> FailureAwareEpisodeResult:
+    """ACTIVE_LOW_LEVEL_DEPENDENCY: deterministic grasp/regrasp subroutine for Skills.
+
+    Uses `ChromaCubePresenceDetector` (`HEURISTIC_VISION`, `is_real_vlm=False`) and
+    deterministic geometry/rule selection rather than nesting another task-level Agent or VLM.
+    """
+    executor = _BoundedGraspRetryExecutor(
+        backend,
+        presence_detector or ChromaCubePresenceDetector(),
+        planner or FailureAwareRulePlanner(),
+        geometry_planner=geometry_planner,
+    )
+    return executor.execute_retry(seed, scramble_steps, reset_scene=reset_scene)
+
+
+class FailureAwareSkillAgent(_BoundedGraspRetryExecutor):
+    """LEGACY_EXPERIMENT v6 failure-aware grasp agent preserved for v6 baselines/tests."""
+
+    architecture_role = "LEGACY_EXPERIMENT"
+
+    def run(
+        self, seed: int, scramble_steps: int = 15, *, reset_scene: bool = True
+    ) -> FailureAwareEpisodeResult:
+        return self.execute_retry(seed, scramble_steps, reset_scene=reset_scene)

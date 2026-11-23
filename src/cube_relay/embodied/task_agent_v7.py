@@ -1,8 +1,9 @@
-"""CubeRelay v7 task-level embodied agent.
+"""LEGACY_EXPERIMENT (v7): CubeRelay v7 task-level embodied agent.
 
-The agent chooses only validated high-level Skills. Physics, contact checks,
-visual localization, sticker fusion and legality remain deterministic modules.
-Simulator cube state is never an observation or planner input.
+Preserved for historical v7 benchmarks, single-file tests (`test_task_agent_v7.py`,
+`test_six_face_inspection.py`), and ablation scripts. LIVE `SimulationSession`
+uses `LLMAgentDecisionPolicy` (`VLMPerceptionProvider` + `AgentPlanningProvider`)
+rather than `GeminiTaskPlanner` or `EmbodiedTaskAgent`.
 """
 
 from __future__ import annotations
@@ -24,6 +25,7 @@ from .failure_aware_v6 import FailureAwareRulePlanner, FailureAwareSkillAgent
 from .perception_v2 import DeterministicCubeLocalizer, StickerStateFusion
 from .v2_types import FaceObservation
 from .vlm import HeuristicSceneVLM
+from cube_relay.mission.vlm_client import _EnvLoadedGeminiClient
 
 
 class TaskPhase(str, Enum):
@@ -114,9 +116,10 @@ class FixedTaskPlanner(RuleTaskPlanner):
 
 
 class GeminiTaskPlanner:
-    """OpenAI-compatible real-VLM task planner with a strict Skill allow-list."""
+    """LEGACY_EXPERIMENT v7 OpenAI-compatible VLM task planner (isolated from LIVE mainline)."""
 
     name = "gemini_task_planner"
+    architecture_role = "LEGACY_EXPERIMENT"
 
     def __init__(self, endpoint: str, model: str, api_key: str, timeout_seconds: float = 45) -> None:
         self.endpoint = endpoint.rstrip("/")
@@ -219,7 +222,9 @@ class EmbodiedTaskResult(BaseModel):
 
 
 class EmbodiedTaskAgent:
-    """Task-level v7 orchestration over v6 grasp and shared physical Skills."""
+    """LEGACY_EXPERIMENT v7 task-level orchestration preserved for historical baselines."""
+
+    architecture_role = "LEGACY_EXPERIMENT"
 
     def __init__(self, backend: Any, planner: TaskPlanner) -> None:
         self.backend = backend

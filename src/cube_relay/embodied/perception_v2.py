@@ -94,23 +94,67 @@ class DeterministicCubeLocalizer:
         self.cube_half_extent_m = cube_half_extent_m
 
     def locate(self, frame: RGBDFrame) -> CubeDetection | None:
+        detection, _ = self.locate_with_diagnostics(frame)
+        return detection
+
+    def locate_with_diagnostics(self, frame: RGBDFrame) -> tuple[CubeDetection | None, dict[str, object]]:
         if frame.depth_m is None:
             raise ValueError("metric depth is required for 3-D localization")
         rgb = frame.rgb.astype(np.int16)
         chroma = rgb.max(axis=2) - rgb.min(axis=2)
         bright = rgb.max(axis=2) > 105
         white_sticker = (rgb.min(axis=2) > 155) & (chroma < 38)
-        mask = (((chroma >= self.min_chroma) & bright) | white_sticker) & np.isfinite(frame.depth_m)
+        finite_depth = np.isfinite(frame.depth_m) & (frame.depth_m > 0.0)
+        mask = (((chroma >= self.min_chroma) & bright) | white_sticker) & finite_depth
         rows, cols = np.nonzero(mask)
+        initial_count = int(len(rows))
+        calibration = frame.calibration
+        base_diag: dict[str, object] = {
+            "frame_id": getattr(frame, "frame_id", None),
+            "camera_id": frame.camera_name,
+            "sim_time": float(frame.timestamp_seconds),
+            "initial_mask_pixel_count": initial_count,
+            "pixel_count": 0,
+            "detection_bbox_xyxy": None,
+            "pixel_centroid_xy": None,
+            "pixel_mean_xy": None,
+            "depth_stats": {
+                "valid_count": 0,
+                "total_mask_count": initial_count,
+                "min_m": None,
+                "max_m": None,
+                "median_m": None,
+                "mean_m": None,
+                "std_m": None,
+            },
+            "camera_coords_surface_m": None,
+            "world_coords_surface_m": None,
+            "estimated_center_world_m": None,
+            "estimated_yaw_rad": None,
+            "yaw_confidence": None,
+            "position_confidence": None,
+            "quality_status": "MISSING",
+            "failure_reason": None,
+        }
         if len(rows) < self.min_pixels:
-            return None
+            base_diag["failure_reason"] = "INSUFFICIENT_MASK_PIXELS"
+            return None, base_diag
         depths = frame.depth_m[rows, cols]
         median = float(np.median(depths))
         keep = np.abs(depths - median) < 0.08
         rows, cols, depths = rows[keep], cols[keep], depths[keep]
         if len(rows) < self.min_pixels:
-            return None
-        calibration = frame.calibration
+            base_diag["depth_stats"] = {
+                "valid_count": int(len(rows)),
+                "total_mask_count": initial_count,
+                "min_m": float(np.min(depths)) if len(depths) else None,
+                "max_m": float(np.max(depths)) if len(depths) else None,
+                "median_m": median,
+                "mean_m": float(np.mean(depths)) if len(depths) else None,
+                "std_m": float(np.std(depths)) if len(depths) else None,
+            }
+            base_diag["failure_reason"] = "INSUFFICIENT_DEPTH_INLIERS"
+            return None, base_diag
         x_cam = (cols - calibration.cx) * depths / calibration.fx
         y_cam = (rows - calibration.cy) * depths / calibration.fy
         points = np.stack((x_cam, y_cam, depths, np.ones_like(depths)), axis=1)
@@ -118,11 +162,42 @@ class DeterministicCubeLocalizer:
         surface_center = np.median(world[:, :3], axis=0)
         center = surface_center + calibration.camera_to_world[:3, 2] * self.cube_half_extent_m
         yaw, yaw_confidence = self._yaw_from_world_contour(world[:, :3])
-        return CubeDetection(
+        pos_conf = min(1.0, len(rows) / 400.0)
+        detection = CubeDetection(
             tuple(float(value) for value in center), yaw,
-            min(1.0, len(rows) / 400.0), int(len(rows)),
+            pos_conf, int(len(rows)),
             yaw_confidence=yaw_confidence,
         )
+        cam_surface = [
+            float(np.median(x_cam)),
+            float(np.median(y_cam)),
+            float(np.median(depths)),
+        ]
+        diag: dict[str, object] = {
+            **base_diag,
+            "pixel_count": int(len(rows)),
+            "detection_bbox_xyxy": [int(cols.min()), int(rows.min()), int(cols.max()), int(rows.max())],
+            "pixel_centroid_xy": [float(np.median(cols)), float(np.median(rows))],
+            "pixel_mean_xy": [float(np.mean(cols)), float(np.mean(rows))],
+            "depth_stats": {
+                "valid_count": int(len(rows)),
+                "total_mask_count": initial_count,
+                "min_m": float(np.min(depths)),
+                "max_m": float(np.max(depths)),
+                "median_m": float(np.median(depths)),
+                "mean_m": float(np.mean(depths)),
+                "std_m": float(np.std(depths)),
+            },
+            "camera_coords_surface_m": cam_surface,
+            "world_coords_surface_m": [float(v) for v in surface_center],
+            "estimated_center_world_m": [float(v) for v in center],
+            "estimated_yaw_rad": float(yaw),
+            "yaw_confidence": float(yaw_confidence),
+            "position_confidence": float(pos_conf),
+            "quality_status": "VALID",
+            "failure_reason": None,
+        }
+        return detection, diag
 
     @staticmethod
     def _convex_hull(points: np.ndarray) -> np.ndarray:

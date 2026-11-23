@@ -1,8 +1,10 @@
-"""Safety-gated grasp Skills and constrained high-level planners.
+"""LEGACY_EXPERIMENT (v5) safety-gated grasp Skills and constrained high-level planners.
 
-Planners may choose only a Skill, a precomputed candidate and bounded offsets.
-All joint control, contact checks and simulator access stay in the deterministic
-MuJoCo backend.
+Note: `SkillRuntime` and its deterministic grasp Skills are also leveraged via
+`failure_aware_v6.run_bounded_grasp_retry` for physical grasp retries.
+`VLMAgentPlanner` and `SkillBasedGraspAgent` themselves are v5 legacy experiment
+classes preserved for historical scripts and M4-C causal audits; they are NOT
+used by LIVE `SimulationSession` mainline.
 """
 
 from __future__ import annotations
@@ -172,6 +174,19 @@ class SkillRuntime:
         self.localizer = DeterministicCubeLocalizer()
         self.state = AgentState()
         self.logs: list[SkillLog] = []
+        self.last_pose_estimate: Any = None
+        self.last_grasp_target: Any = None
+        self.selected_option_id: str | None = None
+
+    def _truth_scope(self, context: str):
+        from contextlib import nullcontext
+
+        boundary = getattr(self.backend, "truth_boundary", None)
+        if boundary is None:
+            return nullcontext()
+        from cube_relay.experiment.boundary import TruthAccessCategory
+
+        return boundary.scope(TruthAccessCategory.RUNTIME_LOCALIZATION_FORBIDDEN, context)
 
     def _record(
         self, skill: str, started: float, sim_started: float, preconditions: dict[str, bool],
@@ -201,9 +216,37 @@ class SkillRuntime:
     def observe_cube(self, value: ObserveCubeInput) -> ObserveCubeOutput:
         started, sim = time.perf_counter(), float(self.backend.data.time)
         pre = {"camera_available": True}
-        frame = self.backend.capture_rgbd(value.camera_name)
-        semantics = self.scene_vlm.understand(frame.rgb)
-        detection = self.localizer.locate(frame) if semantics.cube_visible else None
+        with self._truth_scope("SkillRuntime.observe_cube"):
+            frame = self.backend.capture_rgbd(value.camera_name)
+            semantics = self.scene_vlm.understand(frame.rgb)
+            if semantics.cube_visible:
+                detection, diag = self.localizer.locate_with_diagnostics(frame)
+            else:
+                detection = None
+                diag = {
+                    "frame_id": getattr(frame, "frame_id", None),
+                    "camera_id": frame.camera_name,
+                    "sim_time": float(frame.timestamp_seconds),
+                    "quality_status": "MISSING",
+                    "failure_reason": "CUBE_NOT_VISIBLE",
+                    "pixel_count": 0,
+                    "initial_mask_pixel_count": 0,
+                }
+        exp_run = getattr(self.backend, "experiment_run", None)
+        if exp_run is not None:
+            pose_rec = exp_run.poses.record_pose_estimate(
+                frame_id=getattr(frame, "frame_id", None),
+                camera_id=frame.camera_name,
+                sim_time=float(frame.timestamp_seconds),
+                diagnostics=diag,
+                mission_id=getattr(self.backend, "_active_mission_id", None),
+                skill_execution_id=getattr(self.backend, "_active_skill_execution_id", None),
+            )
+            self.last_pose_estimate = pose_rec
+            if detection is not None:
+                self.backend._active_pose_estimate = pose_rec
+            else:
+                self.backend._active_pose_estimate = None
         success = detection is not None
         output = ObserveCubeOutput(
             success=success,
@@ -222,6 +265,13 @@ class SkillRuntime:
             self.state.bilateral_grasp = self.state.lifted = False
             self.state.last_frame, self.state.semantics = frame, semantics
             self.state.detection = detection
+        else:
+            self.state.observed = False
+            self.state.planned = self.state.approached = self.state.pose_verified = False
+            self.state.bilateral_grasp = self.state.lifted = False
+            self.state.last_frame, self.state.semantics = frame, semantics
+            self.state.detection = None
+            self.state.candidates = ()
         return self._record("observe_cube", started, sim, pre, value, output)  # type: ignore[return-value]
 
     def plan_grasp(self, value: PlanGraspInput) -> PlanGraspOutput:
@@ -230,9 +280,10 @@ class SkillRuntime:
         if not all(pre.values()):
             output = PlanGraspOutput(success=False, failure_code=FailureCode.PRECONDITION_FAILED)
         else:
-            candidates = self.backend.generate_grasp_candidates(
-                value.detection.center_world_m, value.detection.yaw_radians
-            )
+            with self._truth_scope("SkillRuntime.plan_grasp"):
+                candidates = self.backend.generate_grasp_candidates(
+                    value.detection.center_world_m, value.detection.yaw_radians
+                )
             success = any(item.ik_feasible and item.collision_free for item in candidates)
             output = PlanGraspOutput(
                 success=success,
@@ -242,6 +293,45 @@ class SkillRuntime:
             if success:
                 self.state.planned = True
                 self.state.candidates = candidates
+            else:
+                self.state.planned = False
+                self.state.candidates = ()
+                exp_run = getattr(self.backend, "experiment_run", None)
+                if exp_run is not None:
+                    from cube_relay.experiment.schema import QualityStatus
+
+                    any_ik = any(c.ik_feasible for c in candidates)
+                    any_col = any(c.collision_free for c in candidates)
+                    ee_now = self.backend.gripper_axes_world() if hasattr(self.backend, "gripper_axes_world") else {}
+                    grasp_rec = exp_run.grasp_targets.record_grasp_target(
+                        pose_estimate=self.last_pose_estimate,
+                        sim_time=float(self.backend.data.time),
+                        mission_id=getattr(self.backend, "_active_mission_id", None),
+                        skill_execution_id=getattr(self.backend, "_active_skill_execution_id", None),
+                        object_center_world_m=list(value.detection.center_world_m),
+                        object_yaw_rad=float(value.detection.yaw_radians),
+                        actual_end_effector_pose_at_plan=ee_now,
+                        candidates=[
+                            {
+                                "index": i,
+                                "face_pair": c.face_pair,
+                                "wrist_yaw_radians": c.wrist_yaw_radians,
+                                "ik_feasible": c.ik_feasible,
+                                "collision_free": c.collision_free,
+                                "contact_geometry_score": c.contact_geometry_score,
+                                "motion_cost": c.motion_cost,
+                                "rejection_reason": c.rejection_reason,
+                            }
+                            for i, c in enumerate(candidates)
+                        ],
+                        ik_status="FEASIBLE" if any_ik else "INFEASIBLE",
+                        reachability_status="UNREACHABLE" if not any_ik else "COLLISION_BLOCKED",
+                        collision_check_status="CLEAR" if any_col else "BLOCKED",
+                        quality_status=QualityStatus.UNREACHABLE if not any_ik else QualityStatus.BLOCKED,
+                        failure_reason=candidates[0].rejection_reason if candidates else "NO_FEASIBLE_GRASP",
+                    )
+                    self.last_grasp_target = grasp_rec
+                    self.backend._active_grasp_target = grasp_rec
         return self._record("plan_grasp", started, sim, pre, value, output)  # type: ignore[return-value]
 
     def approach_grasp(self, value: ApproachGraspInput) -> ApproachGraspOutput:
@@ -254,9 +344,77 @@ class SkillRuntime:
                 candidate_index=value.candidate_index,
             )
         else:
+            cand = self.state.candidates[value.candidate_index]
+            exp_run = getattr(self.backend, "experiment_run", None)
+            if exp_run is not None:
+                from cube_relay.experiment.schema import QualityStatus
+
+                cos_y = math.cos(cand.wrist_yaw_radians)
+                sin_y = math.sin(cand.wrist_yaw_radians)
+                off_x = cos_y * value.tangent_offset_m - sin_y * value.closure_offset_m
+                off_y = sin_y * value.tangent_offset_m + cos_y * value.closure_offset_m
+                obj_x, obj_y, obj_z = value.detection.center_world_m
+                cfg = self.backend.grasp_config
+                ee_now = self.backend.gripper_axes_world() if hasattr(self.backend, "gripper_axes_world") else {}
+                grasp_rec = exp_run.grasp_targets.record_grasp_target(
+                    pose_estimate=self.last_pose_estimate,
+                    sim_time=float(self.backend.data.time),
+                    mission_id=getattr(self.backend, "_active_mission_id", None),
+                    skill_execution_id=getattr(self.backend, "_active_skill_execution_id", None),
+                    object_center_world_m=[float(obj_x), float(obj_y), float(obj_z)],
+                    object_yaw_rad=float(value.detection.yaw_radians),
+                    approach_direction_world=[0.0, 0.0, -1.0],
+                    approach_offset_local_xy_m=[float(value.tangent_offset_m), float(value.closure_offset_m)],
+                    world_offset_xy_m=[float(off_x), float(off_y)],
+                    target_end_effector_pose={
+                        "x_m": float(obj_x + off_x),
+                        "y_m": float(obj_y + off_y),
+                        "z_m": float(1.09 + cfg.contact_z_ctrl),
+                        "yaw_rad": float(cand.wrist_yaw_radians),
+                        "robot_x_ctrl": float(obj_x + off_x),
+                        "robot_y_ctrl": float(obj_y + off_y),
+                        "pregrasp_z_ctrl": -0.22,
+                        "contact_z_ctrl": float(cfg.contact_z_ctrl),
+                        "wrist_yaw_rad": float(cand.wrist_yaw_radians),
+                        "wrist_pitch_rad": 0.0,
+                    },
+                    target_gripper_width_m=0.12,
+                    pregrasp_gap_m=float(cfg.pregrasp_gap_m),
+                    actual_end_effector_pose_at_plan=ee_now,
+                    candidates=[
+                        {
+                            "index": i,
+                            "face_pair": c.face_pair,
+                            "wrist_yaw_radians": c.wrist_yaw_radians,
+                            "ik_feasible": c.ik_feasible,
+                            "collision_free": c.collision_free,
+                            "contact_geometry_score": c.contact_geometry_score,
+                            "motion_cost": c.motion_cost,
+                            "rejection_reason": c.rejection_reason,
+                        }
+                        for i, c in enumerate(self.state.candidates)
+                    ],
+                    selected_candidate_index=value.candidate_index,
+                    selected_face_pair=cand.face_pair,
+                    selected_option_id=self.selected_option_id,
+                    ik_status="FEASIBLE" if cand.ik_feasible else "INFEASIBLE",
+                    reachability_status="REACHABLE" if (cand.ik_feasible and cand.collision_free) else "UNREACHABLE",
+                    collision_check_status="CLEAR" if cand.collision_free else "BLOCKED",
+                    safety_parameters={
+                        "approach_displacement_limit_m": float(cfg.approach_displacement_limit_m),
+                        "minimum_normal_force_n": float(cfg.minimum_normal_force_n),
+                        "slip_limit_m": float(cfg.slip_limit_m),
+                        "finger_force_limit_n": cfg.finger_force_limit_n,
+                        "joint_limits_xy": [[-0.64, 0.64], [-0.51, 0.51]],
+                    },
+                    quality_status=QualityStatus.VALID if (cand.ik_feasible and cand.collision_free) else QualityStatus.BLOCKED,
+                    failure_reason=cand.rejection_reason,
+                )
+                self.last_grasp_target = grasp_rec
+                self.backend._active_grasp_target = grasp_rec
             raw = self.backend.skill_approach_grasp(
                 value.detection.center_world_m,
-                self.state.candidates[value.candidate_index],
+                cand,
                 tangent_offset_m=value.tangent_offset_m,
                 closure_offset_m=value.closure_offset_m,
             )
@@ -278,8 +436,19 @@ class SkillRuntime:
         detection = None
         position_error = yaw_error = None
         if all(pre.values()):
-            frame = self.backend.capture_rgbd("overhead")
-            detection = self.localizer.locate(frame)
+            with self._truth_scope("SkillRuntime.verify_pose"):
+                frame = self.backend.capture_rgbd("overhead")
+                detection, diag = self.localizer.locate_with_diagnostics(frame)
+            exp_run = getattr(self.backend, "experiment_run", None)
+            if exp_run is not None:
+                exp_run.poses.record_pose_estimate(
+                    frame_id=getattr(frame, "frame_id", None),
+                    camera_id=frame.camera_name,
+                    sim_time=float(frame.timestamp_seconds),
+                    diagnostics=diag,
+                    mission_id=getattr(self.backend, "_active_mission_id", None),
+                    skill_execution_id=getattr(self.backend, "_active_skill_execution_id", None),
+                )
             if detection is not None:
                 position_error = float(np.linalg.norm(
                     np.asarray(detection.center_world_m)
@@ -467,8 +636,11 @@ class ConstrainedHeuristicVLMProvider:
 
 
 class VLMAgentPlanner:
+    """LEGACY_EXPERIMENT v5 planner wrapper (not invoked on LIVE mainline)."""
+
     name = "vlm_agent_planner"
     max_attempts = 3
+    architecture_role = "LEGACY_EXPERIMENT"
 
     def __init__(self, provider: VLMDecisionProvider) -> None:
         self.provider = provider
@@ -499,6 +671,10 @@ class GraspEpisodeResult(BaseModel):
 
 
 class SkillBasedGraspAgent:
+    """LEGACY_EXPERIMENT v5 grasp episode runner (not invoked on LIVE mainline)."""
+
+    architecture_role = "LEGACY_EXPERIMENT"
+
     def __init__(self, backend: Any, scene_vlm: SceneVLM, planner: SkillPlanner) -> None:
         self.backend = backend
         self.runtime = SkillRuntime(backend, scene_vlm)
