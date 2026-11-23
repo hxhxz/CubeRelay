@@ -24,6 +24,38 @@ DEFAULT_VLM_ENDPOINT = "https://generativelanguage.googleapis.com/v1beta/openai/
 DEFAULT_VLM_MODEL = "gemini-3.5-flash-lite"
 
 
+def _chat_completions_url(endpoint: str) -> str:
+    """Build a /chat/completions URL without duplicating the path suffix."""
+    clean = str(endpoint or "").strip().rstrip("/")
+    if clean.endswith("/chat/completions"):
+        return clean
+    return clean + "/chat/completions"
+
+
+def _format_http_error(
+    exc: urllib.error.HTTPError,
+    url: str | None = None,
+    *,
+    pre_read_detail: str | None = None,
+) -> str:
+    """Format HTTPError with target URL and response body snippet for diagnostics."""
+    detail = pre_read_detail
+    if detail is None:
+        try:
+            raw = exc.read(1024)
+            detail = raw.decode("utf-8", errors="replace").strip() if raw else ""
+        except Exception:
+            detail = ""
+    else:
+        detail = detail.strip()
+    parts = [f"HTTPError: {exc}"]
+    if url:
+        parts.append(f"url={url}")
+    if detail:
+        parts.append(f"body={detail[:500]}")
+    return " | ".join(parts)
+
+
 def _urlopen_without_environment_proxy(
     request: urllib.request.Request,
     *,
@@ -200,18 +232,23 @@ class _EnvLoadedGeminiClient:
             self.traces.append(res)
             return res
 
-        content_parts: list[dict[str, Any]] = [{"type": "text", "text": prompt}]
         if has_image and rgb_data_url is not None:
-            content_parts.append({"type": "image_url", "image_url": {"url": rgb_data_url}})
+            content: str | list[dict[str, Any]] = [
+                {"type": "text", "text": prompt},
+                {"type": "image_url", "image_url": {"url": rgb_data_url}},
+            ]
+        else:
+            content = prompt
 
+        target_url = _chat_completions_url(self.endpoint)
         payload = {
             "model": self.model,
             "temperature": 0,
             "response_format": {"type": "json_object"},
-            "messages": [{"role": "user", "content": content_parts}],
+            "messages": [{"role": "user", "content": content}],
         }
         request = urllib.request.Request(
-            self.endpoint + "/chat/completions",
+            target_url,
             data=json.dumps(payload).encode("utf-8"),
             headers={
                 "Content-Type": "application/json",
@@ -257,6 +294,9 @@ class _EnvLoadedGeminiClient:
         except (TimeoutError, socket.timeout) as exc:
             error_code = "MODEL_TIMEOUT"
             error_msg = f"{type(exc).__name__}: {exc}"
+        except urllib.error.HTTPError as exc:
+            error_code = "API_UNAVAILABLE"
+            error_msg = _format_http_error(exc, target_url)
         except urllib.error.URLError as exc:
             if isinstance(exc.reason, (TimeoutError, socket.timeout)):
                 error_code = "MODEL_TIMEOUT"
@@ -380,6 +420,9 @@ class FakeGeminiVLMClient:
         except (TimeoutError, socket.timeout) as exc:
             error_code = "MODEL_TIMEOUT"
             error_msg = f"{type(exc).__name__}: {exc}"
+        except urllib.error.HTTPError as exc:
+            error_code = "API_UNAVAILABLE"
+            error_msg = _format_http_error(exc, getattr(exc, "url", None))
         except urllib.error.URLError as exc:
             error_code = "API_UNAVAILABLE"
             error_msg = f"{type(exc).__name__}: {exc}"

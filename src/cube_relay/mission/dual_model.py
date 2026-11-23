@@ -32,7 +32,9 @@ from .models import (
 )
 from .vlm_client import (
     VLMCallResult,
+    _chat_completions_url,
     _execute_json_post_with_transport_retry,
+    _format_http_error,
     _strip_json_fences,
     _urlopen_without_environment_proxy,
 )
@@ -82,19 +84,64 @@ class OpenAICompatibleStructuredClient:
         self.token_budget = int(os.getenv(prefix + "TOKEN_BUDGET", "8192"))
         self.reasoning_effort: str | None = os.getenv(prefix + "REASONING_EFFORT", "").strip() or None
         raw_thinking_budget = os.getenv(prefix + "THINKING_BUDGET", "").strip()
+        self._explicit_thinking_budget_off = raw_thinking_budget.lower() in {
+            "off",
+            "none",
+            "null",
+            "-1",
+            "0",
+            "disabled",
+        }
         if raw_thinking_budget == "":
             self.thinking_budget: int | None = 1024 if self.role == "agent" else None
-        elif raw_thinking_budget.lower() in {"off", "none", "null", "-1"}:
+        elif raw_thinking_budget.lower() in {"off", "none", "null", "-1", "disabled"}:
             self.thinking_budget = None
         else:
             tb_val = int(raw_thinking_budget)
             self.thinking_budget = tb_val if tb_val >= 0 else None
+        raw_thinking_mode = os.getenv(prefix + "THINKING", "").strip().lower()
+        if raw_thinking_mode in {"disabled", "off", "false", "0", "disable", "none"}:
+            self.thinking_mode: str | None = "disabled"
+        elif raw_thinking_mode in {"enabled", "on", "true", "1", "enable"}:
+            self.thinking_mode = "enabled"
+        else:
+            self.thinking_mode = None
         self.provider_name = os.getenv(prefix + "PROVIDER", "openai_compatible").strip()
         self.has_completed_valid_call = False
         self.traces: list[StructuredCall] = []
 
     def is_configured(self) -> bool:
         return bool(self.endpoint and self.model and self.api_key)
+
+    def _is_deepseek_target(self) -> bool:
+        host = (urllib.parse.urlparse(self.endpoint).hostname or "").lower()
+        model = self.model.lower()
+        provider = self.provider_name.lower()
+        return "deepseek" in host or model.startswith("deepseek") or provider == "deepseek"
+
+    def _apply_thinking_params(self, payload: dict[str, Any]) -> None:
+        if self._is_deepseek_target():
+            eff = (self.reasoning_effort or "").strip()
+            if (
+                self.thinking_mode == "disabled"
+                or self.thinking_budget == 0
+                or self._explicit_thinking_budget_off
+                or eff.lower() == "none"
+            ):
+                payload["thinking"] = {"type": "disabled"}
+                return
+            if self.thinking_mode == "enabled":
+                payload["thinking"] = {"type": "enabled"}
+            if eff and eff.lower() != "none":
+                payload["reasoning_effort"] = eff
+            return
+
+        if self.reasoning_effort:
+            payload["reasoning_effort"] = self.reasoning_effort
+        if self.thinking_budget is not None:
+            payload["extra_body"] = {
+                "google": {"thinking_config": {"thinking_budget": self.thinking_budget}}
+            }
 
     def generate(
         self,
@@ -125,9 +172,13 @@ class OpenAICompatibleStructuredClient:
             self.traces.append(trace)
             return None, trace
 
-        content: list[dict[str, Any]] = [{"type": "text", "text": prompt}]
         if image_data_url:
-            content.append({"type": "image_url", "image_url": {"url": image_data_url}})
+            content: str | list[dict[str, Any]] = [
+                {"type": "text", "text": prompt},
+                {"type": "image_url", "image_url": {"url": image_data_url}},
+            ]
+        else:
+            content = prompt
         base_payload: dict[str, Any] = {
             "model": self.model,
             "temperature": self.temperature,
@@ -136,20 +187,17 @@ class OpenAICompatibleStructuredClient:
             "messages": [{"role": "user", "content": content}],
         }
         payload = dict(base_payload)
-        if self.reasoning_effort:
-            payload["reasoning_effort"] = self.reasoning_effort
-        if self.thinking_budget is not None:
-            payload["extra_body"] = {
-                "google": {"thinking_config": {"thinking_budget": self.thinking_budget}}
-            }
+        self._apply_thinking_params(payload)
+        target_url = _chat_completions_url(self.endpoint)
 
         def _make_req(body_dict: dict[str, Any]) -> urllib.request.Request:
             return urllib.request.Request(
-                self.endpoint + "/chat/completions",
+                target_url,
                 data=json.dumps(body_dict).encode("utf-8"),
                 headers={"Content-Type": "application/json", "Authorization": f"Bearer {self.api_key}"},
             )
 
+        last_http_detail: str | None = None
         try:
             while True:
                 try:
@@ -160,14 +208,18 @@ class OpenAICompatibleStructuredClient:
                     )
                     break
                 except urllib.error.HTTPError as exc:
+                    raw_detail = exc.read(4096).decode("utf-8", errors="replace")
+                    last_http_detail = raw_detail
                     if exc.code not in {400, 422} or payload == base_payload:
                         raise
                     # Preserve the other thinking switch on gateways that identify
                     # which extension they reject. Generic errors get the base request.
-                    detail = exc.read(4096).decode("utf-8", errors="replace").lower()
+                    detail = raw_detail.lower()
                     rejected = []
                     if "reasoning_effort" in detail and "reasoning_effort" in payload:
                         rejected.append("reasoning_effort")
+                    if "thinking" in detail and "thinking" in payload:
+                        rejected.append("thinking")
                     if any(key in detail for key in ("extra_body", "thinking_config", "thinking_budget", "google")) and "extra_body" in payload:
                         rejected.append("extra_body")
                     if rejected:
@@ -189,11 +241,14 @@ class OpenAICompatibleStructuredClient:
             reasoning_tokens = int(raw_reasoning) if raw_reasoning is not None else None
             choice = body["choices"][0]
             finish_reason = choice.get("finish_reason")
-            raw = str(choice["message"]["content"])
+            raw = str(choice["message"].get("content") or "")
             parsed = schema.model_validate(json.loads(_strip_json_fences(raw)))
             self.has_completed_valid_call = True
         except (TimeoutError, socket.timeout) as exc:
             error_code, error = "MODEL_TIMEOUT", f"{type(exc).__name__}: {exc}"
+        except urllib.error.HTTPError as exc:
+            error_code = "API_UNAVAILABLE"
+            error = _format_http_error(exc, target_url, pre_read_detail=last_http_detail)
         except urllib.error.URLError as exc:
             if isinstance(exc.reason, (TimeoutError, socket.timeout)):
                 error_code = "MODEL_TIMEOUT"

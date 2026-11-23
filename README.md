@@ -78,12 +78,66 @@ The safety-gated Skill API, Fixed/Rule/VLM Planner comparison and 3×100 paired
 evaluation are documented in
 [`docs/skill_based_embodied_agent.md`](docs/skill_based_embodied_agent.md).
 
+## M4-A Gemini VLM-in-the-Loop
+
+Configure Gemini only through environment variables or a git-ignored `.env` file:
+
+```bash
+export CUBERELAY_VLM_API_KEY='...'
+export CUBERELAY_VLM_MODEL='gemini-3.5-flash-lite'
+export CUBERELAY_VLM_ENDPOINT='https://generativelanguage.googleapis.com/v1beta/openai/'
+export CUBERELAY_VLM_ENABLE_PASSWORD='use-a-strong-random-password'
+```
+
+The LIVE console requires this enable password before it can switch to `LLM_AGENT`.
+The password gates model activation only; the VLM API key always remains server-side.
+Use HTTPS/WSS outside localhost so the submitted enable password is encrypted in transit.
+
+M4-B uses two independently configured OpenAI-compatible structured-output calls:
+
+```bash
+export CUBERELAY_PERCEPTION_ENDPOINT='http://vision-provider/v1'
+export CUBERELAY_PERCEPTION_MODEL='vision-model'
+export CUBERELAY_PERCEPTION_API_KEY='...'
+export CUBERELAY_AGENT_ENDPOINT='http://planner-provider/v1'
+export CUBERELAY_AGENT_MODEL='planning-model'
+export CUBERELAY_AGENT_API_KEY='...'
+```
+
+The perception endpoint receives the MuJoCo RGB data URL and returns
+`SemanticSceneObservation`. The planning endpoint receives semantics, CV state,
+Mission/history/Skills/capabilities but no image bytes, and returns
+`AgentActionDecision`. Each role also supports independent `PROVIDER`, `TEMPERATURE`,
+`TIMEOUT_SECONDS`, and `TOKEN_BUDGET` variables; see `.env.example`.
+
+Install the simulation and VLM dependencies with Python 3.11-3.13, then run one
+real Gemini/MuJoCo closed loop, the controlled visual ablation, or the deterministic
+baseline comparison:
+
+```bash
+python -m pip install -e '.[dev,simulation,vlm]'
+MUJOCO_GL=egl python scripts/run_m4a_experiments.py --mode vlm_closed_loop --seed 0
+MUJOCO_GL=egl python scripts/run_m4a_experiments.py --mode ablation --seed 0 --ablation-repeats 2
+MUJOCO_GL=egl python scripts/run_m4a_experiments.py --mode baseline --seeds 0,1,2
+```
+
+`vlm_closed_loop` and `ablation` require outbound access to the configured Gemini
+endpoint. If the MuJoCo host cannot reach Gemini, use the Fake Client tests for the
+physical/protocol loop and report online acceptance as blocked; do not count them as
+an online VLM run:
+
+```bash
+CUBERELAY_SKIP_GL_TESTS=1 pytest -q tests/test_m4a_vlm_loop.py
+MUJOCO_GL=egl pytest -q tests/test_m4a_vlm_loop.py tests/test_m3d_orchestration.py
+```
+
 Optional single-visible-face scanning requires `pip install -e '.[vision]'`. It uses
 four supplied corners and six calibrated color samples. It cannot see hidden stickers;
 all six faces must be scanned and the resulting state manually confirmed.
 
 ## Documentation
 
+- [CubeRelay current status and plan（中文）](docs/cuberelay_status_and_plan.md)
 - [Experiment protocol](docs/experiment_protocol.md)
 - [90-second demo](docs/demo_script.md)
 - [ROS 2 / real robot boundary](docs/ros2_real_robot_integration.md)

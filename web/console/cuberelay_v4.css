@@ -329,3 +329,89 @@ video {
 .bg-black\/30{background-color:rgba(0,0,0,.3)}.bg-\[\#0C1422\]{background-color:#0c1422}
 .bg-\[\#FF667B\]\/10{background-color:rgba(255,102,123,.1)}
 .border-\[\#548CFF\]\/30{border-color:rgba(84,140,255,.3)}.hover\:text-white:hover{color:#fff}
+/* M4-B dual-model panel utility tokens retained by the offline bundle. */
+.bg-\[\#3DE8E5\]\/5 { background-color: rgb(61 232 229 / .05); }
+.bg-\[\#548CFF\]\/5 { background-color: rgb(84 140 255 / .05); }
+.disabled\:cursor-default:disabled { cursor: default; }
+.disabled\:cursor-not-allowed:disabled { cursor: not-allowed; }
+.disabled\:opacity-40:disabled { opacity: .4; }
+.focus\:border-\[\#30D6A0\]:focus { border-color: #30D6A0; }
+.hover\:border-\[\#3DE8E5\]\/40:hover { border-color: rgb(61 232 229 / .4); }
+.max-h-36 { max-height: 9rem; }
+.outline-none { outline: 2px solid transparent; outline-offset: 2px; }
+.placeholder\:text-slate-600::placeholder { color: #475569; }
+/* Pre-launch Agent & VLM password modal utilities. */
+.fixed { position: fixed; }
+.z-40 { z-index: 40; }
+.bg-black\/50 { background-color: rgba(0, 0, 0, 0.5); }
+.items-end { align-items: flex-end; }
+.justify-end { justify-content: flex-end; }
+.p-1 { padding: 0.25rem; }
+.p-3 { padding: 0.75rem; }
+.p-3\.5 { padding: 0.875rem; }
+.pb-14 { padding-bottom: 3.5rem; }
+.max-w-sm { max-width: 24rem; }
+.shadow-2xl { box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7); }
+/* M4-C experiment export modal utilities. */
+.bg-\[\#3DE8E5\]\/20 { background-color: rgb(61 232 229 / 0.2); }
+.hover\:bg-\[\#3DE8E5\]\/30:hover { background-color: rgb(61 232 229 / 0.3); }
+/* M4-D benchmark dashboard utilities. */
+.bg-\[\#3DE8E5\]\/10 { background-color: rgb(61 232 229 / 0.1); }
+.bg-\[\#F05D5E\] { background-color: #f05d5e; }
+.bg-\[\#F05D5E\]\/15 { background-color: rgba(240, 93, 94, 0.15); }
+.bg-\[\#F05D5E\]\/20 { background-color: rgba(240, 93, 94, 0.2); }
+.border-\[\#F05D5E\]\/40 { border-color: rgba(240, 93, 94, 0.4); }
+.text-\[\#F05D5E\] { color: #f05d5e; }
+.border-collapse { border-collapse: collapse; }
+.border-slate-800\/60 { border-color: rgba(30, 41, 59, 0.6); }
+.border-slate-800\/70 { border-color: rgba(30, 41, 59, 0.7); }
+.flex-wrap { flex-wrap: wrap; }
+.hover\:bg-\[\#548CFF\]\/30:hover { background-color: rgba(84, 140, 255, 0.3); }
+.hover\:bg-slate-800\/30:hover { background-color: rgba(30, 41, 59, 0.3); }
+.hover\:border-slate-700:hover { border-color: #334155; }
+.max-h-96 { max-height: 24rem; }
+.mb-0\.5 { margin-bottom: 0.125rem; }
+.mb-2 { margin-bottom: 0.5rem; }
+.ml-1\.5 { margin-left: 0.375rem; }
+.p-6 { padding: 1.5rem; }
+.pb-1\.5 { padding-bottom: 0.375rem; }
+.pr-3 { padding-right: 0.75rem; }
+.space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: 1rem; }
+.text-sm { font-size: 0.875rem; line-height: 1.25rem; }
+@media (min-width: 1024px) {
+  .lg\:grid-cols-12 { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+  .lg\:col-span-5 { grid-column: span 5 / span 5; }
+  .lg\:col-span-7 { grid-column: span 7 / span 7; }
+}
+/* M5 Agent-Relay UI utility classes */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.65; }
+}
+.animate-pulse { animation: pulse 1.6s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+.bg-\[\#FF667B\]\/20 { background-color: rgba(255, 102, 123, 0.2); }
+.hover\:bg-\[\#FF667B\]\/30:hover { background-color: rgba(255, 102, 123, 0.3); }
+.border-\[\#FF667B\]\/50 { border-color: rgba(255, 102, 123, 0.5); }
+.border-\[\#FFBF69\]\/60 { border-color: rgba(255, 191, 105, 0.6); }
+.hover\:bg-\[\#548CFF\]\/20:hover { background-color: rgba(84, 140, 255, 0.2); }
+.bg-\[\#8B5CF6\]\/15 { background-color: rgba(139, 92, 246, 0.15); }
+.border-\[\#8B5CF6\]\/50 { border-color: rgba(139, 92, 246, 0.5); }
+.text-\[\#A78BFA\] { color: #a78bfa; }
+.mr-1 { margin-right: 0.25rem; }
+.opacity-85 { opacity: 0.85; }
+.text-\[11\.5px\] { font-size: 11.5px; line-height: 1.4; }
+.transition-all { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+.w-16 { width: 4rem; }
+.h-1\.5 { height: 0.375rem; }
+/* M5-Demo UX polish: turn stepper, close-up controls, collapsible tech & agent/skill drawers */
+.grid-cols-6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.h-\[210px\] { height: 210px; }
+.max-h-56 { max-height: 14rem; }
+.pt-1\.5 { padding-top: 0.375rem; }
+.order-1 { order: 1; }
+.order-2 { order: 2; }
+.order-3 { order: 3; }
+.order-4 { order: 4; }
+.bg-\[\#0A101B\] { background-color: #0a101b; }
+.bg-\[\#8B5CF6\]\/20 { background-color: rgba(139, 92, 246, 0.2); }
+.border-\[\#3DE8E5\]\/60 { border-color: rgba(61, 232, 229, 0.6); }

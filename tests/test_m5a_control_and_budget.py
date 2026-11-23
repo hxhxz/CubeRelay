@@ -242,3 +242,102 @@ def test_router_uses_fast_model_and_preserves_supported_thinking_switch(monkeypa
         assert payload["model"] == "fast-router"
         assert payload["max_tokens"] == 256
         assert payload["extra_body"] == {"google": {"thinking_config": {"thinking_budget": 0}}}
+
+
+@pytest.mark.parametrize(
+    "configured_endpoint",
+    [
+        "https://api.deepseek.com",
+        "https://api.deepseek.com/",
+        "https://api.deepseek.com/chat/completions",
+        "https://api.deepseek.com/chat/completions/",
+    ],
+)
+def test_deepseek_endpoint_dedup_text_content_and_thinking_disabled(
+    monkeypatch: pytest.MonkeyPatch,
+    configured_endpoint: str,
+) -> None:
+    from cube_relay.mission.relay_cognition import HRIDialogueInterpreter
+
+    monkeypatch.setenv("CUBERELAY_AGENT_ENDPOINT", configured_endpoint)
+    monkeypatch.setenv("CUBERELAY_AGENT_MODEL", "deepseek-v4-pro")
+    monkeypatch.setenv("CUBERELAY_AGENT_API_KEY", "test-key")
+    monkeypatch.setenv("CUBERELAY_AGENT_THINKING", "disabled")
+    monkeypatch.delenv("CUBERELAY_AGENT_THINKING_BUDGET", raising=False)
+    monkeypatch.delenv("CUBERELAY_AGENT_REASONING_EFFORT", raising=False)
+
+    seen_urls: list[str] = []
+    seen_payloads: list[dict[str, Any]] = []
+
+    def fake_urlopen(req: Any, timeout: float = 0.0) -> _FakeHTTPResponse:
+        seen_urls.append(req.full_url)
+        seen_payloads.append(json.loads(req.data.decode("utf-8")))
+        return _FakeHTTPResponse({"choices": [{"message": {"content": '{"ok": true}'}}]})
+
+    monkeypatch.setattr(dm, "_urlopen_without_environment_proxy", fake_urlopen)
+    client = OpenAICompatibleStructuredClient("AGENT")
+    parsed, call = client.generate("Ping JSON", _DummySchema)
+
+    assert parsed is not None and parsed.ok is True
+    assert call.error is None
+    assert seen_urls == ["https://api.deepseek.com/chat/completions"]
+    payload = seen_payloads[0]
+    assert payload["messages"] == [{"role": "user", "content": "Ping JSON"}]
+    assert payload["thinking"] == {"type": "disabled"}
+    assert "extra_body" not in payload
+    assert "reasoning_effort" not in payload
+
+    # HRI router on deepseek-flash should also disable thinking cleanly without Google fields
+    monkeypatch.setenv("CUBERELAY_PERCEPTION_ENDPOINT", configured_endpoint)
+    monkeypatch.setenv("CUBERELAY_PERCEPTION_MODEL", "deepseek-flash")
+    monkeypatch.setenv("CUBERELAY_PERCEPTION_API_KEY", "test-key")
+    monkeypatch.setenv("CUBERELAY_PERCEPTION_THINKING", "enabled")
+    monkeypatch.delenv("CUBERELAY_ROUTER_MODEL", raising=False)
+    router_client = HRIDialogueInterpreter().client
+    parsed_router, _ = router_client.generate("Route JSON", _DummySchema)
+    assert parsed_router is not None and parsed_router.ok is True
+    assert seen_urls[-1] == "https://api.deepseek.com/chat/completions"
+    assert seen_payloads[-1]["thinking"] == {"type": "disabled"}
+    assert "reasoning_effort" not in seen_payloads[-1]
+    assert "extra_body" not in seen_payloads[-1]
+
+
+def test_deepseek_thinking_enabled_multimodal_and_http_error_detail(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setenv("CUBERELAY_PERCEPTION_ENDPOINT", "https://api.deepseek.com")
+    monkeypatch.setenv("CUBERELAY_PERCEPTION_MODEL", "deepseek-flash")
+    monkeypatch.setenv("CUBERELAY_PERCEPTION_API_KEY", "test-key")
+    monkeypatch.setenv("CUBERELAY_PERCEPTION_THINKING", "enabled")
+    monkeypatch.setenv("CUBERELAY_PERCEPTION_REASONING_EFFORT", "low")
+
+    seen_payloads: list[dict[str, Any]] = []
+
+    def fake_urlopen(req: Any, timeout: float = 0.0) -> _FakeHTTPResponse:
+        seen_payloads.append(json.loads(req.data.decode("utf-8")))
+        return _FakeHTTPResponse({"choices": [{"message": {"content": '{"ok": true}'}}]})
+
+    monkeypatch.setattr(dm, "_urlopen_without_environment_proxy", fake_urlopen)
+    client = OpenAICompatibleStructuredClient("PERCEPTION")
+    parsed, call = client.generate("Inspect JSON", _DummySchema, "data:image/jpeg;base64,AAA")
+    assert parsed is not None and parsed.ok is True
+    assert seen_payloads[0]["thinking"] == {"type": "enabled"}
+    assert seen_payloads[0]["reasoning_effort"] == "low"
+    assert isinstance(seen_payloads[0]["messages"][0]["content"], list)
+    assert seen_payloads[0]["messages"][0]["content"][1]["image_url"]["url"] == "data:image/jpeg;base64,AAA"
+
+    def failing_urlopen(req: Any, timeout: float = 0.0) -> _FakeHTTPResponse:
+        raise urllib.error.HTTPError(
+            req.full_url,
+            404,
+            "Not Found",
+            {},  # type: ignore[arg-type]
+            io.BytesIO(b'{"error":{"message":"No route matched"}}'),
+        )
+
+    monkeypatch.setattr(dm, "_urlopen_without_environment_proxy", failing_urlopen)
+    parsed_err, err_call = client.generate("Ping", _DummySchema)
+    assert parsed_err is None
+    assert err_call.error_code == "API_UNAVAILABLE"
+    assert "https://api.deepseek.com/chat/completions" in (err_call.error or "")
+    assert "No route matched" in (err_call.error or "")

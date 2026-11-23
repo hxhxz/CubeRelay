@@ -562,6 +562,7 @@ class _HumanUtteranceSemanticsLLMOutput(BaseModel):
     should_wake_robot_from_human_turn: bool
     persistent_constraints_to_add: list[str] = Field(default_factory=list)
     constraints_to_clear: list[str] = Field(default_factory=list)
+    turn_quota_override: Literal["UNLIMITED", "DEFAULT_3", "STEP_1", "STEP_2"] | None = None
     deviation_intent: DeviationIntentType = "NONE"
     rationale_zh: str = ""
     confidence: float = Field(default=0.85, ge=0.0, le=1.0)
@@ -596,6 +597,7 @@ class HRIDialogueInterpreter:
                 chosen.model = os.getenv("CUBERELAY_PERCEPTION_MODEL", "").strip() or "gemini-3.5-flash-lite"
             chosen.model = os.getenv("CUBERELAY_ROUTER_MODEL", "").strip() or chosen.model
             chosen.thinking_budget = 0
+            chosen.thinking_mode = "disabled"
             chosen.reasoning_effort = "none"
             chosen.token_budget = 256
             chosen.temperature = 0.0
@@ -640,6 +642,7 @@ class HRIDialogueInterpreter:
             },
             "rules": [
                 "Understand true semantics, negation, and colloquial Chinese/English expressions—never rely on naive keyword presence.",
+                "Set turn_quota_override to UNLIMITED only for explicit delegation of ALL remaining moves until solved (我不玩了，剩下的全由你复原); a face-specific preference or ordinary handback leaves it null. For one/two/three moves each per turn use STEP_1/STEP_2/DEFAULT_3. Quota changes alone do not interrupt motion.",
                 "Negation / retain turn: e.g. '先别继续解，让我自己先转两步看看' means human wants to KEEP their turn -> speech_act='RETAIN_HUMAN_TURN', should_wake_robot_from_human_turn=false.",
                 "Colloquial handover: e.g. '这几个块太绕了我搞不定，剩下的看你的啦', '交给你吧', '你继续' -> speech_act='YIELD_TURN_TO_ROBOT', should_wake_robot_from_human_turn=true.",
                 "Mid-motion preference/praise/comment: when robot_running=true, if the human praises, comments, asks a question, or states a FUTURE turn division preference (e.g. '干得漂亮，待会儿底面 D 动作留给我拧就行'), set speech_act='UPDATE_PREFERENCE_ONLY' (or 'QUESTION_OR_COMMENT') and requires_immediate_motion_interrupt=false! NEVER interrupt robot motion unless the human explicitly asks to stop/halt/pause the current motion right now or cancel/change the currently executing move.",
@@ -756,6 +759,7 @@ class HRIDialogueInterpreter:
             should_wake_robot_from_human_turn=bool(parsed.should_wake_robot_from_human_turn),
             persistent_constraints_to_add=clean_add,
             constraints_to_clear=clean_clear,
+            turn_quota_override=parsed.turn_quota_override,
             deviation_intent=parsed.deviation_intent,
             rationale_zh=parsed.rationale_zh.strip() or f"语义意图识别为 {parsed.speech_act}",
             confidence=float(parsed.confidence),

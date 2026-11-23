@@ -263,6 +263,26 @@ def test_relay_ux_fixes_chat_takeover_camera_closeup_and_turn_indicator() -> Non
     assert len(resumed_calls) == 1
     assert snap_takeover["resumed"] == 1
 
+    # Face assignment leaves the cadence untouched. Explicit delegation and
+    # turn-length requests propagate from the structured router into the session.
+    s._stale_guard = StaleResponseGuard()
+    for utterance, override, expected in [
+        ("底面 D 我不方便拧，底面动作由你拧", None, 3),
+        ("我不玩了，剩下的全由你复原", "UNLIMITED", None),
+        ("底面动作由你拧", None, None),
+        ("接下来我们一人只拧一步", "STEP_1", 1),
+        ("每轮拧两步", "STEP_2", 2),
+        ("恢复每轮三步", "DEFAULT_3", 3),
+    ]:
+        def quota_reply(prompt, _img):
+            payload = json.loads(prompt.split("\n", 1)[1])
+            assert payload["utterance"] == utterance
+            return dict(speech_act="UPDATE_PREFERENCE_ONLY", requires_immediate_motion_interrupt=False,
+                        should_wake_robot_from_human_turn=False, turn_quota_override=override)
+        s._hri_interpreter = HRIDialogueInterpreter(FakeStructuredModelClient("hri", quota_reply))
+        s.human_send_chat(utterance)
+        assert s.max_robot_moves_per_turn == expected
+
     # 3. Close-up camera preset & zoom lower bound
     assert CAMERA_PRESET_SPECS["overview"]["dist"] == 1.15
     assert CAMERA_PRESET_SPECS["cube_closeup"]["dist"] <= 0.30
@@ -908,7 +928,7 @@ def run_live_trial_2_deviation_and_preference_flip() -> dict[str, Any]:
         assert snap["mission"]["status"] == MissionStatus.WAITING_FOR_HUMAN_TURN.value, snap
         # Inject natural language intent + bottom-face preference override
         snap = sess.human_send_chat(
-            "我是故意拧 R 的别撤回，另外底面动作我不方便拧，接下来全部由你亲自翻面拧完直至复原！",
+            "我是故意拧 R 的别撤回，另外底面动作我不方便拧，剩下所有面都由你独自复原，不用再交给我。",
             auto_resume=True,
         )
         # If not auto-resumed (e.g. if Agent had already handed over rather than clarifying), finish turn cleanly
@@ -919,7 +939,7 @@ def run_live_trial_2_deviation_and_preference_flip() -> dict[str, Any]:
         while snap["mission"]["status"] == MissionStatus.WAITING_FOR_HUMAN_TURN.value and guard_rounds < 3:
             guard_rounds += 1
             snap = sess.human_send_chat(
-                "底面动作我不方便拧，请全部由你亲自使用翻面喂料在工位上执行直至完全复原！",
+                "底面动作我不方便拧，剩余所有步骤都请你独立完成，不用再传给我。",
                 auto_resume=True,
             )
             if snap["mission"]["status"] == MissionStatus.WAITING_FOR_HUMAN_TURN.value:
@@ -929,6 +949,7 @@ def run_live_trial_2_deviation_and_preference_flip() -> dict[str, Any]:
         assert snap["relay_phase"] == RelayPhase.RELAY_COMPLETED_VERIFIED.value
         assert snap["relay_state"]["progress"]["is_solved"] is True
         assert snap["relay_state"]["progress"]["post_solve_independent_verified"] is True
+        assert snap["relay_state"]["max_robot_moves_per_turn"] is None
         # Ensure robot obeyed constraint & executed bottom/remaining moves physically without R/R' loop
         exec_moves = list(sess.scene_state.get("executed_physical_moves") or [])
         assert len(exec_moves) >= 2
@@ -985,6 +1006,7 @@ def run_live_trial_3_urgent_preemption_handover() -> dict[str, Any]:
             assert preempt is not None and preempt["preempted"] is True
             assert preempt["chunk_status"] == "PREEMPTED_SAFE_HOLD"
             assert preempt["recovery_mode"] == "UNWIND_TO_ZERO"
+            assert snap["relay_state"]["robot_moves_this_turn"] == 0
             assert preempt["interrupt_to_hold_sim_ms"] is not None and float(preempt["interrupt_to_hold_sim_ms"]) < 50.0
             assert contract_info["is_lattice_aligned"] is True
             assert abs(float(contract_info["residual_slice_angle_deg"])) < 2.0
@@ -1348,6 +1370,7 @@ def test_hri_dialogue_interpreter_live_llm_adversarial_routing() -> None:
         current_action="commit_physical_moves",
     )
     assert r_pref.provenance == "LIVE_LLM_ROUTER"
+    assert r_pref.turn_quota_override is None
     assert r_pref.requires_immediate_motion_interrupt is False, r_pref
     assert len(r_pref.persistent_constraints_to_add) >= 1, r_pref
     assert any(("D" in c or "底面" in c) for c in r_pref.persistent_constraints_to_add), r_pref
@@ -1376,5 +1399,85 @@ def test_hri_dialogue_interpreter_live_llm_adversarial_routing() -> None:
     assert r_clarify.provenance == "LIVE_LLM_ROUTER"
     assert r_clarify.deviation_intent == "INTENTIONAL_KEEP"
     assert r_clarify.should_wake_robot_from_human_turn
+    for utterance, expected in [("我不玩了，剩下的全由你复原", "UNLIMITED"),
+                                ("接下来我们一人只拧一步", "STEP_1")]:
+        result = interp.interpret(utterance, relay_phase="WAITING_FOR_HUMAN_TURN")
+        assert result.provenance == "LIVE_LLM_ROUTER"
+        assert result.turn_quota_override == expected
     for result in (r_neg, r_wake, r_pref, r_comp, r_clarify):
         print(result.provenance, result.model_name, result.speech_act, result.latency_ms)
+
+
+@pytest.mark.parametrize("value,expected", [(1, 1), (2, 2), (3, 3), ("unlimited", None)])
+def test_turn_quota_rest_and_snapshot(monkeypatch, value, expected):
+    sess = SimulationSession.__new__(SimulationSession)
+    sess._hri_lock = threading.Lock()
+    sess._stale_guard = StaleResponseGuard()
+    sess.scene_state = {"relay_cognitive_context": {}}
+    sess.robot_moves_this_turn = 2
+    sess._emit_snapshot = lambda **_: {"relay_state": sess._turn_quota_state()}
+    monkeypatch.setattr(api_main, "get_m3d_session", lambda: sess)
+    client = TestClient(api_main.app)
+    response = client.post("/api/m3d/command", json={"type": "SET_TURN_QUOTA", "quota": value})
+    assert response.status_code == 200
+    quota = response.json()["snapshot"]["relay_state"]
+    assert quota["max_robot_moves_per_turn"] == expected and quota["robot_moves_this_turn"] == 2
+    assert quota["remaining_turn_quota"] == (None if expected is None else max(0, expected - 2))
+    assert client.post("/api/m3d/command", json={"type": "SET_TURN_QUOTA", "quota": 0}).status_code == 422
+
+
+@pytest.mark.parametrize("scramble", [["R'", "F2", "U'"], ["L'", "R'", "F2", "U'"]])
+def test_turn_quota_across_physical_batches(scramble):
+    if _SKIP_MUJOCO_GL:
+        pytest.skip("Requires MuJoCo")
+    rejected = False
+
+    def choose(prompt, _img):
+        nonlocal rejected
+        body = json.loads(prompt.split("\n", 1)[1])
+        ctx = json.loads(body["planner_context"].split("\n", 1)[1])
+        relay = ctx["relay_cognitive_context"]
+        paths = relay["candidate_paths_and_embodied_costs"]
+        params = {}
+        if not ctx["observable_state"].get("cube_localized"):
+            skill = "observe_workspace"
+            params = {"camera_name": "overhead"}
+        elif not relay["belief_state"]["previous_belief_54_known"]:
+            skill = "scan_occluded_bottom_face"
+        elif paths["is_solved"]:
+            assert relay["belief_state"]["post_solve_independent_verified"]
+            skill = "FINISH"
+        else:
+            skill = "commit_physical_moves"
+            sol = paths["primary_kociemba_solution"]
+            if relay["robot_moves_this_turn"] == 2 and not rejected:
+                # Try two legal moves even if only one is needed to solve.
+                params["moves"] = [sol[0], "U"]
+                rejected = True
+            else:
+                params["moves"] = sol[:min(2, relay["remaining_turn_quota"])]
+        return AgentActionDecision(selected_action=skill, parameters=params,
+                                   reason_summary="exercise quota", expected_outcome=skill,
+                                   completion_condition=skill, confidence=1,
+                                   evidence_observation_ids=[ctx["observation_metadata"]["observation_id"]]).model_dump()
+
+    client = DualModelDecisionClient(agent=AgentPlanningProvider(FakeStructuredModelClient("agent", choose)),
+                                     use_vlm_perception=False)
+    sess = SimulationSession(full_26_cubie=True, planner=LLMAgentDecisionPolicy(client=client))
+    try:
+        snap = sess.run_mission(MissionType.RELAY_SOLVE_CUBE, seed=1, scramble_moves=scramble)
+        assert rejected
+        assert any(event.get("failure_reason") == "EXCEEDS_REMAINING_TURN_QUOTA" for event in snap["decision_events"])
+        assert snap["relay_state"]["robot_moves_this_turn"] == 3
+        assert snap["relay_state"]["remaining_turn_quota"] == 0
+        if len(scramble) == 3:
+            assert snap["mission"]["status"] == "COMPLETED"
+            assert snap["physical_verification"]["exact_54_solved"]
+        else:
+            assert snap["mission"]["status"] == "WAITING_FOR_HUMAN_TURN"
+            ok, reason = sess.registry.validate_parameters("commit_physical_moves", {"moves": ["U"]}, sess.scene_state)
+            assert not ok and reason.startswith("TURN_QUOTA_EXHAUSTED_MUST_HANDOVER")
+            sess._prepare_human_finish_turn()
+            assert sess.robot_moves_this_turn == 0 and sess.remaining_turn_quota == 3
+    finally:
+        sess.close()
